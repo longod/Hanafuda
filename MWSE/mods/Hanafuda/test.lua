@@ -18,7 +18,7 @@ do
 
     unitwind:test("ShuffleDeck", function()
         local deck = card.CreateDeck()
-        local shuffled = card.shuffleDeck(deck)
+        local shuffled = card.ShuffleDeck(deck)
         unitwind:expect(#shuffled).toBe(#deck)
 
         -- no duplicated?
@@ -35,10 +35,10 @@ do
     unitwind:test("DealCard", function()
         local deck = card.CreateDeck()
         for i = 48, 1, -1 do
-            local card = card.dealCard(deck)
+            local card = card.DealCard(deck)
             unitwind:expect(card).toBe(i)
         end
-        local card = card.dealCard(deck)
+        local card = card.DealCard(deck)
         unitwind:expect(card).toBe(nil)
     end)
 

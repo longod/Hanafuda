@@ -134,6 +134,18 @@ assert(table.size(this.cardAssets) == this.cardCount)
 
 ---@type CardAsset
 this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_03.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_06.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_banner_6th.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_banner_dagoth_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_banner_hlaalu_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_banner_redoran_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_de_banner_telvani_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_c_robecommon02_c_bagside.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_de_tapestry_02.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_fresco_newtribunal_01.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_saint_vivec_01.dds" }
 
 -- todo tamriel version.
 -- original japanese version.

@@ -3,7 +3,12 @@ dofile("Hanafuda/test.lua")
 local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
+local view = require("Hanafuda.KoiKoi.view")
+local game = require("Hanafuda.KoiKoi.game").new()
 
+game:Initialize()
+game:DecideParent()
+game:DealInitialCards()
 
 ---@class PlayerView
 ---@field hand tes3uiElement
@@ -30,20 +35,22 @@ local playerView = {} ---@typee PlayerView
 local opponentCardView = {} ---@typee { intger: tes3uiElement }
 local groundCardView = {} ---@typee { intger: tes3uiElement }
 local playerCardView = {} ---@typee { intger: tes3uiElement }
+local selectedCard = nil ---@type integer?
+local gameState = 0
 
 local deck = card.CreateDeck()
-deck = card.shuffleDeck(deck)
+deck = card.ShuffleDeck(deck)
 
 while not (#playerPool >= initialPlayerCards and #opponentPool >= initialPlayerCards and #groundPool >= initialPlaygroundCards) do
     -- todo check count
     for i = 1, initialDealEach do
-        table.insert(playerPool, card.dealCard(deck))
+        table.insert(playerPool, card.DealCard(deck))
     end
     for i = 1, initialDealEach do
-        table.insert(groundPool, card.dealCard(deck))
+        table.insert(groundPool, card.DealCard(deck))
     end
     for i = 1, initialDealEach do
-        table.insert(opponentPool, card.dealCard(deck))
+        table.insert(opponentPool, card.DealCard(deck))
     end
 end
 
@@ -60,7 +67,6 @@ local function CanMatch(cardId0, cardId1)
     return card.GetCardData(cardId0).suit == card.GetCardData(cardId1).suit
 end
 
-local selectedCard = nil ---@type integer?
 
 ---@param parent tes3uiElement
 ---@param cardId integer
@@ -87,21 +93,7 @@ local function PutCard(parent, cardId, backface)
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        local tooltip = tes3ui.createTooltipMenu()
-        if backface then
-            local name = tooltip:createLabel{text = "Back" }
-            name.color = tes3ui.getPalette(tes3.palette.headerColor)
-        else
-            local thumb = tooltip:createImage({path = asset.path })
-            thumb.width = card.GetCardWidth() * 2
-            thumb.height = card.GetCardHeight() * 2
-            thumb.scaleMode = true
-            local ref = card.GetCardData(cardId)
-            local name = tooltip:createLabel{text = card.GetCardText(cardId).name }
-            name.color = card.GetCardTypeColor(ref.type)
-            tooltip:createLabel{text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")"}
-            tooltip:createLabel{text = card.GetCardTypeText(ref.type).name}
-        end
+        view.CreateCardTooltip(cardId, backface)
     end)
 
     return image
@@ -127,8 +119,7 @@ local function PutDeck(parent)
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        local tooltip = tes3ui.createTooltipMenu()
-        tooltip:createLabel{text = "Remain: " .. tostring(#deck)}
+        view.CreateDeckTooltip(deck)
     end)
     -- todo split view and control
     image:register(tes3.uiEvent.mouseOver,
@@ -139,11 +130,56 @@ local function PutDeck(parent)
     ---@param e uiEventEventData
     function(e)
 
-        local cardId = card.dealCard(deck)
+        local cardId = card.DealCard(deck)
+        assert(cardId)
         local menu = tes3ui.findMenu(uiid.gameMenu)
+        assert(menu)
         local pile = menu:findChild(uiid.boardPile)
-        PutCard(pile, cardId, false)
+        local image = PutCard(pile, cardId, false)
         menu:updateLayout()
+
+        image:register(tes3.uiEvent.mouseOver,
+        ---@param e uiEventEventData
+        function(e)
+            for id, g in pairs(groundCardView) do
+                if not CanMatch(cardId, id) then
+                    g.alpha = 0.5
+                end
+            end
+            menu:updateLayout()
+        end)
+        image:register(tes3.uiEvent.mouseLeave,
+        ---@param e uiEventEventData
+        function(e)
+            for id, g in pairs(groundCardView) do
+                g.alpha = 1.0
+            end
+            menu:updateLayout()
+        end)
+
+
+        image:register(tes3.uiEvent.mouseClick,
+        ---@param e uiEventEventData
+        function(e)
+            -- callback(e, cardId)
+            if not selectedCard then
+                selectedCard = cardId
+                logger:debug("Pick " .. tostring(selectedCard))
+                tes3.messageBox("Pick " .. card.GetCardText(selectedCard).name)
+                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                overlay.disabled = false
+                overlay.visible = true
+                -- need to set initial position?
+                local root = e.source:getTopLevelMenu()
+                -- remove from view
+                --e.source:move({ to = groundView.ground}) -- safe?
+                local to = e.source:move({ to = overlay}) -- safe?
+                -- unregister events?
+                overlay:updateLayout()
+                --groundView.ground:getTopLevelMenu():updateLayout()
+                root:updateLayout()
+            end
+        end)
 
     end)
     return image
@@ -474,6 +510,50 @@ local function OpenGameMenu(id)
                 c.alpha = 1.0
         end
             menu:updateLayout()
+        end)
+
+        image:register(tes3.uiEvent.mouseClick,
+        ---@param e uiEventEventData
+        function(e)
+            -- callback(e, cardId)
+            if selectedCard and CanMatch(selectedCard, cardId) then
+                logger:debug("Match " .. tostring(selectedCard) .. " and " .. tostring(cardId) )
+                tes3.messageBox("Match " .. card.GetCardText(selectedCard).name .. " and " .. card.GetCardText(cardId).name )
+
+                -- -- need to set initial position?
+                -- local root = e.source:getTopLevelMenu()
+                -- -- remove from view
+                -- --e.source:move({ to = groundView.ground}) -- safe?
+                -- local to = e.source:move({ to = overlay}) -- safe?
+                -- -- unregister events?
+                -- overlay:updateLayout()
+                -- --groundView.ground:getTopLevelMenu():updateLayout()
+                -- root:updateLayout()
+                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                overlay.disabled = true
+                overlay.visible = false
+                local root = e.source:getTopLevelMenu()
+
+                local dest = {
+                    [card.type.bright] = playerView.bright,
+                    [card.type.animal] = playerView.animal,
+                    [card.type.ribbon] = playerView.ribbon,
+                    [card.type.chaff] = playerView.chaff,
+                }
+
+                local to0 = overlay.children[1]:move({ to = dest[card.GetCardData(selectedCard).type] })
+                local to1 = e.source:move({ to = dest[card.GetCardData(cardId).type] })
+                -- todo re-register events
+                overlay:updateLayout()
+                --groundView.ground:getTopLevelMenu():updateLayout()
+                root:updateLayout()
+                -- todo keep temporary
+                -- local result = table.removevalue(playerPool, selectedCard)
+                -- assert(result)
+                -- table.insert(groundPool, selectedCard)
+                -- todo directory move to captured
+                selectedCard = nil
+            end
         end)
     end
     for _, cardId in pairs(opponentPool) do

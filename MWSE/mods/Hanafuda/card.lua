@@ -157,7 +157,7 @@ end
 
 ---@param deck integer[] cardId
 ---@return integer[] cardId
-function this.shuffleDeck(deck)
+function this.ShuffleDeck(deck)
     local s = {}
     for i = 1, #deck do s[i] = deck[i] end
     for i = #deck, 2, -1 do
@@ -169,7 +169,7 @@ end
 
 ---@param deck integer[] cardId
 ---@return integer? cardId
-function this.dealCard(deck)
+function this.DealCard(deck)
     if table.empty(deck) then
         return nil
     end
