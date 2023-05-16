@@ -89,65 +89,65 @@ local this = {
 
 ---@param cardId integer
 ---@return CardData
-function this.getCardData(cardId)
+function this.GetCardData(cardId)
     return cardReferenceData[cardId]
 end
 
 ---@param cardId integer
 ---@return CardText
-function this.getCardText(cardId)
+function this.GetCardText(cardId)
     return data.cardText[cardId]
 end
 
 ---@param suit CardSuit
 ---@return CardText
-function this.getCardSuitText(suit)
+function this.GetCardSuitText(suit)
     return data.suitText[suit]
 end
 
 ---@param type CardType
 ---@return CardText
-function this.getCardTypeText(type)
+function this.GetCardTypeText(type)
     return data.typeText[type]
 end
 
 ---@param type CardType
 ---@return number[]
-function this.getCardTypeColor(type)
+function this.GetCardTypeColor(type)
     return data.typeColor[type]
 end
 
 ---@param cardId integer
 ---@return integer
-function this.getCardPoint(cardId)
+function this.GetCardPoint(cardId)
     return cardPoint[cardId]
 end
 
 ---@param cardId integer
 ---@return CardAsset
-function this.getCardAsset(cardId)
+function this.GetCardAsset(cardId)
     return data.cardAssets[cardId]
 end
 
 ---@return CardAsset
-function this.getCardBackAsset()
+function this.GetCardBackAsset()
     return data.cardBackAsset
 end
 
 -- contain CardAsset for any asset types?
 ---@return number
-function this.getCardWidth()
+function this.GetCardWidth()
     return data.cardWidth
 end
 
 -- contain CardAsset for any asset types?
 ---@return number
-function this.getCardHeight()
+function this.GetCardHeight()
     return data.cardHeight
 end
 
 ---@return integer[] cardId
-function this.createDeck()
+function this.CreateDeck()
     local deck = {}
     for index, _ in ipairs(cardReferenceData) do
         deck[index] = index

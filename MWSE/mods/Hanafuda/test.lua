@@ -8,7 +8,7 @@ do
     unitwind:start("Hanafuda Card")
 
     unitwind:test("CreateDeck", function()
-        local deck = card.createDeck()
+        local deck = card.CreateDeck()
         unitwind:expect(#deck).toBe(48)
         -- sequence and unique?
         for index, value in ipairs(deck) do
@@ -17,7 +17,7 @@ do
     end)
 
     unitwind:test("ShuffleDeck", function()
-        local deck = card.createDeck()
+        local deck = card.CreateDeck()
         local shuffled = card.shuffleDeck(deck)
         unitwind:expect(#shuffled).toBe(#deck)
 
@@ -33,7 +33,7 @@ do
     end)
 
     unitwind:test("DealCard", function()
-        local deck = card.createDeck()
+        local deck = card.CreateDeck()
         for i = 48, 1, -1 do
             local card = card.dealCard(deck)
             unitwind:expect(card).toBe(i)

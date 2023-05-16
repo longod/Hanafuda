@@ -31,7 +31,7 @@ local opponentCardView = {} ---@typee { intger: tes3uiElement }
 local groundCardView = {} ---@typee { intger: tes3uiElement }
 local playerCardView = {} ---@typee { intger: tes3uiElement }
 
-local deck = card.createDeck()
+local deck = card.CreateDeck()
 deck = card.shuffleDeck(deck)
 
 while not (#playerPool >= initialPlayerCards and #opponentPool >= initialPlayerCards and #groundPool >= initialPlaygroundCards) do
@@ -47,12 +47,17 @@ while not (#playerPool >= initialPlayerCards and #opponentPool >= initialPlayerC
     end
 end
 
+local function Validate()
+    -- no duplicated
+    -- same pool and view
+end
+
 
 ---@param cardId0 integer
 ---@param cardId1 integer
 ---@return boolean
 local function CanMatch(cardId0, cardId1)
-    return card.getCardData(cardId0).suit == card.getCardData(cardId1).suit
+    return card.GetCardData(cardId0).suit == card.GetCardData(cardId1).suit
 end
 
 local selectedCard = nil ---@type integer?
@@ -62,7 +67,7 @@ local selectedCard = nil ---@type integer?
 ---@param backface boolean
 ---@return tes3uiElement
 local function PutCard(parent, cardId, backface)
-    local asset = backface and card.getCardBackAsset() or card.getCardAsset(cardId)
+    local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
 
     -- todo child for flipping
     local image = parent:createImage({ path = asset.path })
@@ -70,8 +75,8 @@ local function PutCard(parent, cardId, backface)
     -- image.ignoreLayoutY = true
     -- image.positionX = 10
     -- image.positionY = 10
-    image.width = card.getCardWidth()
-    image.height = card.getCardHeight()
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
     image.scaleMode = true
     image.consumeMouseEvents = true
     image.borderAllSides = 2
@@ -88,14 +93,14 @@ local function PutCard(parent, cardId, backface)
             name.color = tes3ui.getPalette(tes3.palette.headerColor)
         else
             local thumb = tooltip:createImage({path = asset.path })
-            thumb.width = card.getCardWidth() * 2
-            thumb.height = card.getCardHeight() * 2
+            thumb.width = card.GetCardWidth() * 2
+            thumb.height = card.GetCardHeight() * 2
             thumb.scaleMode = true
-            local ref = card.getCardData(cardId)
-            local name = tooltip:createLabel{text = card.getCardText(cardId).name }
-            name.color = card.getCardTypeColor(ref.type)
-            tooltip:createLabel{text = card.getCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")"}
-            tooltip:createLabel{text = card.getCardTypeText(ref.type).name}
+            local ref = card.GetCardData(cardId)
+            local name = tooltip:createLabel{text = card.GetCardText(cardId).name }
+            name.color = card.GetCardTypeColor(ref.type)
+            tooltip:createLabel{text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")"}
+            tooltip:createLabel{text = card.GetCardTypeText(ref.type).name}
         end
     end)
 
@@ -105,7 +110,7 @@ end
 ---@param parent tes3uiElement
 ---@return tes3uiElement
 local function PutDeck(parent)
-    local asset = card.getCardBackAsset()
+    local asset = card.GetCardBackAsset()
 
     -- todo child for flipping
     local image = parent:createImage({ path = asset.path })
@@ -113,8 +118,8 @@ local function PutDeck(parent)
     -- image.ignoreLayoutY = true
     -- image.positionX = 10
     -- image.positionY = 10
-    image.width = card.getCardWidth()
-    image.height = card.getCardHeight()
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
     image.scaleMode = true
     image.consumeMouseEvents = true
     image.borderAllSides = 2
@@ -152,13 +157,13 @@ end
 ---@param type CardType
 ---@return tes3uiElement
 local function CreateTypeArea(parent, id, type)
-    local area = parent:createRect({ id = id, color = card.getCardTypeColor(type) })
+    local area = parent:createRect({ id = id, color = card.GetCardTypeColor(type) })
     area.widthProportional = 1
     area.heightProportional = 1
     area.flowDirection = tes3.flowDirection.leftToRight
     area.alpha = 0.25
     area.paddingAllSides = 2
-    area.minHeight = card.getCardHeight()
+    area.minHeight = card.GetCardHeight()
     return area
 end
 
@@ -180,14 +185,7 @@ local function CreateOpponentArea(parent)
     opponent.widthProportional = 1
     opponent.heightProportional = 1
     opponent.flowDirection = tes3.flowDirection.topToBottom
-    local hand = opponent:createBlock({ id = uiid.opponentHand })
-    hand.widthProportional = 1
-    hand.heightProportional = 1
-    hand.flowDirection = tes3.flowDirection.leftToRight
-    hand.paddingAllSides = 2
-    hand.childAlignX = 0.5
-    hand.minHeight = card.getCardHeight()
-    hand.childAlignY =1.0
+
     local captured = opponent:createBlock()
     captured.widthProportional = 1
     captured.heightProportional = 1
@@ -204,10 +202,19 @@ local function CreateOpponentArea(parent)
     row1.flowDirection = tes3.flowDirection.leftToRight
     local ribbon = CreateTypeArea(CreateFrame(row1), uiid.opponentRibbon, card.type.ribbon)
     local chaff = CreateTypeArea(CreateFrame(row1), uiid.opponentChaff, card.type.chaff)
-    bright.childAlignY =1.0
-    animal.childAlignY =1.0
-    ribbon.childAlignY =1.0
-    chaff.childAlignY =1.0
+    bright.childAlignY = 0.5
+    animal.childAlignY = 0.5
+    ribbon.childAlignY = 0.5
+    chaff.childAlignY = 0.5
+
+    local hand = opponent:createBlock({ id = uiid.opponentHand })
+    hand.widthProportional = 1
+    hand.heightProportional = 1
+    hand.flowDirection = tes3.flowDirection.leftToRight
+    hand.paddingAllSides = 2
+    hand.childAlignX = 0.5
+    hand.minHeight = card.GetCardHeight()
+    hand.childAlignY = 1.0
 
     return {hand = hand, bright = bright , animal = animal, ribbon = ribbon, chaff = chaff }
 end
@@ -219,6 +226,15 @@ local function CreatePlayerArea(parent)
     player.widthProportional = 1
     player.heightProportional = 1
     player.flowDirection = tes3.flowDirection.topToBottom
+
+    local hand = player:createBlock({ id = uiid.playerHand })
+    hand.widthProportional = 1
+    hand.heightProportional = 1
+    hand.flowDirection = tes3.flowDirection.leftToRight
+    hand.paddingAllSides = 2
+    hand.childAlignX = 0.5
+    hand.minHeight = card.GetCardHeight()
+
     local captured = player:createBlock()
     captured.widthProportional = 1
     captured.heightProportional = 1
@@ -235,13 +251,11 @@ local function CreatePlayerArea(parent)
     row1.flowDirection = tes3.flowDirection.leftToRight
     local ribbon = CreateTypeArea(CreateFrame(row1), uiid.playerRibbon, card.type.ribbon)
     local chaff = CreateTypeArea(CreateFrame(row1), uiid.playerChaff, card.type.chaff)
-    local hand = player:createBlock({ id = uiid.playerHand })
-    hand.widthProportional = 1
-    hand.heightProportional = 1
-    hand.flowDirection = tes3.flowDirection.leftToRight
-    hand.paddingAllSides = 2
-    hand.childAlignX = 0.5
-    hand.minHeight = card.getCardHeight()
+    bright.childAlignY = 0.5
+    animal.childAlignY = 0.5
+    ribbon.childAlignY = 0.5
+    chaff.childAlignY = 0.5
+
     return {hand = hand, bright = bright, animal = animal, ribbon = ribbon, chaff = chaff }
 end
 
@@ -256,10 +270,10 @@ local function CreateBoard(parent)
 
     local pile = area:createThinBorder({id = uiid.boardPile })
     -- for placement dealing card or vertical placement
-    pile.minWidth = card.getCardWidth()
-    pile.minHeight = card.getCardHeight() * 2
-    pile.width = card.getCardWidth()
-    pile.height = card.getCardHeight() * 2
+    pile.minWidth = card.GetCardWidth() * 1.2
+    pile.minHeight = card.GetCardHeight() * 2
+    pile.width = card.GetCardWidth() * 1.2
+    pile.height = card.GetCardHeight() * 2
     pile.heightProportional = 1
     pile.flowDirection = tes3.flowDirection.topToBottom
     pile.paddingAllSides = 2
@@ -270,7 +284,7 @@ local function CreateBoard(parent)
     ground.flowDirection = tes3.flowDirection.leftToRight
     ground.paddingAllSides = 2
     ground.childAlignX = 0.5
-    ground.minHeight = card.getCardHeight() * 2
+    ground.minHeight = card.GetCardHeight() * 2
 
     return { pile = pile, ground = ground }
 end
@@ -288,7 +302,7 @@ local function OpenGameMenu(id)
     menu.borderAllSides = 0
     menu.paddingAllSides = 2
     menu.color = { 0.1, 0.1, 0.1 }
-    menu.alpha = 0.7
+    menu.alpha = 0.0
     menu.autoWidth = false
     menu.autoHeight = false
     menu.minWidth = viewportWidth / 2
@@ -299,8 +313,74 @@ local function OpenGameMenu(id)
     menu.maxHeight = viewportHeight
     menu.positionX = -menu.width * 0.5 -- center
     menu.positionY = menu.height * 0.5 -- center
-    menu.flowDirection = tes3.flowDirection.topToBottom
-    local board = menu:createBlock()
+    menu.flowDirection = tes3.flowDirection.leftToRight
+
+    -- todo remake layout
+    local info = menu:createBlock()
+    info.autoWidth = true
+    info.autoHeight = true
+    info.minWidth = 128
+    info.heightProportional = 1
+    info.flowDirection = tes3.flowDirection.topToBottom
+    local b = info:createBlock()
+    b.autoWidth = true
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    local button = b:createButton({ text = "Yield"}) -- image button?
+    button.autoWidth = true
+    button.autoHeight = true
+    b = info:createBlock()
+    b.widthProportional = 1
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    b.childAlignX = 1
+    local l = b:createLabel({ text = "Round: 12"})
+    l.color = tes3ui.getPalette(tes3.palette.headerColor)
+    l.autoWidth = true
+    l.autoHeight = true
+    b = info:createBlock()
+    b.widthProportional = 1
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    b.childAlignX = 0.5
+    l = b:createLabel({ text = "Opponent Name" })
+    l.color = tes3ui.getPalette(tes3.palette.headerColor)
+    l.autoWidth = true
+    l.autoHeight = true
+    l.wrapText = true
+    b = info:createBlock()
+    b.widthProportional = 1
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    b.childAlignX = 1
+    l = b:createLabel({ text = "Score: 88" })
+    l.autoWidth = true
+    l.autoHeight = true
+    -- todo show current yaku
+    b = info:createBlock()
+    b.widthProportional = 1
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    b.childAlignX = 0.5
+    l = b:createLabel({ text = "Your Name" })
+    l.color = tes3ui.getPalette(tes3.palette.headerColor)
+    l.autoWidth = true
+    l.autoHeight = true
+    l.wrapText = true
+    b = info:createBlock()
+    b.widthProportional = 1
+    b.autoHeight = true
+    b.flowDirection = tes3.flowDirection.topToBottom
+    b.childAlignX = 1
+    l = b:createLabel({ text = "Score: 77" })
+    l.autoWidth = true
+    l.autoHeight = true
+    -- todo show current yaku
+
+
+    local board = menu:createRect()
+    board.color = { 0.1, 0.1, 0.1 }
+    board.alpha = 0.5
     board.widthProportional = 1
     board.heightProportional = 1
     board.flowDirection = tes3.flowDirection.topToBottom
@@ -352,35 +432,22 @@ local function OpenGameMenu(id)
         ---@param e uiEventEventData
         function(e)
             -- callback(e, cardId)
-            if selectedCard == cardId then
-                selectedCard = nil
-                logger:debug("Deselect")
-                tes3.messageBox("Deselect")
-            else
+            if not selectedCard then
                 selectedCard = cardId
-                logger:debug("Select " .. tostring(selectedCard))
-                tes3.messageBox("Select " .. tostring(selectedCard))
+                logger:debug("Pick " .. tostring(selectedCard))
+                tes3.messageBox("Pick " .. card.GetCardText(selectedCard).name)
                 local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
                 overlay.disabled = false
                 overlay.visible = true
-                -- overlay:destroyChildren()
-                -- overlay.borderAllSides = 0
-                -- overlay.paddingAllSides = 0
-                -- overlay.autoWidth = true
-                -- overlay.autoHeight = true
-                -- hod do I it follow mouse.
-                -- perhaps mouseAxis delta ha zureru...
-                -- everyframe?
-                --local pos = tes3.getCursorPosition()
-                -- * ui scale? and space fix
-                local parent = e.source:getTopLevelMenu()
+                -- need to set initial position?
+                local root = e.source:getTopLevelMenu()
                 -- remove from view
                 --e.source:move({ to = groundView.ground}) -- safe?
                 local to = e.source:move({ to = overlay}) -- safe?
                 -- unregister events?
                 overlay:updateLayout()
                 --groundView.ground:getTopLevelMenu():updateLayout()
-                parent:updateLayout()
+                root:updateLayout()
             end
         end)
     end
@@ -415,12 +482,34 @@ local function OpenGameMenu(id)
     end
     PutDeck(groundView.pile)
 
+    playerView.hand:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        if selectedCard then
+                logger:debug("Put " .. tostring(selectedCard))
+                tes3.messageBox("Put " .. card.GetCardText(selectedCard).name)
+            selectedCard = nil
+
+            local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+            overlay.disabled = true
+            overlay.visible = false
+            local root = e.source:getTopLevelMenu()
+            local to = overlay.children[1]:move({ to = e.source}) -- safe?
+            -- unregister events?
+            overlay:updateLayout()
+            --groundView.ground:getTopLevelMenu():updateLayout()
+            root:updateLayout()
+
+        end
+    end)
+
     groundView.ground:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
         -- callback(e, cardId)
         if selectedCard then
             logger:debug("Discard?")
+            -- todo checking
         end
     end)
     groundView.ground:register(tes3.uiEvent.mouseClick,
@@ -428,7 +517,35 @@ local function OpenGameMenu(id)
     function(e)
         -- callback(e, cardId)
         if selectedCard then
-            logger:debug("Discard")
+            local canDiscard = true
+            for _, cardId in pairs(groundPool) do
+                if CanMatch(selectedCard, cardId) then
+                    canDiscard = false
+                    break
+                end
+            end
+            if canDiscard then
+                logger:debug("Discard " .. tostring(selectedCard))
+                tes3.messageBox("Discard " .. card.GetCardText(selectedCard).name)
+
+                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                overlay.disabled = true
+                overlay.visible = false
+                local root = e.source:getTopLevelMenu()
+                local to = overlay.children[1]:move({ to = e.source })
+                -- todo re-register events
+                overlay:updateLayout()
+                --groundView.ground:getTopLevelMenu():updateLayout()
+                root:updateLayout()
+                -- todo move from pool
+                local result = table.removevalue(playerPool, selectedCard)
+                assert(result)
+                table.insert(groundPool, selectedCard)
+                selectedCard = nil
+            else
+                logger:debug(tostring(selectedCard) .. " can be matched")
+                tes3.messageBox(card.GetCardText(selectedCard).name .. " can be matched")
+            end
         end
     end)
 
@@ -454,18 +571,6 @@ local function CloseGameMenu(element)
         overlayMenu:destroy()
     end
 end
-
--- tes3ui.showMessageMenu{
---     id = "confirmyaku",
---     header = "Koi-koi or Shobu",
---     message = "show yaku",
---     buttons = {
---         -- tooltips
---         { text = "Shobu", callback = function() end },
---         { text = "Koi-koi", callback = function() end }
---     }
--- }
-
 
 ---@param _ initializedEventData
 local function OnInitialized(_)
