@@ -311,6 +311,19 @@ local function OpenGameMenu(id)
     menu:updateLayout()
     -- getting actual size
 
+    local overlayMenu = tes3ui.createHelpLayerMenu({ id = uiid.overlayMenu, fixedFrame = true }) -- maybe fixedFrame not work
+    overlayMenu:destroyChildren()
+    overlayMenu.absolutePosAlignX = nil
+    overlayMenu.absolutePosAlignY = nil
+    overlayMenu.borderAllSides = 0
+    overlayMenu.paddingAllSides = 0
+    overlayMenu.autoWidth = true
+    overlayMenu.autoHeight = true
+    overlayMenu.disabled = true
+    overlayMenu.visible = false
+    overlayMenu:updateLayout()
+
+
     for _, cardId in pairs(playerPool) do
         local image = PutCard(playerView.hand, cardId, false)
         playerCardView[cardId] = image
@@ -347,6 +360,27 @@ local function OpenGameMenu(id)
                 selectedCard = cardId
                 logger:debug("Select " .. tostring(selectedCard))
                 tes3.messageBox("Select " .. tostring(selectedCard))
+                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                overlay.disabled = false
+                overlay.visible = true
+                -- overlay:destroyChildren()
+                -- overlay.borderAllSides = 0
+                -- overlay.paddingAllSides = 0
+                -- overlay.autoWidth = true
+                -- overlay.autoHeight = true
+                -- hod do I it follow mouse.
+                -- perhaps mouseAxis delta ha zureru...
+                -- everyframe?
+                --local pos = tes3.getCursorPosition()
+                -- * ui scale? and space fix
+                local parent = e.source:getTopLevelMenu()
+                -- remove from view
+                --e.source:move({ to = groundView.ground}) -- safe?
+                local to = e.source:move({ to = overlay}) -- safe?
+                -- unregister events?
+                overlay:updateLayout()
+                --groundView.ground:getTopLevelMenu():updateLayout()
+                parent:updateLayout()
             end
         end)
     end
@@ -415,6 +449,10 @@ local function CloseGameMenu(element)
     groundCardView = {}
     playerCardView = {}
     element:destroy()
+    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+    if overlayMenu then
+        overlayMenu:destroy()
+    end
 end
 
 -- tes3ui.showMessageMenu{
@@ -434,6 +472,7 @@ local function OnInitialized(_)
     dofile("Hanafuda/mcm.lua")
 
     event.register(tes3.event.keyDown,
+    ---@param e keyDownEventData
     function(e)
         local mod = e.isAltDown or e.isControlDown or e.isShiftDown or e.isSuperDown
         if mod then
@@ -449,5 +488,19 @@ local function OnInitialized(_)
 
     end, {filter = tes3.scanCode.k} )
 
+    event.register(tes3.event.enterFrame,
+    ---@param e enterFrameEventData
+    function(e)
+        local overlayMenu = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+        if overlayMenu and overlayMenu.visible and not overlayMenu.disabled then
+            local cursor = tes3.getCursorPosition() -- coordinate is same as ui
+            -- need offset by clicking position
+            --overlayMenu:updateLayout()
+            overlayMenu.positionX = cursor.x - overlayMenu.width * 0.5
+            overlayMenu.positionY = cursor.y + overlayMenu.height * 0.5
+            overlayMenu:updateLayout()
+        end
+
+    end)
 end
 event.register(tes3.event.initialized, OnInitialized)
