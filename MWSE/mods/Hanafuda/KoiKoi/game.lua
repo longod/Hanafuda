@@ -13,9 +13,9 @@ local combination = require("Hanafuda.KoiKoi.combination")
 ---@field hand integer[]
 ---@field [CardType] integer[]
 
+--- ruleset aka model
 ---@class KoiKoi
 ---@field settings KoiKoi.Settings
----@field phase KoiKoi.Phase
 ---@field parent KoiKoi.Player
 ---@field current KoiKoi.Player
 ---@field deck integer[] card deck
@@ -24,34 +24,11 @@ local combination = require("Hanafuda.KoiKoi.combination")
 ---@field brains KoiKoi.IBrain[]
 local KoiKoi = {}
 
---umm
----@enum KoiKoi.Phase
-local phase = {
-    initialization = 1,
-    decideParent = 2,
-    roundSetup = 3,
-    parentTurnBegin = 1,
-    parentMatch = 1,
-    parentDraw = 1,
-    parentPlace = 1,
-    parentCollect = 1,
-    parentTurnEnd = 1,
-    childTurnBegin = 1,
-    childMatch = 1,
-    childDraw = 1,
-    childPlace = 1,
-    childCollect = 1,
-    childTurnEnd = 1,
-    roundFinish = 1,
-    finish = 1,
-}
-
 
 -- todo random seed or random object
 
 ---@type KoiKoi
 local defaults = {
-    phase = phase.initialization,
     parent = koi.player.you,
     current = koi.player.you,
     settings = {
@@ -139,8 +116,11 @@ function KoiKoi.Initialize(self)
 end
 
 -- Better to be able to choose between two cut cards to decide.
-function KoiKoi.DecideParent(self)
-    self.parent = math.random(koi.player.you, koi.player.opponent)
+---@param self KoiKoi
+---@param leftRight boolean
+function KoiKoi.DecideParent(self, leftRight)
+    --self.parent = math.random(koi.player.you, koi.player.opponent)
+    self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent
     logger:debug("Parent is ".. tostring(self.parent))
 end
@@ -234,11 +214,23 @@ end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param cardId integer?
-function KoiKoi.Capture(self, player, cardId)
+---@param ground boolean -- todo smartway
+---@param drawn boolean -- todo smartway
+function KoiKoi.Capture(self, player, cardId, ground, drawn)
     if cardId then
         local pool = self.pools[player]
         table.insert(pool[card.GetCardData(cardId).type], cardId)
-        table.removevalue(pool.hand, cardId) -- if own card?
+        if ground then
+            logger:trace("captured then removeing ".. tostring(cardId))
+            logger:trace(table.concat(self.groundPool, ", "))
+            local removed = table.removevalue(self.groundPool, cardId)
+            assert(removed)
+        elseif not drawn then
+            logger:trace("captured then removeing ".. tostring(cardId))
+            logger:trace(table.concat(pool.hand, ", "))
+            local removed = table.removevalue(pool.hand, cardId)
+            assert(removed)
+        end
         return true
     end
     return false
@@ -247,11 +239,16 @@ end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param cardId integer?
-function KoiKoi.Discard(self, player, cardId)
+---@param drawn boolean -- todo smartway
+function KoiKoi.Discard(self, player, cardId, drawn)
     if cardId then
         local pool = self.pools[player]
-        local removed = table.removevalue(pool.hand, cardId)
-        assert(removed)
+        if not drawn then
+            logger:trace("removeing ".. tostring(cardId))
+            logger:trace(table.concat(pool.hand, ", "))
+            local removed = table.removevalue(pool.hand, cardId)
+            assert(removed)
+        end
         table.insert(self.groundPool, cardId)
         return true
     end

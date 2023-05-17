@@ -25,7 +25,7 @@ function this.Simulate(self, p)
                 return { selectedCard = p.drawnCard, matchedCard = id }
             end
         end
-        logger:debug(string.format("discard selectedCard = %d", p.drawnCard))
+        logger:debug(string.format("discard drawnCard = %d", p.drawnCard))
         return { selectedCard = p.drawnCard, matchedCard = nil } -- discard
     else
         for _, hand in ipairs(p.pool.hand) do

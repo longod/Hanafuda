@@ -4,9 +4,17 @@ local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
 local view = require("Hanafuda.KoiKoi.view")
+
+local runner = require("Hanafuda.KoiKoi.runner").new(
+    require("Hanafuda.KoiKoi.simplismBrain").new(),
+    require("Hanafuda.KoiKoi.simplismBrain").new()
+)
+while runner:Run() do
+end
+
+--[[
 local game = require("Hanafuda.KoiKoi.game").new()
 local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
-
 game:SetBrains(brain)
 game:SetBrains(brain, true) -- player
 game:Initialize()
@@ -42,18 +50,10 @@ game:Simulate(game.current, card.DealCard(game.deck))
 game:CheckCombination(game.current)
 game:CheckEnd()
 game:SwapPlayer()
+]]--
 
 
----@class PlayerView
----@field hand tes3uiElement
----@field bright tes3uiElement
----@field animal tes3uiElement
----@field ribbon tes3uiElement
----@field chaff tes3uiElement
 
----@class GroundView
----@field pile tes3uiElement
----@field ground tes3uiElement
 
 --math.randomseed()
 local initialPlayerCards = 8
@@ -690,6 +690,7 @@ end
 local function OnInitialized(_)
     dofile("Hanafuda/mcm.lua")
 
+    --[[
     event.register(tes3.event.keyDown,
     ---@param e keyDownEventData
     function(e)
@@ -721,5 +722,28 @@ local function OnInitialized(_)
         end
 
     end)
+    ]]--
+
+    local service = nil ---@type KoiKoi.Service?
+
+    -- launch on key
+    event.register(tes3.event.keyDown,
+    ---@param e keyDownEventData
+    function(e)
+        local mod = e.isAltDown or e.isControlDown or e.isShiftDown or e.isSuperDown
+        if mod then
+            return
+        end
+        if service then
+            service:Destory()
+            service = nil
+        else
+            service = require("Hanafuda.KoiKoi.service").new(
+                require("Hanafuda.KoiKoi.game").new(),
+                require("Hanafuda.KoiKoi.view").new()
+            )
+            service:Initialize()
+        end
+    end, {filter = tes3.scanCode.k} )
 end
 event.register(tes3.event.initialized, OnInitialized)
