@@ -176,6 +176,13 @@ function this.DealCard(deck)
     return table.remove(deck) -- remove last element
 end
 
+---@param cardId0 integer
+---@param cardId1 integer
+---@return boolean
+function this.CanMatchSuit(cardId0, cardId1)
+    return this.GetCardData(cardId0).suit == this.GetCardData(cardId1).suit
+end
+
 -- lua 5.4 rng is xoshiro256**
 -- So is the algorithm worse than it used to be?
 return this

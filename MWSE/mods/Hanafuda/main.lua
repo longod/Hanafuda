@@ -5,10 +5,44 @@ local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
 local view = require("Hanafuda.KoiKoi.view")
 local game = require("Hanafuda.KoiKoi.game").new()
+local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
 
+game:SetBrains(brain)
+game:SetBrains(brain, true) -- player
 game:Initialize()
 game:DecideParent()
 game:DealInitialCards()
+-- check lucky hand
+-- do each turn
+local com = game:Simulate(game.current)
+if com then
+    -- todo com:Execute()
+    if com.selectedCard and com.matchedCard then
+        -- match
+        game:Capture(game.current, com.selectedCard)
+        game:Capture(game.current, com.matchedCard)
+
+    elseif not com.matchedCard then
+        -- discard
+        game:Discard(game.current, com.selectedCard)
+
+    else
+        -- skip
+    end
+end
+if game:CheckCombination(game.current) then
+    local com2 = game:Call(game.current)
+end
+com = game:Simulate(game.current, card.DealCard(game.deck))
+game:CheckCombination(game.current)
+game:SwapPlayer()
+game:Simulate(game.current)
+game:CheckCombination(game.current)
+game:Simulate(game.current, card.DealCard(game.deck))
+game:CheckCombination(game.current)
+game:CheckEnd()
+game:SwapPlayer()
+
 
 ---@class PlayerView
 ---@field hand tes3uiElement
@@ -64,7 +98,7 @@ end
 ---@param cardId1 integer
 ---@return boolean
 local function CanMatch(cardId0, cardId1)
-    return card.GetCardData(cardId0).suit == card.GetCardData(cardId1).suit
+    return card.CanMatchSuit(cardId0, cardId1)
 end
 
 
