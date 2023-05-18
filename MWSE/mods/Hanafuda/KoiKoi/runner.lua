@@ -67,9 +67,10 @@ function this.Run(self)
         end,
         [2] = function()
             -- todo cache
+            -- fixme if called koi-koi the combination is subtract before combination
             local comb = self.game:CheckCombination(self.game.current)
             if comb then
-                local command = self.game:Call(self.game.current) -- todo send combination list
+                local command = self.game:Call(self.game.current, comb) -- todo send combination list
                 if command then
                     if command.calling == koi.calling.koikoi then
                         -- continue
@@ -109,9 +110,10 @@ function this.Run(self)
         end,
         [5] = function()
             -- todo cache
+            -- fixme if called koi-koi the combination is subtract before combination
             local comb = self.game:CheckCombination(self.game.current)
             if comb then
-                local command = self.game:Call(self.game.current) -- todo send combination list
+                local command = self.game:Call(self.game.current, comb) -- todo send combination list
                 if command then
                     if command.calling == koi.calling.koikoi then
                         -- continue

@@ -4,12 +4,17 @@ local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local i18n = mwse.loadTranslations("Hanafuda")
 
+-- with mergin
+local cardLayoutWidth = card.GetCardWidth() + 4
+local cardLayoutHeight = card.GetCardHeight() + 4
+
 ---@class PlayerView
 ---@field hand tes3uiElement
 ---@field [CardType] tes3uiElement
 
 ---@class GroundView
 ---@field pile tes3uiElement
+---@field drawn tes3uiElement
 ---@field ground tes3uiElement
 
 ---@class KoiKoi.UI
@@ -133,146 +138,156 @@ end
 local function CreateTypeArea(parent, id, type)
     local area = parent:createRect({ id = id, color = card.GetCardTypeColor(type) })
     area.widthProportional = 1
-    area.heightProportional = 1
+    area.minHeight = cardLayoutHeight
+    area.height = cardLayoutHeight
     area.flowDirection = tes3.flowDirection.leftToRight
     area.alpha = 0.25
     area.paddingAllSides = 2
-    area.minHeight = card.GetCardHeight()
+    area.childAlignY = 0.5
     return area
 end
 
 ---@param parent tes3uiElement
 ---@return tes3uiElement
-local function CreateFrame(parent)
+local function CreateTypeFrame(parent)
     local frame = parent:createThinBorder()
     frame.widthProportional = 1
-    frame.heightProportional = 1
+    frame.minHeight = cardLayoutHeight
+    frame.height = cardLayoutHeight
     frame.flowDirection = tes3.flowDirection.leftToRight
     frame.paddingAllSides = 2
     return frame
 end
 
 ---@param parent tes3uiElement
----@return PlayerView
-local function CreateYourArea(parent)
-    local player = parent:createBlock()
-    player.widthProportional = 1
-    player.heightProportional = 1
-    player.flowDirection = tes3.flowDirection.topToBottom
+---@return tes3uiElement
+local function CreateHandView(parent, id, height)
+    local border = parent:createThinBorder()
+    border.widthProportional = 1
+    border.heightProportional = height
+    border.flowDirection = tes3.flowDirection.topToBottom
 
-    local hand = player:createBlock({ id = uiid.playerHand })
+    local hand = border:createBlock({ id = id })
     hand.widthProportional = 1
     hand.heightProportional = 1
     hand.flowDirection = tes3.flowDirection.leftToRight
-    hand.paddingAllSides = 2
+    --hand.paddingAllSides = 2
     hand.childAlignX = 0.5
-    hand.minHeight = card.GetCardHeight()
-
-    local captured = player:createBlock()
-    captured.widthProportional = 1
-    captured.heightProportional = 1
-    captured.flowDirection = tes3.flowDirection.topToBottom
-    local row0 = captured:createBlock()
-    row0.widthProportional = 1
-    row0.heightProportional = 1
-    row0.flowDirection = tes3.flowDirection.leftToRight
-    local bright = CreateTypeArea(CreateFrame(row0), uiid.playerBright, card.type.bright)
-    local animal = CreateTypeArea(CreateFrame(row0), uiid.playerAnimal, card.type.animal)
-    local row1 = captured:createBlock()
-    row1.widthProportional = 1
-    row1.heightProportional = 1
-    row1.flowDirection = tes3.flowDirection.leftToRight
-    local ribbon = CreateTypeArea(CreateFrame(row1), uiid.playerRibbon, card.type.ribbon)
-    local chaff = CreateTypeArea(CreateFrame(row1), uiid.playerChaff, card.type.chaff)
-    bright.childAlignY = 0.5
-    animal.childAlignY = 0.5
-    ribbon.childAlignY = 0.5
-    chaff.childAlignY = 0.5
-
-    return {
-        hand = hand,
-        [card.type.bright] = bright,
-        [card.type.animal] = animal,
-        [card.type.ribbon] = ribbon,
-        [card.type.chaff] = chaff,
-    }
-end
----@param parent tes3uiElement
----@return PlayerView
-local function CreateOpponentArea(parent)
-    local opponent = parent:createBlock()
-    opponent.widthProportional = 1
-    opponent.heightProportional = 1
-    opponent.flowDirection = tes3.flowDirection.topToBottom
-
-    local captured = opponent:createBlock()
-    captured.widthProportional = 1
-    captured.heightProportional = 1
-    captured.flowDirection = tes3.flowDirection.topToBottom
-    local row0 = captured:createBlock()
-    row0.widthProportional = 1
-    row0.heightProportional = 1
-    row0.flowDirection = tes3.flowDirection.leftToRight
-    local bright = CreateTypeArea(CreateFrame(row0), uiid.opponentBright, card.type.bright)
-    local animal = CreateTypeArea(CreateFrame(row0), uiid.opponentAnimal, card.type.animal)
-    local row1 = captured:createBlock()
-    row1.widthProportional = 1
-    row1.heightProportional = 1
-    row1.flowDirection = tes3.flowDirection.leftToRight
-    local ribbon = CreateTypeArea(CreateFrame(row1), uiid.opponentRibbon, card.type.ribbon)
-    local chaff = CreateTypeArea(CreateFrame(row1), uiid.opponentChaff, card.type.chaff)
-    bright.childAlignY = 0.5
-    animal.childAlignY = 0.5
-    ribbon.childAlignY = 0.5
-    chaff.childAlignY = 0.5
-
-    local hand = opponent:createBlock({ id = uiid.opponentHand })
-    hand.widthProportional = 1
-    hand.heightProportional = 1
-    hand.flowDirection = tes3.flowDirection.leftToRight
-    hand.paddingAllSides = 2
-    hand.childAlignX = 0.5
-    hand.minHeight = card.GetCardHeight()
-    hand.childAlignY = 1.0
-
-    return {
-        hand = hand,
-        [card.type.bright] = bright,
-        [card.type.animal] = animal,
-        [card.type.ribbon] = ribbon,
-        [card.type.chaff] = chaff,
-    }
+    hand.childAlignY = 0.5
+    hand.minWidth= cardLayoutWidth * 8
+    hand.minHeight = cardLayoutHeight
+    return hand
 end
 
 ---@param parent tes3uiElement
 ---@return GroundView
-local function CreateBoard(parent)
+local function CreateBoard(parent, height)
     local area = parent:createBlock()
     area.widthProportional = 1
-    area.heightProportional = 1
+    area.heightProportional = height
     area.flowDirection = tes3.flowDirection.leftToRight
 
-    local pile = area:createThinBorder({id = uiid.boardPile })
+    local border = area:createBlock()
     -- for placement dealing card or vertical placement
-    pile.minWidth = card.GetCardWidth() * 1.2
-    pile.minHeight = card.GetCardHeight() * 2
-    pile.width = card.GetCardWidth() * 1.2
-    pile.height = card.GetCardHeight() * 2
+    border.minWidth = cardLayoutWidth
+    border.minHeight = cardLayoutHeight * 2
+    border.autoWidth = true
+    border.heightProportional = 1
+    border.flowDirection = tes3.flowDirection.topToBottom
+    --border.paddingAllSides = 2
+    border.childAlignX = 0.5
+    border.childAlignY = 0.5
+    local pile = border:createBlock({id = uiid.boardPile })
+    pile.width = cardLayoutWidth * 2
+    pile.minWidth = cardLayoutWidth
+    pile.minHeight = cardLayoutHeight * 2
     pile.heightProportional = 1
-    pile.flowDirection = tes3.flowDirection.topToBottom
-    pile.paddingAllSides = 2
+    pile.childAlignX = 0.5
+    pile.childAlignY = 0.5
+    local drawn = border:createBlock({id = uiid.boardDrawn })
+    drawn.width = cardLayoutWidth * 2
+    drawn.minWidth = cardLayoutWidth
+    drawn.minHeight = cardLayoutHeight * 2
+    drawn.heightProportional = 1
+    drawn.childAlignX = 0.5
+    drawn.childAlignY = 0.5
 
-    local ground = area:createThinBorder({id = uiid.boardGround })
+    -- todo double rows
+    local ground = area:createBlock({id = uiid.boardGround })
     ground.widthProportional = 1
     ground.heightProportional = 1
     ground.flowDirection = tes3.flowDirection.leftToRight
-    ground.paddingAllSides = 2
+    --ground.paddingAllSides = 2
     ground.childAlignX = 0.5
-    ground.minHeight = card.GetCardHeight() * 2
+    ground.childAlignY = 0.5
+    ground.minWidth = cardLayoutWidth * 4
+    ground.minHeight = cardLayoutHeight * 2
 
-    return { pile = pile, ground = ground }
+    return { pile = pile, drawn = drawn, ground = ground }
 end
 
+---@param parent tes3uiElement
+---@return PlayerView
+local function CreateYourCaptured(parent)
+    local captured = parent:createBlock()
+    captured.widthProportional = 1
+    captured.heightProportional = 1
+    captured.flowDirection = tes3.flowDirection.topToBottom
+    captured.childAlignY = 1
+
+    local block = captured:createBlock()
+    block.childAlignX = 0
+    block.widthProportional = 1
+    block.autoHeight = true
+    block:createLabel({text="Your Captured Cards"}) -- todo name
+
+    local bright = CreateTypeArea(CreateTypeFrame(captured), uiid.playerBright, card.type.bright)
+    local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.playerAnimal, card.type.animal)
+    local ribbon = CreateTypeArea(CreateTypeFrame(captured), uiid.playerRibbon, card.type.ribbon)
+    local chaff = CreateTypeArea(CreateTypeFrame(captured), uiid.playerChaff, card.type.chaff)
+    bright.childAlignX = 1.0
+    animal.childAlignX = 1.0
+    ribbon.childAlignX = 1.0
+    chaff.childAlignX = 1.0
+    return {
+        -- hand later
+        [card.type.bright] = bright,
+        [card.type.animal] = animal,
+        [card.type.ribbon] = ribbon,
+        [card.type.chaff] = chaff,
+    }
+end
+
+---@param parent tes3uiElement
+---@return PlayerView
+local function CreateOpponentCaptured(parent)
+    local captured = parent:createBlock()
+    captured.widthProportional = 1
+    captured.autoHeight = true
+    captured.flowDirection = tes3.flowDirection.topToBottom
+    local bright = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentBright, card.type.bright)
+    local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentAnimal, card.type.animal)
+    local ribbon = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentRibbon, card.type.ribbon)
+    local chaff = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentChaff, card.type.chaff)
+    bright.childAlignX = 1.0
+    animal.childAlignX = 1.0
+    ribbon.childAlignX = 1.0
+    chaff.childAlignX = 1.0
+
+    local block = captured:createBlock()
+    block.childAlignX = 1
+    block.widthProportional = 1
+    block.autoHeight = true
+    local label = block:createLabel({text="Opponent's Captured Cards"}) -- todo name
+
+    return {
+        -- hand later
+        [card.type.bright] = bright,
+        [card.type.animal] = animal,
+        [card.type.ribbon] = ribbon,
+        [card.type.chaff] = chaff,
+    }
+end
 
 ---@param id number|string
 function UI.OpenGameMenu(self, id)
@@ -282,96 +297,65 @@ function UI.OpenGameMenu(self, id)
     local menu = tes3ui.createMenu({ id = id, fixedFrame = true })
     menu:destroyChildren()
     --menu.disabled = true
+    local borderSize = 4
     menu.absolutePosAlignX = 0.5
 	menu.absolutePosAlignY = 0.5
-    menu.borderAllSides = 0
-    menu.paddingAllSides = 2
+    menu.borderAllSides = borderSize
+    menu.paddingAllSides = 0
     menu.color = { 0.1, 0.1, 0.1 }
-    menu.alpha = 0.0
+    menu.alpha = 0.5
     menu.autoWidth = false
     menu.autoHeight = false
     menu.minWidth = viewportWidth / 2
     menu.minHeight = viewportHeight / 2
-    menu.width = viewportWidth / 1.5
-    menu.height = viewportHeight
+    menu.width = viewportWidth - borderSize * 2
+    menu.height = viewportHeight - borderSize * 2
     menu.maxWidth = viewportWidth
     menu.maxHeight = viewportHeight
     menu.positionX = -menu.width * 0.5 -- center
     menu.positionY = menu.height * 0.5 -- center
+    menu.childAlignX = 0.5
+    menu.childAlignY = 0.5
     menu.flowDirection = tes3.flowDirection.leftToRight
+    menu:updateLayout()
 
-    -- todo remake layout
-    local info = menu:createBlock()
-    info.autoWidth = true
-    info.autoHeight = true
-    info.minWidth = 128
-    info.heightProportional = 1
-    info.flowDirection = tes3.flowDirection.topToBottom
-    local b = info:createBlock()
-    b.autoWidth = true
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    local button = b:createButton({ text = "Yield"}) -- image button?
-    button.autoWidth = true
-    button.autoHeight = true
-    b = info:createBlock()
-    b.widthProportional = 1
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    b.childAlignX = 1
-    local l = b:createLabel({ text = "Round: 12"})
-    l.color = tes3ui.getPalette(tes3.palette.headerColor)
-    l.autoWidth = true
-    l.autoHeight = true
-    b = info:createBlock()
-    b.widthProportional = 1
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    b.childAlignX = 0.5
-    l = b:createLabel({ text = "Opponent Name" })
-    l.color = tes3ui.getPalette(tes3.palette.headerColor)
-    l.autoWidth = true
-    l.autoHeight = true
-    l.wrapText = true
-    b = info:createBlock()
-    b.widthProportional = 1
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    b.childAlignX = 1
-    l = b:createLabel({ text = "Score: 88" })
-    l.autoWidth = true
-    l.autoHeight = true
-    -- todo show current yaku
-    b = info:createBlock()
-    b.widthProportional = 1
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    b.childAlignX = 0.5
-    l = b:createLabel({ text = "Your Name" })
-    l.color = tes3ui.getPalette(tes3.palette.headerColor)
-    l.autoWidth = true
-    l.autoHeight = true
-    l.wrapText = true
-    b = info:createBlock()
-    b.widthProportional = 1
-    b.autoHeight = true
-    b.flowDirection = tes3.flowDirection.topToBottom
-    b.childAlignX = 1
-    l = b:createLabel({ text = "Score: 77" })
-    l.autoWidth = true
-    l.autoHeight = true
-    -- todo show current yaku
+    -- local bg = menu:createImage({ path = "Textures/Tx_b_n_khajiit_f_h03.dds" })
+    -- bg.widthProportional = 1
+    -- bg.heightProportional = 1
+    -- bg.imageScaleX = 4
+    -- bg.imageScaleY = 3 -- todo aspect
+    -- bg.scaleMode = false -- true is buggy, then using false and set manulay imageScaleX/Y
 
-    local board = menu:createRect()
+    local left = menu:createBlock()
+    left.widthProportional = 0.8
+    left.heightProportional = 1
+    left.flowDirection = tes3.flowDirection.topToBottom
+    left.childAlignY = 0.5
+    local center = menu:createBlock()
+    center.widthProportional = 1.2
+    center.heightProportional = 1
+    center.flowDirection = tes3.flowDirection.topToBottom
+    center.minWidth = cardLayoutWidth * 8 -- initial card
+    center.childAlignY = 0.5
+    local right = menu:createBlock()
+    right.widthProportional = 1
+    right.heightProportional = 1
+    right.flowDirection = tes3.flowDirection.topToBottom
+    right.childAlignY = 0.5
+
+    self.playerViews = {}
+    self.playerViews[koi.player.opponent] = CreateOpponentCaptured(right)
+    self.playerViews[koi.player.you] = CreateYourCaptured(right)
+
+    local board = center:createRect()
     board.color = { 0.1, 0.1, 0.1 }
     board.alpha = 0.5
     board.widthProportional = 1
     board.heightProportional = 1
     board.flowDirection = tes3.flowDirection.topToBottom
-    self.playerViews = {}
-    self.playerViews[koi.player.opponent] = CreateOpponentArea(board)
-    self.groundView = CreateBoard(board)
-    self.playerViews[koi.player.you] = CreateYourArea(board)
+    self.playerViews[koi.player.opponent].hand = CreateHandView(board, uiid.opponentHand, 0.75)
+    self.groundView = CreateBoard(board, 1.5)
+    self.playerViews[koi.player.you].hand = CreateHandView(board, uiid.playerHand, 0.75)
 
     menu:updateLayout()
     -- getting actual size
@@ -389,8 +373,6 @@ function UI.OpenGameMenu(self, id)
     overlayMenu.visible = false
     overlayMenu:updateLayout()
 
-
-    menu:updateLayout()
     return menu
 end
 

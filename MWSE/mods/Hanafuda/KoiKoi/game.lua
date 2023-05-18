@@ -22,6 +22,7 @@ local combination = require("Hanafuda.KoiKoi.combination")
 ---@field pools KoiKoi.PlayerPool[]
 ---@field groundPool  integer[]
 ---@field brains KoiKoi.IBrain[]
+---@field combinations { [KoiKoi.CombinationType] : integer }[]
 local KoiKoi = {}
 
 
@@ -57,6 +58,7 @@ local defaults = {
     },
     groundPool = {},
     brains = {},
+    combinations = {},
 }
 
 ---@param settings KoiKoi.Settings
@@ -161,6 +163,7 @@ function KoiKoi.Simulate(self, player, drawnCardId)
             opponentPool = self.pools[GetOpponent(player)],
             groundPool = self.groundPool,
             deck = self.deck,
+            combination = nil,
         }
         local command = self.brains[player]:Simulate(params)
         if command then
@@ -173,8 +176,9 @@ end
 
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
+---@param combination { [KoiKoi.CombinationType] : integer }
 ---@return KoiKoi.CallCommand?
-function KoiKoi.Call(self, player)
+function KoiKoi.Call(self, player, combination)
     if self.brains[player] then
         -- todo temp
         ---@type KoiKoi.AI.Params
@@ -184,6 +188,7 @@ function KoiKoi.Call(self, player)
             opponentPool = self.pools[GetOpponent(player)],
             groundPool = self.groundPool,
             deck = self.deck,
+            combination = combination,
         }
         local command = self.brains[player]:Call(params)
         if command then
@@ -203,7 +208,9 @@ end
 ---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
-    return combination.Calculate(pool)
+    local comb = combination.Calculate(pool)
+    local latest = self.combinations[player]
+    return comb
 end
 
 ---@param self KoiKoi

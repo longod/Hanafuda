@@ -1,57 +1,10 @@
+-- early test
 dofile("Hanafuda/test.lua")
 
 local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
 local view = require("Hanafuda.KoiKoi.view")
-
--- local runner = require("Hanafuda.KoiKoi.runner").new(
---     require("Hanafuda.KoiKoi.simplismBrain").new(),
---     require("Hanafuda.KoiKoi.simplismBrain").new()
--- )
--- while runner:Run() do
--- end
-
---[[
-local game = require("Hanafuda.KoiKoi.game").new()
-local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
-game:SetBrains(brain)
-game:SetBrains(brain, true) -- player
-game:Initialize()
-game:DecideParent()
-game:DealInitialCards()
--- check lucky hand
--- do each turn
-local com = game:Simulate(game.current)
-if com then
-    -- todo com:Execute()
-    if com.selectedCard and com.matchedCard then
-        -- match
-        game:Capture(game.current, com.selectedCard)
-        game:Capture(game.current, com.matchedCard)
-
-    elseif not com.matchedCard then
-        -- discard
-        game:Discard(game.current, com.selectedCard)
-
-    else
-        -- skip
-    end
-end
-if game:CheckCombination(game.current) then
-    local com2 = game:Call(game.current)
-end
-com = game:Simulate(game.current, card.DealCard(game.deck))
-game:CheckCombination(game.current)
-game:SwapPlayer()
-game:Simulate(game.current)
-game:CheckCombination(game.current)
-game:Simulate(game.current, card.DealCard(game.deck))
-game:CheckCombination(game.current)
-game:CheckEnd()
-game:SwapPlayer()
-]]--
-
 
 
 
@@ -688,7 +641,6 @@ end
 
 ---@param _ initializedEventData
 local function OnInitialized(_)
-    dofile("Hanafuda/mcm.lua")
 
     --[[
     event.register(tes3.event.keyDown,
@@ -747,5 +699,7 @@ local function OnInitialized(_)
     end, {filter = tes3.scanCode.k} )
 end
 event.register(tes3.event.initialized, OnInitialized)
+dofile("Hanafuda/mcm.lua")
 
+-- later test
 dofile("Hanafuda/KoiKoi/test.lua")

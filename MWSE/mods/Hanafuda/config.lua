@@ -1,8 +1,1 @@
----@class Config
-local config = {
-    enable = true,
-    logLevel = "TRACE",
-    logToConsole = false,
-}
-
-return config
+return require("Hanafuda.settings").Load()

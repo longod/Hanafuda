@@ -1,29 +1,6 @@
 local card = require("Hanafuda.card")
-
-
--- order is important, almost combinations have exclusively
--- move name to trans data
-
----@enum KoiKoi.CombinationType
-local combo = {
-    -- bright
-    fiveBrights = 1,
-    fourBrights = 2,
-    rainyFourBrights = 3,
-    threeBrights = 4,
-    -- animal
-    boarDeerButterfly = 5,
-    animals = 6,
-    -- ribbon
-    poetryAndBlueRibbons = 7, -- both poety and blue
-    poetryRibbons = 8,
-    blueRibbons = 9,
-    ribbons = 10,
-    -- chaff (no exclusively)
-    flowerViewingSake = 11, -- house rule
-    moonViewingSake = 12, -- house rules
-    chaff = 13,
-}
+local logger = require("Hanafuda.logger")
+local koi = require("Hanafuda.KoiKoi.koikoi")
 
 local basePoint = {
     -- bright
@@ -44,7 +21,7 @@ local basePoint = {
     5,
     1,
 }
-assert(table.size(combo) == table.size(basePoint))
+assert(table.size(koi.combination) == table.size(basePoint))
 
 ---@class KoiKoi.Combination
 local this = {}
@@ -70,6 +47,8 @@ assert(sakeCup)
 assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
 
+--todo test
+
 -- or {combotype = N, point = M} can be accessed ipairs
 ---@param captured { [CardType] : integer[] }
 -----@param excluding any? using already calling koi-koi
@@ -83,17 +62,21 @@ function this.Calculate(captured)
     if bright then
         local count = table.size(bright)
         if count == 5 then
-            caps[combo.fiveBrights] = basePoint[combo.fiveBrights]
+            caps[koi.combination.fiveBrights] = basePoint[koi.combination.fiveBrights]
+            logger:debug("Goko " .. tostring(caps[koi.combination.fiveBrights]))
         elseif count == 4 then
             if card.Contain(rainman, bright) then
-                caps[combo.rainyFourBrights] = basePoint[combo.rainyFourBrights]
+                caps[koi.combination.rainyFourBrights] = basePoint[koi.combination.rainyFourBrights]
+                logger:debug("Ame-Shiko " .. tostring(caps[koi.combination.rainyFourBrights]))
             else
-                caps[combo.fourBrights] = basePoint[combo.fourBrights]
+                caps[koi.combination.fourBrights] = basePoint[koi.combination.fourBrights]
+                logger:debug("Shiko " .. tostring(caps[koi.combination.fourBrights]))
             end
         elseif count == 3 then
             if card.Contain(rainman, bright) then
             else
-                caps[combo.threeBrights] = basePoint[combo.threeBrights]
+                caps[koi.combination.threeBrights] = basePoint[koi.combination.threeBrights]
+                logger:debug("Sanko " .. tostring(caps[koi.combination.threeBrights]))
             end
         end
 
@@ -112,19 +95,23 @@ function this.Calculate(captured)
             if card.Contain(boar, animal) and
             card.Contain(deer, animal) and
             card.Contain(butterfly, animal) then
-                caps[combo.boarDeerButterfly] = basePoint[combo.boarDeerButterfly]
+                caps[koi.combination.boarDeerButterfly] = basePoint[koi.combination.boarDeerButterfly]
+                logger:debug("Ino-Shika-Cho " .. tostring(caps[koi.combination.boarDeerButterfly]))
             end
         end
         if count >= 5 then
-            caps[combo.animals] = basePoint[combo.animals] + (count - 5)
+            caps[koi.combination.animals] = basePoint[koi.combination.animals] + (count - 5)
+            logger:debug("Tane " .. tostring(caps[koi.combination.animals]))
         end
 
         if card.Contain(sakeCup, animal) then
             if hasCurtain then
-                caps[combo.flowerViewingSake] = basePoint[combo.flowerViewingSake]
+                caps[koi.combination.flowerViewingSake] = basePoint[koi.combination.flowerViewingSake]
+                logger:debug("Hanami de Ippai " .. tostring(caps[koi.combination.flowerViewingSake]))
             end
             if hasMoon then
-                caps[combo.moonViewingSake] = basePoint[combo.moonViewingSake]
+                caps[koi.combination.moonViewingSake] = basePoint[koi.combination.moonViewingSake]
+                logger:debug("Tsukimi de Ippai " .. tostring(caps[koi.combination.moonViewingSake]))
             end
         end
     end
@@ -136,13 +123,17 @@ function this.Calculate(captured)
             local poetAll = card.ContainAll(redPoetry, ribbon)
             local blueAll = card.ContainAll(blueRibbon, ribbon)
             if poetAll and blueAll then
-                caps[combo.poetryAndBlueRibbons] = basePoint[combo.poetryAndBlueRibbons] + (count - 6)
+                caps[koi.combination.poetryAndBlueRibbons] = basePoint[koi.combination.poetryAndBlueRibbons] + (count - 6)
+                logger:debug("Akatan-Aotan " .. tostring(caps[koi.combination.poetryAndBlueRibbons]))
             elseif poetAll then
-                caps[combo.poetryRibbons] = basePoint[combo.poetryRibbons] + (count - 3)
+                caps[koi.combination.poetryRibbons] = basePoint[koi.combination.poetryRibbons] + (count - 3)
+                logger:debug("Akatan " .. tostring(caps[koi.combination.poetryRibbons]))
             elseif blueAll then
-                caps[combo.blueRibbons] = basePoint[combo.blueRibbons] + (count - 3)
+                caps[koi.combination.blueRibbons] = basePoint[koi.combination.blueRibbons] + (count - 3)
+                logger:debug("Aotan " .. tostring(caps[koi.combination.blueRibbons]))
             elseif count >= 5 then
-                caps[combo.ribbons] = basePoint[combo.ribbons] + (count - 5)
+                caps[koi.combination.ribbons] = basePoint[koi.combination.ribbons] + (count - 5)
+                logger:debug("Tan " .. tostring(caps[koi.combination.ribbons]))
             end
         end
     end
@@ -151,10 +142,32 @@ function this.Calculate(captured)
     if chaff then
         local count = table.size(chaff)
         if count >= 10 then
-            caps[combo.chaff] = basePoint[combo.chaff] + (count - 10)
+            caps[koi.combination.chaff] = basePoint[koi.combination.chaff] + (count - 10)
+            logger:debug("Kasu " .. tostring(caps[koi.combination.chaff]))
         end
     end
     return table.size(caps) > 0 and caps or nil
 end
+
+---@param current { [KoiKoi.CombinationType] : integer }?
+---@param prev { [KoiKoi.CombinationType] : integer }?
+---@return { [KoiKoi.CombinationType] : integer }?
+function this.Different(current, prev)
+    if not prev or not current then
+        return current
+    end
+    assert(prev)
+    assert(current)
+
+    local diff = {}
+    for key, value in pairs(current) do
+        if not prev[key] then
+            diff[key] = value
+        end
+        -- need tracking upgrade?
+    end
+    return table.size(diff) > 0 and diff or nil
+end
+
 
 return this

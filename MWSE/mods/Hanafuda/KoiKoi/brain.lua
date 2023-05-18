@@ -17,7 +17,7 @@ local this = {}
 ---@field opponentPool KoiKoi.PlayerPool eval for scoreing combinations, but peeping hand is cheating
 ---@field groundPool  integer[] placed card pools
 ---@field deck integer[] for cheating
--- + current combination
+---@field combination { [KoiKoi.CombinationType] : integer }?
 
 --- simulate on every frame
 ---@param self KoiKoi.IBrain

@@ -18,6 +18,7 @@ local this = {
     opponentScore = tes3ui.registerID("Opponent.Score"),
     opponentCombination = tes3ui.registerID("Opponent.Combination"),
     boardPile = tes3ui.registerID("Board.Pile"),
+    boardDrawn = tes3ui.registerID("Board.Drawn"),
     boardGround = tes3ui.registerID("Board.Ground"),
     boardRound = tes3ui.registerID("Board.Round"),
 }
