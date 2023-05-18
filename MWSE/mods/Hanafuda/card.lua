@@ -76,7 +76,9 @@ local cardReferenceData = {
 --- basic card operation
 ---@class Card
 local this = {
+    suit = data.cardSuit,
     type = data.cardType,
+    symbol = data.cardSymbol,
 }
 
 -- function this.getCardReference()
@@ -174,6 +176,55 @@ function this.DealCard(deck)
         return nil
     end
     return table.remove(deck) -- remove last element
+end
+
+
+---@param cardId integer cardId
+---@param deck integer[] cardId
+---@return boolean
+function this.Contain(cardId, deck)
+    return table.find(deck, cardId) ~= nil
+end
+
+---@param cardIds integer[] cardId
+---@param deck integer[] cardId
+---@return boolean
+function this.ContainAll(cardIds, deck)
+    if table.size(deck) == 0 then
+        return false
+    end
+    for _, value in pairs(cardIds) do
+        if not this.Contain(value, deck) then
+            return false
+        end
+    end
+    return true
+end
+
+---@class Card.Find.Params
+---@field suit CardSuit?
+---@field type CardType?
+---@field symbol CardSymbol?
+---@field findAll boolean?
+
+---@param params Card.Find.Params
+---@return integer|integer[]?
+function this.Find(params)
+    local matched = {}
+    for index, ref in ipairs(cardReferenceData) do
+        if params.suit ~= nil and params.suit ~= ref.suit then
+        elseif params.type ~= nil and params.type ~= ref.type then
+        elseif params.symbol ~= nil and params.symbol ~= ref.symbol then
+        else
+            -- find
+            if params.findAll then
+                table.insert(matched, index)
+            else
+                return index
+            end
+        end
+    end
+    return table.size(matched) > 0 and matched or nil
 end
 
 ---@param cardId0 integer

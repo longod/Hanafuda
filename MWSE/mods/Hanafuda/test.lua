@@ -3,6 +3,7 @@ do
 
     local unitwind = require("unitwind").new({
         enabled = true,
+        highlight = false,
     })
 
     unitwind:start("Hanafuda Card")

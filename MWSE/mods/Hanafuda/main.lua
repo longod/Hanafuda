@@ -5,12 +5,12 @@ local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
 local view = require("Hanafuda.KoiKoi.view")
 
-local runner = require("Hanafuda.KoiKoi.runner").new(
-    require("Hanafuda.KoiKoi.simplismBrain").new(),
-    require("Hanafuda.KoiKoi.simplismBrain").new()
-)
-while runner:Run() do
-end
+-- local runner = require("Hanafuda.KoiKoi.runner").new(
+--     require("Hanafuda.KoiKoi.simplismBrain").new(),
+--     require("Hanafuda.KoiKoi.simplismBrain").new()
+-- )
+-- while runner:Run() do
+-- end
 
 --[[
 local game = require("Hanafuda.KoiKoi.game").new()
@@ -747,3 +747,5 @@ local function OnInitialized(_)
     end, {filter = tes3.scanCode.k} )
 end
 event.register(tes3.event.initialized, OnInitialized)
+
+dofile("Hanafuda/KoiKoi/test.lua")

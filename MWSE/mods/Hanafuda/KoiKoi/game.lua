@@ -200,10 +200,10 @@ end
 
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
+---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
-    -- combination:Find(pool)
-    -- todo return
+    return combination.Calculate(pool)
 end
 
 ---@param self KoiKoi
