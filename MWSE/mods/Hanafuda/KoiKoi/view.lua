@@ -56,6 +56,9 @@ end
 ---@param self KoiKoi.UI
 ---@param service KoiKoi.Service
 function UI.CreateDecidingParent(self, service)
+    -- I want to wait for a selection using coroutine,
+    -- but for some reason the coroutine suspended by yield is runnning in selection callbacks.
+    -- Therefore, cannot resume it in callbacks.
     tes3ui.showMessageMenu({
         id = "DecideParent",
         header = "Decide Parent",
@@ -64,17 +67,23 @@ function UI.CreateDecidingParent(self, service)
             {
                 text = "Left",
                 callback = function()
-                    -- todo
                     logger:debug("choose left")
                     service:DecideParent(false)
+                end,
+                tooltip = function()
+                    local tooltip = tes3ui.createTooltipMenu()
+                    tooltip:createLabel({ text = "Choose Left" })
                 end
             },
             {
                 text = "Right",
                 callback = function()
-                    -- todo
                     logger:debug("choose right")
                     service:DecideParent(true)
+                end,
+                tooltip = function()
+                    local tooltip = tes3ui.createTooltipMenu()
+                    tooltip:createLabel({ text = "Choose Right" })
                 end
             },
         }
@@ -82,17 +91,75 @@ function UI.CreateDecidingParent(self, service)
 end
 
 ---@param self KoiKoi.UI
----@param player KoiKoi.Player
-function UI.InformParent(self, player)
-    if player == koi.player.you then
+---@param parent KoiKoi.Player
+function UI.InformParent(self, parent)
+    if parent == koi.player.you then
         tes3.messageBox("Parent is you")
-    elseif player == koi.player.opponent then
+    elseif parent == koi.player.opponent then
         tes3.messageBox("Parent is opponent")
     else
         assert()
     end
 end
 
+---@param parent tes3uiElement
+---@param cardId integer
+---@param backface boolean
+---@return tes3uiElement
+local function PutCard(parent, cardId, backface)
+    local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
+
+    -- todo child for flipping
+    local image = parent:createImage({ path = asset.path })
+    -- image.ignoreLayoutX = true
+    -- image.ignoreLayoutY = true
+    -- image.positionX = 10
+    -- image.positionY = 10
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = true
+    image.borderAllSides = 2
+    -- if not image.widget then
+    --     image.widget = {}
+    -- end
+    -- image.widget.cardId = cardId -- i want to embeded...
+    image:register(tes3.uiEvent.help,
+    ---@param e uiEventEventData
+    function(e)
+        UI.CreateCardTooltip(cardId, backface)
+    end)
+
+    return image
+end
+
+---@param self KoiKoi.UI
+---@param parent KoiKoi.Player
+---@param pools KoiKoi.PlayerPool[]
+---@param groundPools integer[]
+function UI.DealInitialCards(self, parent, pools, groundPools)
+    -- animation with coroutine or timer?
+    local back = parent ~= koi.player.you
+    local child = koi.GetOpponent(parent)
+    local view = self.playerViews[child].hand
+    for _, cardId in ipairs(pools[child].hand) do
+        local e = PutCard(view, cardId, not back)
+        -- todo callbacks
+    end
+
+    for _, cardId in ipairs(groundPools) do
+        local e = PutCard(self.groundView.ground, cardId, false)
+    end
+
+    view = self.playerViews[parent].hand
+    for _, cardId in ipairs(pools[parent].hand) do
+        local e = PutCard(view, cardId, back)
+    end
+
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    gameMenu:updateLayout()
+end
 
 ---@param cardId integer
 ---@param backface boolean
@@ -220,7 +287,7 @@ local function CreateBoard(parent, height)
     --ground.paddingAllSides = 2
     ground.childAlignX = 0.5
     ground.childAlignY = 0.5
-    ground.minWidth = cardLayoutWidth * 4
+    ground.minWidth = cardLayoutWidth * 8 -- fixme double rows and use 4
     ground.minHeight = cardLayoutHeight * 2
 
     return { pile = pile, drawn = drawn, ground = ground }
@@ -302,7 +369,7 @@ function UI.OpenGameMenu(self, id)
 	menu.absolutePosAlignY = 0.5
     menu.borderAllSides = borderSize
     menu.paddingAllSides = 0
-    menu.color = { 0.1, 0.1, 0.1 }
+    menu.color = { 0.0, 0.0, 0.0 }
     menu.alpha = 0.5
     menu.autoWidth = false
     menu.autoHeight = false
@@ -348,7 +415,7 @@ function UI.OpenGameMenu(self, id)
     self.playerViews[koi.player.you] = CreateYourCaptured(right)
 
     local board = center:createRect()
-    board.color = { 0.1, 0.1, 0.1 }
+    board.color = { 0.0, 0.0, 0.0 }
     board.alpha = 0.5
     board.widthProportional = 1
     board.heightProportional = 1

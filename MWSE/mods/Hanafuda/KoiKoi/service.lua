@@ -7,6 +7,7 @@ local phase = {
     initialized = 2,
     decidingParent = 3,
     decidedParent = 4,
+    setupRound = 5,
     -- roundSetup = 3,
     -- parentTurnBegin = 1,
     -- parentMatch = 1,
@@ -77,6 +78,11 @@ function Service.OnEnterFrame(self, e)
             self.view:InformParent(self.game.parent) -- todo send opened card
             self:TransitionNext()
         end,
+        [phase.setupRound] = function()
+            self.game:DealInitialCards() -- todo animation
+            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool)
+            self:TransitionNext()
+        end,
     }
     --logger:trace("phase ".. tostring(self.phase) )
     if state[self.phase] then
@@ -103,6 +109,7 @@ function Service.Initialize(self)
     self.game:Initialize()
     self.view:Initialize()
     self:TransitionNext()
+    -- todo skip deciding parent
 end
 
 ---@param self KoiKoi.Service

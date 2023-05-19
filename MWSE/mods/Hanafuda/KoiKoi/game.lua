@@ -20,7 +20,7 @@ local combination = require("Hanafuda.KoiKoi.combination")
 ---@field current KoiKoi.Player
 ---@field deck integer[] card deck
 ---@field pools KoiKoi.PlayerPool[]
----@field groundPool  integer[]
+---@field groundPool integer[]
 ---@field brains KoiKoi.IBrain[]
 ---@field combinations { [KoiKoi.CombinationType] : integer }[]
 local KoiKoi = {}
@@ -88,17 +88,6 @@ end
 -- todo phase transition in controller?
 
 ---comment
----@param player KoiKoi.Player
-local function GetOpponent(player)
-    if player == koi.player.you then
-        return koi.player.opponent
-    elseif player == koi.player.opponent then
-        return koi.player.you
-    end
-    assert()
-end
-
----comment
 ---@param self KoiKoi
 ---@param brain KoiKoi.IBrain
 ---@param player boolean?
@@ -131,7 +120,7 @@ end
 function KoiKoi.DealInitialCards(self)
     local initialCards = self.settings.initialCards
     local initialDealEach = self.settings.initialDealEach
-    local first = self.pools[GetOpponent(self.parent)].hand
+    local first = self.pools[koi.GetOpponent(self.parent)].hand
     local second = self.pools[self.parent].hand
     while table.size(first) < initialCards do
         -- todo check count
@@ -160,7 +149,7 @@ function KoiKoi.Simulate(self, player, drawnCardId)
         local params = {
             drawnCard = drawnCardId,
             pool = self.pools[player],
-            opponentPool = self.pools[GetOpponent(player)],
+            opponentPool = self.pools[koi.GetOpponent(player)],
             groundPool = self.groundPool,
             deck = self.deck,
             combination = nil,
@@ -185,7 +174,7 @@ function KoiKoi.Call(self, player, combination)
         local params = {
             drawnCard = nil,
             pool = self.pools[player],
-            opponentPool = self.pools[GetOpponent(player)],
+            opponentPool = self.pools[koi.GetOpponent(player)],
             groundPool = self.groundPool,
             deck = self.deck,
             combination = combination,
@@ -200,7 +189,7 @@ function KoiKoi.Call(self, player, combination)
 end
 
 function KoiKoi.SwapPlayer(self)
-    self.current = GetOpponent(self.current)
+    self.current = koi.GetOpponent(self.current)
 end
 
 ---@param self KoiKoi

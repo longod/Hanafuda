@@ -34,4 +34,14 @@ this.combination = {
     chaff = 13,
 }
 
+---comment
+---@param player KoiKoi.Player
+function this.GetOpponent(player)
+    if player == this.player.you then
+        return this.player.opponent
+    elseif player == this.player.opponent then
+        return this.player.you
+    end
+    assert()
+end
 return this

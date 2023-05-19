@@ -1,10 +1,9 @@
--- early test
-dofile("Hanafuda/test.lua")
 
 local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local uiid = require("Hanafuda.uiid")
 local view = require("Hanafuda.KoiKoi.view")
+local config = require("Hanafuda.config")
 
 
 
@@ -701,5 +700,8 @@ end
 event.register(tes3.event.initialized, OnInitialized)
 dofile("Hanafuda/mcm.lua")
 
--- later test
-dofile("Hanafuda/KoiKoi/test.lua")
+-- unittest
+if config.development.unittest then
+    dofile("Hanafuda/test.lua")
+    dofile("Hanafuda/KoiKoi/test.lua")
+end
