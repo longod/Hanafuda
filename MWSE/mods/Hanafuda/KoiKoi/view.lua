@@ -1,5 +1,6 @@
 local uiid = require("Hanafuda.uiid")
 local card = require("Hanafuda.card")
+local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local i18n = mwse.loadTranslations("Hanafuda")
@@ -41,12 +42,15 @@ function UI.ShowCallingDialog()
                 text = "Koi-koi",
                 callback = function()
                     -- todo
+                    sound.PlayVoice(sound.voice.continue, "", false)
+
                 end
             },
             {
                 text = "Shobu",
                 callback = function()
                     -- todo
+                    sound.PlayVoice(sound.voice.finish, "", false)
                 end
             },
         }
@@ -109,7 +113,7 @@ end
 local function PutCard(parent, cardId, backface)
     local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
 
-    -- todo child for flipping
+    -- todo child on block for flipping
     local image = parent:createImage({ path = asset.path })
     -- image.ignoreLayoutX = true
     -- image.ignoreLayoutY = true
@@ -132,33 +136,117 @@ local function PutCard(parent, cardId, backface)
 
     return image
 end
+---@param parent tes3uiElement
+---@param deck integer[]
+---@return tes3uiElement
+local function PutDeck(parent, deck)
+    local asset = card.GetCardBackAsset()
+
+    -- todo child for flipping
+    local image = parent:createImage({ path = asset.path })
+    -- image.ignoreLayoutX = true
+    -- image.ignoreLayoutY = true
+    -- image.positionX = 10
+    -- image.positionY = 10
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = true
+    image.borderAllSides = 2
+    --image:createLabel({text= "Deck!"})
+    image:register(tes3.uiEvent.help,
+    ---@param e uiEventEventData
+    function(e)
+        UI.CreateDeckTooltip(deck)
+    end)
+
+    return image
+end
 
 ---@param self KoiKoi.UI
 ---@param parent KoiKoi.Player
 ---@param pools KoiKoi.PlayerPool[]
 ---@param groundPools integer[]
-function UI.DealInitialCards(self, parent, pools, groundPools)
-    -- animation with coroutine or timer?
-    local back = parent ~= koi.player.you
-    local child = koi.GetOpponent(parent)
-    local view = self.playerViews[child].hand
-    for _, cardId in ipairs(pools[child].hand) do
-        local e = PutCard(view, cardId, not back)
-        -- todo callbacks
-    end
+---@param deck integer[]
+---@param skipAnimation boolean? -- TODO
+function UI.DealInitialCards(self, parent, pools, groundPools, deck, skipAnimation)
+    -- animation with coroutine or timer
+    local deal = coroutine.wrap(function()
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
 
-    for _, cardId in ipairs(groundPools) do
-        local e = PutCard(self.groundView.ground, cardId, false)
-    end
+        local back = parent ~= koi.player.you
+        local child = koi.GetOpponent(parent)
 
-    view = self.playerViews[parent].hand
-    for _, cardId in ipairs(pools[parent].hand) do
-        local e = PutCard(view, cardId, back)
-    end
+        -- todo get from service
+        local initialCards = 8
+        local initialDealEach = 2
+        -- must be no fraction
+        -- annoy indexing begin 1
+        for j = 0, (initialCards / initialDealEach) - 1 do
+            local start = j * 2 + 1
+            -- child
+            for i = start, (start + (initialDealEach-1)) do
+                --logger:trace(i)
+                local view = self.playerViews[child].hand
+                local cardId = pools[child].hand[i]
+                local e = PutCard(view, cardId, not back)
+                gameMenu:updateLayout()
+                coroutine.yield(e)
+            end
+            -- ground
+            for i = start, (start + (initialDealEach-1)) do
+                local cardId = groundPools[i]
+                local e = PutCard(self.groundView.ground, cardId, false)
+                gameMenu:updateLayout()
+                coroutine.yield(e)
+            end
+            -- parent
+            for i = start, (start + (initialDealEach-1)) do
+                local view = self.playerViews[parent].hand
+                local cardId = pools[parent].hand[i]
+                local e = PutCard(view, cardId, back)
+                gameMenu:updateLayout()
+                coroutine.yield(e)
+            end
+        end
 
-    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-    assert(gameMenu)
-    gameMenu:updateLayout()
+    end)
+
+    -- use this, but adding needs in CS
+    -- local se = tes3.getSound("Rain")
+    -- logger:trace(se)
+    -- se:play()
+
+
+    --local mainmenu = tes3.onMainMenu()
+
+    timer.start({
+        type = timer.real,
+        ---@param e mwseTimerCallbackData
+        callback = function(e)
+            if deal() == nil then
+                logger:debug("dealing done")
+                --or infinit and use e.timer.cancel
+                -- notify servic to next phase
+                -- todo put
+                PutDeck(self.groundView.pile, deck)
+
+                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+                assert(gameMenu)
+                gameMenu:updateLayout()
+                sound.Play(sound.se.putDeck)
+
+            else
+
+                sound.Play(sound.se.dealCard)
+
+            end
+        end,
+        iterations = 8 * 3 + 1, -- cards and endpoint
+        duration = 0.3,
+        persist = false,        -- hmm..perhaps false
+    })
 end
 
 ---@param cardId integer

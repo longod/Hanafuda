@@ -80,7 +80,7 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.setupRound] = function()
             self.game:DealInitialCards() -- todo animation
-            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool)
+            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck)
             self:TransitionNext()
         end,
     }
