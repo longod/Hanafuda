@@ -2,6 +2,16 @@
 ---@class Config
 local defaultConfig = {
     enable = true,
+    -- language?
+    koikoi = {
+        houseRule = {
+            flowerViewingSake = true,
+            moonViewingSake = true,
+        },
+    },
+    audio = {
+        volume = 100,
+    },
     development = {
         logLevel = "INFO",
         logToConsole = false,

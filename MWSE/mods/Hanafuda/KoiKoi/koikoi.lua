@@ -34,6 +34,28 @@ this.combination = {
     chaff = 13,
 }
 
+---@type integer[]
+this.basePoint = {
+    -- bright
+    15,
+    8,
+    7,
+    6,
+    -- animal
+    5,
+    1,
+    -- ribbon
+    10,
+    5,
+    5,
+    1,
+    -- chaff (no exclusively)
+    5,
+    5,
+    1,
+}
+assert(table.size(this.combination) == table.size(this.basePoint))
+
 ---comment
 ---@param player KoiKoi.Player
 function this.GetOpponent(player)

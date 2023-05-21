@@ -9,6 +9,7 @@ local this = {}
 this.se = {
     dealCard = 1,
     putDeck = 2,
+    turnBegin = 3,
 }
 ---@enum VoiceId
 this.voice = {
@@ -37,8 +38,10 @@ local soundData = {
     -- ["8"] = { sound ="Item Clothes Up",soundPath = "Fx/item/cloth.wav" },
     -- ["9"] = { sound ="Item Misc Up",soundPath = "Fx/item/item.wav" },
     -- ["10"] = { sound ="Item Gold Up",soundPath = "Fx/item/money.wav" },
+    -- Menu Size
     [this.se.dealCard] = { sound = "book page2" },
     [this.se.putDeck] = { sound = "book close" },
+    [this.se.turnBegin] = { sound = "Silt_2" },
 }
 local voiceData = {
     [this.voice.continue] = { soundPath = "vo\\d\\m\\Hlo_DM035.mp3" }, -- Keep moving, scum.

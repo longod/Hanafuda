@@ -2,27 +2,6 @@ local card = require("Hanafuda.card")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 
-local basePoint = {
-    -- bright
-    15,
-    8,
-    7,
-    6,
-    -- animal
-    5,
-    1,
-    -- ribbon
-    10,
-    5,
-    5,
-    1,
-    -- chaff (no exclusively)
-    5,
-    5,
-    1,
-}
-assert(table.size(koi.combination) == table.size(basePoint))
-
 ---@class KoiKoi.Combination
 local this = {}
 
@@ -62,20 +41,20 @@ function this.Calculate(captured)
     if bright then
         local count = table.size(bright)
         if count == 5 then
-            caps[koi.combination.fiveBrights] = basePoint[koi.combination.fiveBrights]
+            caps[koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights]
             logger:debug("Goko " .. tostring(caps[koi.combination.fiveBrights]))
         elseif count == 4 then
             if card.Contain(rainman, bright) then
-                caps[koi.combination.rainyFourBrights] = basePoint[koi.combination.rainyFourBrights]
+                caps[koi.combination.rainyFourBrights] = koi.basePoint[koi.combination.rainyFourBrights]
                 logger:debug("Ame-Shiko " .. tostring(caps[koi.combination.rainyFourBrights]))
             else
-                caps[koi.combination.fourBrights] = basePoint[koi.combination.fourBrights]
+                caps[koi.combination.fourBrights] = koi.basePoint[koi.combination.fourBrights]
                 logger:debug("Shiko " .. tostring(caps[koi.combination.fourBrights]))
             end
         elseif count == 3 then
             if card.Contain(rainman, bright) then
             else
-                caps[koi.combination.threeBrights] = basePoint[koi.combination.threeBrights]
+                caps[koi.combination.threeBrights] = koi.basePoint[koi.combination.threeBrights]
                 logger:debug("Sanko " .. tostring(caps[koi.combination.threeBrights]))
             end
         end
@@ -95,22 +74,22 @@ function this.Calculate(captured)
             if card.Contain(boar, animal) and
             card.Contain(deer, animal) and
             card.Contain(butterfly, animal) then
-                caps[koi.combination.boarDeerButterfly] = basePoint[koi.combination.boarDeerButterfly]
+                caps[koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly]
                 logger:debug("Ino-Shika-Cho " .. tostring(caps[koi.combination.boarDeerButterfly]))
             end
         end
         if count >= 5 then
-            caps[koi.combination.animals] = basePoint[koi.combination.animals] + (count - 5)
+            caps[koi.combination.animals] = koi.basePoint[koi.combination.animals] + (count - 5)
             logger:debug("Tane " .. tostring(caps[koi.combination.animals]))
         end
 
         if card.Contain(sakeCup, animal) then
             if hasCurtain then
-                caps[koi.combination.flowerViewingSake] = basePoint[koi.combination.flowerViewingSake]
+                caps[koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake]
                 logger:debug("Hanami de Ippai " .. tostring(caps[koi.combination.flowerViewingSake]))
             end
             if hasMoon then
-                caps[koi.combination.moonViewingSake] = basePoint[koi.combination.moonViewingSake]
+                caps[koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake]
                 logger:debug("Tsukimi de Ippai " .. tostring(caps[koi.combination.moonViewingSake]))
             end
         end
@@ -123,16 +102,17 @@ function this.Calculate(captured)
             local poetAll = card.ContainAll(redPoetry, ribbon)
             local blueAll = card.ContainAll(blueRibbon, ribbon)
             if poetAll and blueAll then
-                caps[koi.combination.poetryAndBlueRibbons] = basePoint[koi.combination.poetryAndBlueRibbons] + (count - 6)
+                -- same as both poetryRibbons and blueRibbons, but checking easly with bonus points
+                caps[koi.combination.poetryAndBlueRibbons] = koi.basePoint[koi.combination.poetryAndBlueRibbons] + (count - 6)
                 logger:debug("Akatan-Aotan " .. tostring(caps[koi.combination.poetryAndBlueRibbons]))
             elseif poetAll then
-                caps[koi.combination.poetryRibbons] = basePoint[koi.combination.poetryRibbons] + (count - 3)
+                caps[koi.combination.poetryRibbons] = koi.basePoint[koi.combination.poetryRibbons] + (count - 3)
                 logger:debug("Akatan " .. tostring(caps[koi.combination.poetryRibbons]))
             elseif blueAll then
-                caps[koi.combination.blueRibbons] = basePoint[koi.combination.blueRibbons] + (count - 3)
+                caps[koi.combination.blueRibbons] = koi.basePoint[koi.combination.blueRibbons] + (count - 3)
                 logger:debug("Aotan " .. tostring(caps[koi.combination.blueRibbons]))
             elseif count >= 5 then
-                caps[koi.combination.ribbons] = basePoint[koi.combination.ribbons] + (count - 5)
+                caps[koi.combination.ribbons] = koi.basePoint[koi.combination.ribbons] + (count - 5)
                 logger:debug("Tan " .. tostring(caps[koi.combination.ribbons]))
             end
         end
@@ -142,7 +122,7 @@ function this.Calculate(captured)
     if chaff then
         local count = table.size(chaff)
         if count >= 10 then
-            caps[koi.combination.chaff] = basePoint[koi.combination.chaff] + (count - 10)
+            caps[koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (count - 10)
             logger:debug("Kasu " .. tostring(caps[koi.combination.chaff]))
         end
     end

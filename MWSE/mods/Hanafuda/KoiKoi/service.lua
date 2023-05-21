@@ -1,6 +1,6 @@
 local logger = require("Hanafuda.logger")
 
---umm
+--umm needs sub phase?
 ---@enum KoiKoi.Phase
 local phase = {
     new = 1,
@@ -8,6 +8,12 @@ local phase = {
     decidingParent = 3,
     decidedParent = 4,
     setupRound = 5,
+    dealingInitial = 6,
+    checkLuckyHand = 7,
+    beginTurn = 8,
+    matchCard = 9,
+    drawCard = 10,
+    endTurn = 11,
     -- roundSetup = 3,
     -- parentTurnBegin = 1,
     -- parentMatch = 1,
@@ -49,17 +55,12 @@ function Service.new(game, view)
 end
 
 ---@param self KoiKoi.Service
----@param next KoiKoi.Phase
+---@param next KoiKoi.Phase?
 ---@return KoiKoi.Phase
-function Service.Transition(self, next)
-    self.phase = next
-    return self.phase
-end
-
----@param self KoiKoi.Service
----@return KoiKoi.Phase
-function Service.TransitionNext(self)
-    self:Transition(self.phase + 1)
+function Service.TransitPhase(self, next)
+    local n = next or (self.phase + 1)
+    logger:debug("Transit Phase %d -> %d", self.phase, n)
+    self.phase = n
     return self.phase
 end
 
@@ -67,22 +68,36 @@ end
 ---@param self KoiKoi.Service
 ---@param e enterFrameEventData
 function Service.OnEnterFrame(self, e)
+    -- fixme Transitions should be triggered by notifications from the view.
     local state = {
         [phase.initialized] = function()
             logger:info("initialized")
             self.view:CreateDecidingParent(self)
-            self:TransitionNext()
+            self:TransitPhase()
         end,
         [phase.decidedParent] = function()
             logger:info("inform parent")
             self.view:InformParent(self.game.parent) -- todo send opened card
-            self:TransitionNext()
+            self:TransitPhase()
         end,
         [phase.setupRound] = function()
             self.game:DealInitialCards() -- todo animation
-            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck)
-            self:TransitionNext()
+            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self)
+            self:TransitPhase()
         end,
+        -- dealingInitial
+        [phase.checkLuckyHand] = function()
+            -- todo
+            self:TransitPhase()
+        end,
+        [phase.beginTurn] = function()
+            self.view:BeginTurn(self.game.current, self.game.parent, self)
+            --self:TransitPhase()
+        end,
+        -- parentMatch = 9,
+        -- parentDraw = 10,
+        -- parentEnd = 11,
+
     }
     --logger:trace("phase ".. tostring(self.phase) )
     if state[self.phase] then
@@ -108,7 +123,7 @@ function Service.Initialize(self)
     self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
     self.view:Initialize()
-    self:TransitionNext()
+    self:TransitPhase()
     -- todo skip deciding parent
 end
 
@@ -126,7 +141,7 @@ end
 ---@param leftRight boolean
 function Service.DecideParent(self, leftRight)
     self.game:DecideParent(leftRight)
-    self:TransitionNext()
+    self:TransitPhase()
 end
 
 return Service
