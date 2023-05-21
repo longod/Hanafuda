@@ -152,7 +152,7 @@ local function PutDeck(parent)
                 selectedCard = cardId
                 logger:debug("Pick " .. tostring(selectedCard))
                 tes3.messageBox("Pick " .. card.GetCardText(selectedCard).name)
-                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                local overlay = tes3ui.findHelpLayerMenu(uiid.grabMenu)
                 overlay.disabled = false
                 overlay.visible = true
                 -- need to set initial position?
@@ -413,7 +413,7 @@ local function OpenGameMenu(id)
     menu:updateLayout()
     -- getting actual size
 
-    local overlayMenu = tes3ui.createHelpLayerMenu({ id = uiid.overlayMenu, fixedFrame = true }) -- maybe fixedFrame not work
+    local overlayMenu = tes3ui.createHelpLayerMenu({ id = uiid.grabMenu, fixedFrame = true }) -- maybe fixedFrame not work
     overlayMenu:destroyChildren()
     overlayMenu.absolutePosAlignX = nil
     overlayMenu.absolutePosAlignY = nil
@@ -458,7 +458,7 @@ local function OpenGameMenu(id)
                 selectedCard = cardId
                 logger:debug("Pick " .. tostring(selectedCard))
                 tes3.messageBox("Pick " .. card.GetCardText(selectedCard).name)
-                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                local overlay = tes3ui.findHelpLayerMenu(uiid.grabMenu)
                 overlay.disabled = false
                 overlay.visible = true
                 -- need to set initial position?
@@ -515,7 +515,7 @@ local function OpenGameMenu(id)
                 -- overlay:updateLayout()
                 -- --groundView.ground:getTopLevelMenu():updateLayout()
                 -- root:updateLayout()
-                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                local overlay = tes3ui.findHelpLayerMenu(uiid.grabMenu)
                 overlay.disabled = true
                 overlay.visible = false
                 local root = e.source:getTopLevelMenu()
@@ -556,7 +556,7 @@ local function OpenGameMenu(id)
                 tes3.messageBox("Put " .. card.GetCardText(selectedCard).name)
             selectedCard = nil
 
-            local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+            local overlay = tes3ui.findHelpLayerMenu(uiid.grabMenu)
             overlay.disabled = true
             overlay.visible = false
             local root = e.source:getTopLevelMenu()
@@ -594,7 +594,7 @@ local function OpenGameMenu(id)
                 logger:debug("Discard " .. tostring(selectedCard))
                 tes3.messageBox("Discard " .. card.GetCardText(selectedCard).name)
 
-                local overlay = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+                local overlay = tes3ui.findHelpLayerMenu(uiid.grabMenu)
                 overlay.disabled = true
                 overlay.visible = false
                 local root = e.source:getTopLevelMenu()
@@ -632,7 +632,7 @@ local function CloseGameMenu(element)
     groundCardView = {}
     playerCardView = {}
     element:destroy()
-    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if overlayMenu then
         overlayMenu:destroy()
     end

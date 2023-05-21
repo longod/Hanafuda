@@ -8,6 +8,8 @@ local i18n = mwse.loadTranslations("Hanafuda")
 -- with mergin
 local cardLayoutWidth = card.GetCardWidth() + 4
 local cardLayoutHeight = card.GetCardHeight() + 4
+local enabledCardColor = { 1, 1, 1 }
+local disabledCardColor = { 0.2, 0.2, 0.2 }
 
 local rainman = card.Find({ symbol = card.symbol.rainman }) ---@cast rainman integer
 local curtain = card.Find({ symbol = card.symbol.curtain }) ---@cast curtain integer
@@ -41,7 +43,6 @@ local function CreateCombinationView(parent, combination, actualPoint)
 
     local indent = 12
 
-    ---comment
     ---@param cardIds integer[]
     local listup = function(cardIds)
         local pattern = block:createBlock()
@@ -229,11 +230,13 @@ end
 ---@class PlayerView
 ---@field hand tes3uiElement
 ---@field [CardType] tes3uiElement
+---@field card {[integer] : tes3uiElement} card pool
 
 ---@class GroundView
 ---@field pile tes3uiElement
 ---@field drawn tes3uiElement
 ---@field ground tes3uiElement
+---@field card {[integer] : tes3uiElement} card pool
 
 ---@class KoiKoi.UI
 ---@field groundView GroundView
@@ -352,6 +355,8 @@ local function PutCard(parent, cardId, backface)
     --     image.widget = {}
     -- end
     -- image.widget.cardId = cardId -- i want to embeded...
+
+    -- BUG It crashes when you mouse over it after about 30 seconds of time has elapsed. Even with non-lambda functions. without creating a tooltip.
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
@@ -377,7 +382,7 @@ local function PutDeck(parent, deck)
     image.scaleMode = true
     image.consumeMouseEvents = true
     image.borderAllSides = 2
-    --image:createLabel({text= "Deck!"})
+
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
@@ -390,6 +395,116 @@ local function PutDeck(parent, deck)
 end
 
 -- fixme Only notification without direct transition is desirable.
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
+---@param cardId integer
+---@param service KoiKoi.Service
+function UI.RegisterHandCardEvent(self, element, cardId, service)
+    element:register(tes3.uiEvent.mouseOver,
+    ---@param e uiEventEventData
+    function(e)
+        -- highlight matching ground cards
+        -- if can then...
+        for key, value in pairs(self.groundView.card) do
+            if not card.CanMatchSuit(cardId, key) then
+                value.color = disabledCardColor
+            end
+        end
+        e.source:getTopLevelMenu():updateLayout()
+    end)
+    element:register(tes3.uiEvent.mouseLeave,
+    ---@param e uiEventEventData
+    function(e)
+        -- stop highlight
+        -- if can then...
+        for key, value in pairs(self.groundView.card) do
+            value.color = enabledCardColor
+        end
+        e.source:getTopLevelMenu():updateLayout()
+    end)
+    element:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- keep highlight
+        -- grab card
+    end)
+end
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
+---@param service KoiKoi.Service
+function UI.RegisterHandEvent(self, element, service)
+    element:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- cancel, put back card
+    end)
+end
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
+---@param cardId integer
+---@param service KoiKoi.Service
+function UI.RegisterGroundCardEvent(self, element, cardId, service)
+    element:register(tes3.uiEvent.mouseOver,
+    ---@param e uiEventEventData
+    function(e)
+        -- highlight matching cards
+        -- todo opponent (almost backface, but usefull for manual playing)
+        -- if can then...
+        for key, value in pairs(self.playerViews[koi.player.you].card) do
+            if not card.CanMatchSuit(cardId, key) then
+                value.color = disabledCardColor
+            end
+        end
+        e.source:getTopLevelMenu():updateLayout()
+    end)
+    element:register(tes3.uiEvent.mouseLeave,
+    ---@param e uiEventEventData
+    function(e)
+        -- stop highlight
+        -- if can then...
+        for key, value in pairs(self.playerViews[koi.player.you].card) do
+            value.color = enabledCardColor
+        end
+        e.source:getTopLevelMenu():updateLayout()
+    end)
+    element:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- stop highlight
+        -- if can then...
+        for key, value in pairs(self.playerViews[koi.player.you].card) do
+            value.color = enabledCardColor
+        end
+        e.source:getTopLevelMenu():updateLayout()
+        -- match and capture
+    end)
+end
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
+---@param service KoiKoi.Service
+function UI.RegisterGroundEvent(self, element, service)
+    element:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- discard card
+    end)
+end
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
+---@param service KoiKoi.Service
+function UI.RegisterDeckEvent(self, element, service)
+    element:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- draw card
+    end)
+end
+
 
 ---@param self KoiKoi.UI
 ---@param parent KoiKoi.Player
@@ -420,6 +535,10 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 local view = self.playerViews[child].hand
                 local cardId = pools[child].hand[i]
                 local e = PutCard(view, cardId, not back)
+                self.playerViews[child].card[cardId] = e
+                if child == koi.player.you then -- workaround
+                    self:RegisterHandCardEvent(e, cardId, service)
+                end
                 gameMenu:updateLayout()
                 coroutine.yield(e)
             end
@@ -427,6 +546,8 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             for i = start, (start + (initialDealEach-1)) do
                 local cardId = groundPools[i]
                 local e = PutCard(self.groundView.ground, cardId, false)
+                self.groundView.card[cardId] = e
+                self:RegisterGroundCardEvent(e, cardId, service)
                 gameMenu:updateLayout()
                 coroutine.yield(e)
             end
@@ -435,6 +556,10 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 local view = self.playerViews[parent].hand
                 local cardId = pools[parent].hand[i]
                 local e = PutCard(view, cardId, back)
+                self.playerViews[parent].card[cardId] = e
+                if parent == koi.player.you then -- workaround
+                    self:RegisterHandCardEvent(e, cardId, service)
+                end
                 gameMenu:updateLayout()
                 coroutine.yield(e)
             end
@@ -719,7 +844,8 @@ local function CreateInfo(parent)
 end
 
 ---@param id number|string
-function UI.OpenGameMenu(self, id)
+---@param service KoiKoi.Service
+function UI.OpenGameMenu(self, id, service)
 
     -- pre-load all resources?
 
@@ -790,36 +916,46 @@ function UI.OpenGameMenu(self, id)
     self.groundView = CreateBoard(board, 1.5)
     self.playerViews[koi.player.you].hand = CreateHandView(board, uiid.playerHand, 0.75)
 
+    -- allocate card table
+    self.groundView.card = {}
+    self.playerViews[koi.player.opponent].card = {}
+    self.playerViews[koi.player.you].card = {}
+
+    self:RegisterHandEvent(self.playerViews[koi.player.opponent].hand, service)
+    self:RegisterHandEvent(self.playerViews[koi.player.you].hand, service)
+    self:RegisterGroundEvent(self.groundView.ground, service)
+
     menu:updateLayout()
     -- getting actual size
 
     -- present card dragging
-    local overlayMenu = tes3ui.createHelpLayerMenu({ id = uiid.overlayMenu }) -- maybe fixedFrame not work
-    overlayMenu:destroyChildren()
-    overlayMenu.absolutePosAlignX = nil
-    overlayMenu.absolutePosAlignY = nil
-    overlayMenu.borderAllSides = 0
-    overlayMenu.paddingAllSides = 0
-    overlayMenu.autoWidth = true
-    overlayMenu.autoHeight = true
-    overlayMenu.disabled = true
-    overlayMenu.visible = false
-    overlayMenu:updateLayout()
+    local grabMenu = tes3ui.createHelpLayerMenu({ id = uiid.grabMenu }) -- maybe fixedFrame not work
+    grabMenu:destroyChildren()
+    grabMenu.absolutePosAlignX = nil
+    grabMenu.absolutePosAlignY = nil
+    grabMenu.borderAllSides = 0
+    grabMenu.paddingAllSides = 0
+    grabMenu.autoWidth = true
+    grabMenu.autoHeight = true
+    grabMenu.disabled = true
+    grabMenu.visible = false
+    grabMenu:updateLayout()
 
     return menu
 end
 
-
-
-function UI.Initialize(self)
+---@param self KoiKoi.UI
+---@param service KoiKoi.Service
+function UI.Initialize(self, service)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(not gameMenu)
-    gameMenu = self:OpenGameMenu(uiid.gameMenu)
+    gameMenu = self:OpenGameMenu(uiid.gameMenu, service)
     tes3ui.enterMenuMode(gameMenu.id)
 end
 
+---@param self KoiKoi.UI
 function UI.Shutdown(self)
-    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
+    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if overlayMenu then
         overlayMenu:destroy()
     end

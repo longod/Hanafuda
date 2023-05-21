@@ -94,6 +94,26 @@ function Service.OnEnterFrame(self, e)
             self.view:BeginTurn(self.game.current, self.game.parent, self)
             --self:TransitPhase()
         end,
+        [phase.matchCard] = function()
+            local command = self.game:Simulate(self.game.current, nil)
+            if command then
+                -- todo com:Execute()
+                -- todo view
+                if command.selectedCard and command.matchedCard then
+                    -- match
+                    self.game:Capture(self.game.current, command.selectedCard, false, true)
+                    self.game:Capture(self.game.current, command.matchedCard, true, true)
+                elseif not command.matchedCard then
+                    -- discard
+                    self.game:Discard(self.game.current, command.selectedCard, true)
+                else
+                    -- skip
+                end
+                --self.drawnCard = nil
+                --self:Next()
+            end
+        end,
+
         -- parentMatch = 9,
         -- parentDraw = 10,
         -- parentEnd = 11,
@@ -120,9 +140,9 @@ function Service.Initialize(self)
     local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
     -- todo set brain anywhere
     self.game:SetBrains(brain)
-    self.game:SetBrains(brain, true) -- player
+    --self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
-    self.view:Initialize()
+    self.view:Initialize(self)
     self:TransitPhase()
     -- todo skip deciding parent
 end

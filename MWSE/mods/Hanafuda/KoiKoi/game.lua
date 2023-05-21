@@ -71,12 +71,10 @@ end
 ValidateSettings(defaults.settings)
 
 ---comment
----@param data KoiKoi?
 ---@return KoiKoi
-function KoiKoi.new(data)
+function KoiKoi.new()
     ---@type KoiKoi
-    local instance = data and table.copy(data) or {}
-    table.copymissing(instance, defaults)
+    local instance = table.deepcopy(defaults)
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
     return instance

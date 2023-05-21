@@ -21,27 +21,27 @@ function this.Simulate(self, p)
     if p.drawnCard then
         for _, id in ipairs(p.groundPool) do
             if card.CanMatchSuit(p.drawnCard, id) then
-                logger:debug(string.format("match selectedCard = %d, matchedCard = %d", p.drawnCard, id))
+                logger:trace(string.format("match selectedCard = %d, matchedCard = %d", p.drawnCard, id))
                 return { selectedCard = p.drawnCard, matchedCard = id }
             end
         end
-        logger:debug(string.format("discard drawnCard = %d", p.drawnCard))
+        logger:trace(string.format("discard drawnCard = %d", p.drawnCard))
         return { selectedCard = p.drawnCard, matchedCard = nil } -- discard
     else
         for _, hand in ipairs(p.pool.hand) do
             for _, id in ipairs(p.groundPool) do
                 if card.CanMatchSuit(hand, id) then
-                    logger:debug(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
+                    logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
                     return { selectedCard = hand, matchedCard = id }
                 end
             end
         end
         if table.size(p.pool.hand) > 0 then
-            logger:debug(string.format("discard selectedCard = %d", p.pool.hand[1]))
+            logger:trace(string.format("discard selectedCard = %d", p.pool.hand[1]))
             return { selectedCard = p.pool.hand[1], matchedCard = nil } -- discard
         end
     end
-    logger:debug("no hand, no drawn")
+    logger:trace("no hand, no drawn")
     return { selectedCard = nil, matchedCard = nil } -- skip
 end
 
@@ -50,7 +50,7 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
-    logger:debug("always shobu")
+    logger:trace("always shobu")
     return { calling = koi.calling.shobu }
 end
 
