@@ -3,6 +3,7 @@ local card = require("Hanafuda.card")
 local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
+local combo = require("Hanafuda.KoiKoi.combinationView")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 -- with mergin
@@ -11,205 +12,13 @@ local cardLayoutHeight = card.GetCardHeight() + 4
 local enabledCardColor = { 1, 1, 1 }
 local disabledCardColor = { 0.2, 0.2, 0.2 }
 
-local rainman = card.Find({ symbol = card.symbol.rainman }) ---@cast rainman integer
-local curtain = card.Find({ symbol = card.symbol.curtain }) ---@cast curtain integer
-local moon = card.Find({ symbol = card.symbol.moon }) ---@cast moon integer
-local boar = card.Find({ symbol = card.symbol.boar }) ---@cast boar integer
-local deer = card.Find({ symbol = card.symbol.deer }) ---@cast deer integer
-local butterfly = card.Find({ symbol = card.symbol.butterfly }) ---@cast butterfly integer
-local sakeCup = card.Find({ symbol = card.symbol.sakeCup }) ---@cast sakeCup integer
-local redPoetry = card.Find({ symbol = card.symbol.redPoetry, findAll = true }) ---@cast redPoetry integer[]
-local blueRibbon = card.Find({ symbol = card.symbol.blue, findAll = true }) ---@cast blueRibbon integer[]
-assert(rainman)
-assert(curtain)
-assert(moon)
-assert(boar)
-assert(deer)
-assert(butterfly)
-assert(sakeCup)
-assert(redPoetry and table.size(redPoetry) == 3)
-assert(blueRibbon and table.size(blueRibbon) == 3)
-
----@param parent tes3uiElement
----@param combination KoiKoi.CombinationType
----@param actualPoint integer?
----@return tes3uiElement
-local function CreateCombinationView(parent, combination, actualPoint)
-    local header = tes3ui.getPalette(tes3.palette.headerColor)
-    local block = parent:createBlock()
-    block.flowDirection = tes3.flowDirection.topToBottom
-    block.autoWidth = true
-    block.autoHeight = true
-
-    local indent = 12
-
-    ---@param cardIds integer[]
-    local listup = function(cardIds)
-        local pattern = block:createBlock()
-        pattern.autoWidth = true
-        pattern.autoHeight = true
-        pattern.flowDirection = tes3.flowDirection.leftToRight
-        pattern.borderAllSides = 0
-        pattern.borderLeft = indent
-
-        for index, cardId in ipairs(cardIds) do
-            local asset = card.GetCardAsset(cardId)
-            local ref = card.GetCardData(cardId)
-            local b = pattern:createBlock()
-            b.borderAllSides = 0
-            b.autoWidth = true
-            b.autoHeight = true
-            b.flowDirection = tes3.flowDirection.topToBottom
-            b.childAlignX = 0.5
-            local image = b:createImage({ path = asset.path })
-            image.width = card.GetCardWidth() * 0.75
-            image.height = card.GetCardHeight() * 0.75
-            image.scaleMode = true
-            image.consumeMouseEvents = false
-            image.borderAllSides = 2
-            image.flowDirection = tes3.flowDirection.topToBottom
-            -- without card name for layout
-            -- b:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
-            -- local type = b:createLabel({ text = card.GetCardTypeText(ref.type).name })
-            -- type.color = card.GetCardTypeColor(ref.type)
-        end
-        return pattern
-
-    end
-    local desc = {
-        [koi.combination.fiveBrights] = {
-            name = "Goko",
-            point = string.format("%u points.", koi.basePoint[koi.combination.fiveBrights]),
-            condition = string.format("All 5 %s cards.", card.GetCardTypeText(card.type.bright).name),
-        },
-        [koi.combination.fourBrights] = {
-            name = "Shiko",
-            point = string.format("%u points.", koi.basePoint[koi.combination.fourBrights]),
-            condition = string.format("All 4 %s cards without %s.", card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name),
-        },
-        [koi.combination.rainyFourBrights] = {
-            name = "Ame-Shiko",
-            point = string.format("%u points.", koi.basePoint[koi.combination.rainyFourBrights]),
-            condition = string.format("Any 4 %s cards.", card.GetCardTypeText(card.type.bright).name),
-        },
-        [koi.combination.threeBrights] = {
-            name = "Sanko",
-            point = string.format("%u points.", koi.basePoint[koi.combination.threeBrights]),
-            condition = string.format("Any 3 %s cards.", card.GetCardTypeText(card.type.bright).name),
-        },
-        [koi.combination.boarDeerButterfly] = {
-            name = "Ino-Shika-Cho",
-            point = string.format("%u points.", koi.basePoint[koi.combination.boarDeerButterfly]),
-            condition = string.format("%s, %s and %s", card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name),
-        },
-        [koi.combination.animals] = {
-            name = "Tane",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name),
-            condition = string.format("Any five %s cards.", card.GetCardTypeText(card.type.animal).name),
-        },
-        [koi.combination.poetryAndBlueRibbons] = {
-            name = "Akatan-Aotan",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("All 3 Red Poetry %s cards and all 3 Blue %s cards.", card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name),
-        },
-        [koi.combination.poetryRibbons] = {
-            name = "Akatan",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("%s, %s and %s", card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name, card.GetCardText(redPoetry[3]).name),
-        },
-        [koi.combination.blueRibbons] = {
-            name = "Aotan",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("%s, %s and %s", card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name, card.GetCardText(blueRibbon[3]).name),
-        },
-        [koi.combination.ribbons] = {
-            name = "Tan",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("Any 5 %s cards.", card.GetCardTypeText(card.type.ribbon).name),
-        },
-        [koi.combination.flowerViewingSake] = {
-            name = "Hanami de Ippai",
-            point = string.format("%u points.", koi.basePoint[koi.combination.flowerViewingSake]),
-            condition = string.format("%s and %s", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
-        },
-        [koi.combination.moonViewingSake] = {
-            name = "Tsukimi de Ippai",
-            point = string.format("%u points.", koi.basePoint[koi.combination.moonViewingSake]),
-            condition = string.format("%s and %s", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),
-        },
-        [koi.combination.chaff] = {
-            name = "Kasu",
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name),
-            condition = string.format("Any 10 %s cards.", card.GetCardTypeText(card.type.chaff).name),
-        },
-    }
-    local comb = {
-        [koi.combination.fiveBrights] = function()
-            local list = card.Find({type = card.type.bright, findAll = true}) ---@cast list integer[]
-            listup(list)
-        end,
-        [koi.combination.fourBrights] = function()
-            local list = card.Find({type = card.type.bright, findAll = true}) ---@cast list integer[]
-            table.removevalue(list, rainman)
-            listup(list)
-        end,
-        [koi.combination.rainyFourBrights] = function()
-        end,
-        [koi.combination.threeBrights] = function()
-        end,
-        [koi.combination.boarDeerButterfly] = function()
-            local list = {boar, deer, butterfly}
-            listup(list)
-        end,
-        [koi.combination.animals] = function()
-        end,
-        [koi.combination.poetryAndBlueRibbons] = function()
-            local list = {}
-            list = {redPoetry[1], redPoetry[2], redPoetry[3], blueRibbon[1], blueRibbon[2], blueRibbon[3] }
-            listup(list)
-        end,
-        [koi.combination.poetryRibbons] = function()
-            listup(redPoetry)
-        end,
-        [koi.combination.blueRibbons] = function()
-            listup(blueRibbon)
-        end,
-        [koi.combination.ribbons] = function()
-        end,
-        [koi.combination.flowerViewingSake] = function()
-            local list = {curtain, sakeCup}
-            listup(list)
-        end,
-        [koi.combination.moonViewingSake] = function()
-            local list = {moon, sakeCup}
-            listup(list)
-        end,
-        [koi.combination.chaff] = function()
-        end,
-    }
-
-
-    if comb[combination] and desc[combination] then
-        local d = desc[combination]
-        local name = block:createLabel({ text = d.name})
-        name.color = header
-        -- todo if actualPoint
-        -- todo getting table data
-        block:createLabel({ text = d.point }).borderLeft = indent
-        block:createLabel({ text = d.condition }).borderLeft = indent
-
-        comb[combination]()
-    else
-        logger:error("unknown combination %u", combination)
-    end
-    return block
-end
+local cardProperty = "Hanafuda:CardId"
 
 ---@param e uiEventEventData
 local function CreateCombinationList(e)
     -- TODO
     logger:debug("combo help")
-    local menu = tes3ui.createHelpLayerMenu({id = "helpcombo", dragFrame= true })
+    local menu = tes3ui.createHelpLayerMenu({id = "helpcombo", dragFrame = true })
     menu:destroyChildren()
     menu.width = 300
     menu.height = 300
@@ -221,7 +30,7 @@ local function CreateCombinationList(e)
     -- parent.width = 300
     -- parent.height = 300
     for index, value in ipairs(table.values(koi.combination, true)) do
-        CreateCombinationView(menu, value)
+        combo.CreateCombinationView(menu, value)
     end
     menu:updateLayout()
     --pane.widget:contentsChanged()
@@ -340,30 +149,45 @@ end
 local function PutCard(parent, cardId, backface)
     local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
 
-    -- todo child on block for flipping
-    local image = parent:createImage({ path = asset.path })
-    -- image.ignoreLayoutX = true
-    -- image.ignoreLayoutY = true
-    -- image.positionX = 10
-    -- image.positionY = 10
+    local element = parent:createBlock()
+    element.autoWidth = true
+    element.autoHeight = true
+    element.borderAllSides = 2
+    element:setPropertyInt(cardProperty, cardId)
+
+    local image = element:createImage({ path = asset.path })
     image.width = card.GetCardWidth()
     image.height = card.GetCardHeight()
     image.scaleMode = true
-    image.consumeMouseEvents = true
-    image.borderAllSides = 2
-    -- if not image.widget then
-    --     image.widget = {}
-    -- end
-    -- image.widget.cardId = cardId -- i want to embeded...
+    image.consumeMouseEvents = false
 
-    image:register(tes3.uiEvent.help,
+    element:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
         UI.CreateCardTooltip(cardId, backface)
     end)
 
-    return image
+    return element
 end
+
+---@param element tes3uiElement
+---@return tes3uiElement
+local function FlipCard(element)
+    -- or query id to service
+    local cardId = element:getPropertyInt(cardProperty)
+    local asset = card.GetCardAsset(cardId) -- only reveal
+
+    element:destroyChildren()
+
+    local image = element:createImage({ path = asset.path })
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = false
+
+    return element
+end
+
 ---@param parent tes3uiElement
 ---@param deck integer[]
 ---@return tes3uiElement
@@ -393,6 +217,51 @@ local function PutDeck(parent, deck)
     return image
 end
 
+
+---@param element tes3uiElement
+---@param highlight boolean
+local function HighlightCard(element, highlight)
+    -- skip toplevel, it's just block
+    -- if use rect or background image then it is changed too.
+    for key, value in pairs(element.children) do
+        value.color = highlight and enabledCardColor or disabledCardColor
+    end
+end
+
+---@param element tes3uiElement
+local function GrabCard(element)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if table.size(grab.children) > 0 then
+        logger:error("GrabCard but has children")
+        return
+    end
+    grab.disabled = false
+    grab.visible = true
+    -- need to set initial position?
+    local root = element:getTopLevelMenu()
+    -- TODO remove from view or no keeping
+    local to = element:move({ to = grab}) -- safe?
+    -- unregister events?
+    grab:updateLayout()
+    root:updateLayout()
+end
+
+---@param element tes3uiElement
+local function ReleaseCard(element)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if table.size(grab.children) == 0 then
+        logger:error("ReleaseCard but no child")
+        return
+    end
+    grab.disabled = true
+    grab.visible = false
+    local root = element:getTopLevelMenu()
+    local to = grab.children[1]:move({ to = element}) -- currently just one child.
+    -- unregister events?
+    grab:updateLayout()
+    root:updateLayout()
+end
+
 -- fixme Only notification without direct transition is desirable.
 
 ---@param self KoiKoi.UI
@@ -406,9 +275,7 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
         -- highlight matching ground cards
         -- if can then...
         for key, value in pairs(self.groundView.card) do
-            if not card.CanMatchSuit(cardId, key) then
-                value.color = disabledCardColor
-            end
+            HighlightCard(value, card.CanMatchSuit(cardId, key))
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -418,7 +285,7 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
         -- stop highlight
         -- if can then...
         for key, value in pairs(self.groundView.card) do
-            value.color = enabledCardColor
+            HighlightCard(value, true)
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -427,6 +294,8 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
     function(e)
         -- keep highlight
         -- grab card
+        --e.source:getTopLevelMenu():updateLayout()
+        GrabCard(e.source)
     end)
 end
 
@@ -438,6 +307,7 @@ function UI.RegisterHandEvent(self, element, service)
     ---@param e uiEventEventData
     function(e)
         -- cancel, put back card
+        ReleaseCard(e.source)
     end)
 end
 
@@ -452,10 +322,9 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- highlight matching cards
         -- todo opponent (almost backface, but usefull for manual playing)
         -- if can then...
+
         for key, value in pairs(self.playerViews[koi.player.you].card) do
-            if not card.CanMatchSuit(cardId, key) then
-                value.color = disabledCardColor
-            end
+            HighlightCard(value, card.CanMatchSuit(cardId, key))
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -465,7 +334,7 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- stop highlight
         -- if can then...
         for key, value in pairs(self.playerViews[koi.player.you].card) do
-            value.color = enabledCardColor
+            HighlightCard(value, true)
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -474,10 +343,10 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
     function(e)
         -- stop highlight
         -- if can then...
-        for key, value in pairs(self.playerViews[koi.player.you].card) do
-            value.color = enabledCardColor
-        end
-        e.source:getTopLevelMenu():updateLayout()
+        -- for key, value in pairs(self.playerViews[koi.player.you].card) do
+        --     HighlightCard(value, true)
+        -- end
+        -- e.source:getTopLevelMenu():updateLayout()
         -- match and capture
     end)
 end
@@ -986,5 +855,17 @@ function UI.Shutdown(self)
     end
 end
 
+---@param e enterFrameEventData
+function UI:OnEnterFrame(e)
+    -- follow cursor
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if grab and grab.visible and not grab.disabled then
+        local cursor = tes3.getCursorPosition() -- coordinate is same as ui
+        -- TODO need offset by clicking position
+        grab.positionX = cursor.x - grab.width * 0.5
+        grab.positionY = cursor.y + grab.height * 0.5
+        grab:updateLayout()
+    end
+end
 
 return UI

@@ -129,6 +129,8 @@ function Service.OnEnterFrame(self, e)
     if state[self.phase] then
         state[self.phase]()
     end
+    -- after?
+    self.view:OnEnterFrame(e)
 end
 
 local enterFrameCallback = nil ---@type fun(e : enterFrameEventData)?

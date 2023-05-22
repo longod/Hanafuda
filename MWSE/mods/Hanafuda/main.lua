@@ -619,61 +619,8 @@ local function OpenGameMenu(id)
     return menu
 end
 
-
----@param element tes3uiElement
-local function CloseGameMenu(element)
-    playerPool = {}
-    opponentPool = {}
-    groundPool = {}
-    opponentView = {}
-    groundView = {}
-    playerView = {}
-    opponentCardView = {}
-    groundCardView = {}
-    playerCardView = {}
-    element:destroy()
-    local overlayMenu = tes3ui.findHelpLayerMenu(uiid.grabMenu)
-    if overlayMenu then
-        overlayMenu:destroy()
-    end
-end
-
 ---@param _ initializedEventData
 local function OnInitialized(_)
-
-    --[[
-    event.register(tes3.event.keyDown,
-    ---@param e keyDownEventData
-    function(e)
-        local mod = e.isAltDown or e.isControlDown or e.isShiftDown or e.isSuperDown
-        if mod then
-            return
-        end
-        local menu = tes3ui.findMenu(uiid.gameMenu)
-        if menu then
-            CloseGameMenu(menu)
-        else
-            menu = OpenGameMenu(uiid.gameMenu)
-            tes3ui.enterMenuMode(menu.id)
-        end
-
-    end, {filter = tes3.scanCode.k} )
-
-    event.register(tes3.event.enterFrame,
-    ---@param e enterFrameEventData
-    function(e)
-        local overlayMenu = tes3ui.findHelpLayerMenu(uiid.overlayMenu)
-        if overlayMenu and overlayMenu.visible and not overlayMenu.disabled then
-            local cursor = tes3.getCursorPosition() -- coordinate is same as ui
-            -- need offset by clicking position
-            --overlayMenu:updateLayout()
-            overlayMenu.positionX = cursor.x - overlayMenu.width * 0.5
-            overlayMenu.positionY = cursor.y + overlayMenu.height * 0.5
-            overlayMenu:updateLayout()
-        end
-
-    end)
-    ]]--
 
     local service = nil ---@type KoiKoi.Service?
 
