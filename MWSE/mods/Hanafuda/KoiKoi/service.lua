@@ -38,6 +38,8 @@ local phase = {
 ---@field phase KoiKoi.Phase
 ---@field game KoiKoi
 ---@field view KoiKoi.UI
+---@field skipDecidingParent boolean
+---@field skipAnimation boolean
 local Service = {}
 
 ---@param game KoiKoi
@@ -49,6 +51,8 @@ function Service.new(game, view)
         phase = phase.new,
         game = game,
         view = view,
+        skipDecidingParent = true, -- or table flags
+        skipAnimation = true,
     }
     setmetatable(instance, { __index = Service })
     return instance
@@ -82,10 +86,12 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.setupRound] = function()
             self.game:DealInitialCards() -- todo animation
-            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self)
+            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
             self:TransitPhase()
         end,
-        -- dealingInitial
+        [phase.dealingInitial] = function()
+            -- wait for view
+        end,
         [phase.checkLuckyHand] = function()
             -- todo
             self:TransitPhase()
@@ -143,7 +149,7 @@ function Service.Initialize(self)
     --self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
     self.view:Initialize(self)
-    self:TransitPhase()
+    self:TransitPhase(self.skipDecidingParent and phase.decidedParent or nil )
     -- todo skip deciding parent
 end
 

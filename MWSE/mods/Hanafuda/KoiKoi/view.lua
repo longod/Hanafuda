@@ -356,7 +356,6 @@ local function PutCard(parent, cardId, backface)
     -- end
     -- image.widget.cardId = cardId -- i want to embeded...
 
-    -- BUG It crashes when you mouse over it after about 30 seconds of time has elapsed. Even with non-lambda functions. without creating a tooltip.
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
@@ -506,17 +505,20 @@ function UI.RegisterDeckEvent(self, element, service)
 end
 
 
+-- There are two ways to register all the necessary events for controling use CanPerform to decide,
+-- or register and unregister the necessary events in each phase for each phase.
+-- Here, I try to use the CanPerform method as in a general application.
+
 ---@param self KoiKoi.UI
 ---@param parent KoiKoi.Player
 ---@param pools KoiKoi.PlayerPool[]
 ---@param groundPools integer[]
 ---@param deck integer[]
 ---@param service KoiKoi.Service
----@param skipAnimation boolean? -- TODO
+---@param skipAnimation boolean
 function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, skipAnimation)
-    -- animation with coroutine or timer
-    -- todo card animation deck to hand/ground
-    local deal = coroutine.wrap(function()
+    ---@return any
+    local function putCards()
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
         assert(gameMenu)
 
@@ -539,8 +541,10 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 if child == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
-                gameMenu:updateLayout()
-                coroutine.yield(e)
+                if not skipAnimation then
+                    gameMenu:updateLayout()
+                    coroutine.yield(e)
+                end
             end
             -- ground
             for i = start, (start + (initialDealEach-1)) do
@@ -548,8 +552,10 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 local e = PutCard(self.groundView.ground, cardId, false)
                 self.groundView.card[cardId] = e
                 self:RegisterGroundCardEvent(e, cardId, service)
-                gameMenu:updateLayout()
-                coroutine.yield(e)
+                if not skipAnimation then
+                    gameMenu:updateLayout()
+                    coroutine.yield(e)
+                end
             end
             -- parent
             for i = start, (start + (initialDealEach-1)) do
@@ -560,41 +566,54 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 if parent == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
-                gameMenu:updateLayout()
-                coroutine.yield(e)
+                if not skipAnimation then
+                    gameMenu:updateLayout()
+                    coroutine.yield(e)
+                end
             end
         end
+    end
 
-    end)
+    -- BUG Crash when using coroutine with enterFrame event present
 
-    -- There are two ways to register all the necessary events for controling use CanPerform to decide,
-    -- or register and unregister the necessary events in each phase for each phase.
-    -- Here, I try to use the CanPerform method as in a general application.
+    -- animation with coroutine or timer
+    -- todo card animation deck to hand/ground
+    if skipAnimation then
+        putCards()
 
-    timer.start({
-        type = timer.real,
-        ---@param e mwseTimerCallbackData
-        callback = function(e)
-            if deal() == nil then
-                --or infinit and use e.timer.cancel
-                -- notify servic to next phase
-                local e = PutDeck(self.groundView.pile, deck)
+        local e = PutDeck(self.groundView.pile, deck)
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
+        gameMenu:updateLayout()
+        sound.Play(sound.se.putDeck)
+        logger:debug("dealing done")
+        service:TransitPhase()
 
-                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-                assert(gameMenu)
-                gameMenu:updateLayout()
-                sound.Play(sound.se.putDeck)
-                logger:debug("dealing done")
-                service:TransitPhase()
-
-            else
-                sound.Play(sound.se.dealCard)
-            end
-        end,
-        iterations = 8 * 3 + 1, -- cards and endpoint
-        duration = 0.1, -- tweak this
-        persist = false,        -- hmm..perhaps false
-    })
+    else
+        local deal = coroutine.wrap(putCards)
+        timer.start({
+            type = timer.real,
+            ---@param e mwseTimerCallbackData
+            callback = function(e)
+                if deal() == nil then
+                    --or infinit and use e.timer.cancel
+                    -- notify servic to next phase
+                    local e = PutDeck(self.groundView.pile, deck)
+                    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+                    assert(gameMenu)
+                    gameMenu:updateLayout()
+                    sound.Play(sound.se.putDeck)
+                    logger:debug("dealing done")
+                    service:TransitPhase()
+                else
+                    sound.Play(sound.se.dealCard)
+                end
+            end,
+            iterations = 8 * 3 + 1, -- cards and endpoint
+            duration = 0.1,         -- tweak this
+            persist = false,        -- hmm..perhaps false
+        })
+    end
 end
 
 ---@param self KoiKoi.UI
