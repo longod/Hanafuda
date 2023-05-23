@@ -1,4 +1,6 @@
 local logger = require("Hanafuda.logger")
+local koi = require("Hanafuda.KoiKoi.koikoi")
+local card = require("Hanafuda.card")
 
 --umm needs sub phase?
 ---@enum KoiKoi.Phase
@@ -38,6 +40,7 @@ local phase = {
 ---@field phase KoiKoi.Phase
 ---@field game KoiKoi
 ---@field view KoiKoi.UI
+---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
 local Service = {}
@@ -51,6 +54,7 @@ function Service.new(game, view)
         phase = phase.new,
         game = game,
         view = view,
+        drawnCard = nil,
         skipDecidingParent = true, -- or table flags
         skipAnimation = true,
     }
@@ -69,10 +73,31 @@ end
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
+---@param ground boolean
+function Service.Capture(self, cardId, ground)
+    local drawn = self.drawnCard == cardId
+    self.game:Capture(self.game.current, cardId, ground, drawn)
+    if drawn then
+        self.drawnCard = nil
+    end
+end
+
+---@param self KoiKoi.Service
+---@param cardId integer
 ---@return boolean
 function Service.CanDiscard(self, cardId)
     -- todo and check phase
     return self.game:CanDiscard(cardId)
+end
+
+---@param self KoiKoi.Service
+---@param cardId integer
+function Service.Discard(self, cardId)
+    local drawn = self.drawnCard == cardId
+    self.game:Discard(self.game.current, cardId, drawn)
+    if drawn then
+        self.drawnCard = nil
+    end
 end
 
 
@@ -87,9 +112,22 @@ function Service.TransitPhase(self, next)
 end
 
 ---@param self KoiKoi.Service
+---@return boolean
+function Service.CanDrawCard(self)
+    if self.drawnCard == nil and table.size(self.game.deck) > 0 then
+        return true
+    end
+    return false
+end
+
+
+---@param self KoiKoi.Service
 ---@return integer?
 function Service.DrawCard(self)
-    return self.game:DrawCard()
+    if self.drawnCard == nil then
+        self.drawnCard = self.game:DrawCard()
+    end
+    return self.drawnCard
 end
 
 ---comment
@@ -157,7 +195,28 @@ function Service.OnEnterFrame(self, e)
     self.view:OnEnterFrame(e)
 end
 
+---debugging
+---@param self KoiKoi.Service
+function Service.DumpData(self)
+    logger:debug("parent      = " .. tostring(self.game.parent))
+    logger:debug("current     = " .. tostring(self.game.current))
+    logger:debug("drawn       = " .. tostring(self.drawnCard))
+    logger:debug("you         = %d:{%s}", table.size(self.game.pools[koi.player.you].hand), table.concat(self.game.pools[koi.player.you].hand, ", "))
+    logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.bright]), table.concat(self.game.pools[koi.player.you][card.type.bright], ", "))
+    logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.animal]), table.concat(self.game.pools[koi.player.you][card.type.animal], ", "))
+    logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.ribbon]), table.concat(self.game.pools[koi.player.you][card.type.ribbon], ", "))
+    logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.chaff]), table.concat(self.game.pools[koi.player.you][card.type.chaff], ", "))
+    logger:debug("opponent    = %d:{%s}", table.size(self.game.pools[koi.player.opponent].hand), table.concat(self.game.pools[koi.player.opponent].hand, ", "))
+    logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.bright]), table.concat(self.game.pools[koi.player.opponent][card.type.bright], ", "))
+    logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.animal]), table.concat(self.game.pools[koi.player.opponent][card.type.animal], ", "))
+    logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.ribbon]), table.concat(self.game.pools[koi.player.opponent][card.type.ribbon], ", "))
+    logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.chaff]), table.concat(self.game.pools[koi.player.opponent][card.type.chaff], ", "))
+    logger:debug("ground      = %d:{%s}", table.size(self.game.groundPool), table.concat(self.game.groundPool, ", "))
+    logger:debug("deck        = %d:{%s}", table.size(self.game.deck), table.concat(self.game.deck, ", "))
+end
+
 local enterFrameCallback = nil ---@type fun(e : enterFrameEventData)?
+local debugDumpCallback = nil ---@type fun(e : keyDownEventData)?
 
 ---@param self KoiKoi.Service
 function Service.Initialize(self)
@@ -168,7 +227,10 @@ function Service.Initialize(self)
         self:OnEnterFrame(e)
     end
     event.register(tes3.event.enterFrame, enterFrameCallback)
-
+    debugDumpCallback = function (e)
+        self:DumpData()
+    end
+    event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
     local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
     -- todo set brain anywhere
     self.game:SetBrains(brain)
@@ -184,6 +246,10 @@ function Service.Destory(self)
     if enterFrameCallback then
         event.unregister(tes3.event.enterFrame, enterFrameCallback)
         enterFrameCallback = nil
+    end
+    if debugDumpCallback then
+        event.unregister(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
+        debugDumpCallback = nil
     end
     self.view:Shutdown()
     logger:info("Finished Koi-Koi")

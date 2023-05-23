@@ -268,8 +268,8 @@ end
 ---@param drawn boolean -- todo smartway
 function KoiKoi.Discard(self, player, cardId, drawn)
     if cardId then
-        local pool = self.pools[player]
         if not drawn then
+            local pool = self.pools[player]
             logger:trace("removeing ".. tostring(cardId))
             logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)

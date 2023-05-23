@@ -284,21 +284,21 @@ local function GrabCard(element)
 end
 
 ---@param to tes3uiElement
----@return boolean
+---@return tes3uiElement?
 local function ReleaseGrabedCard(to)
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if table.size(grab.children) == 0 then
         logger:error("ReleaseCard but no child")
-        return false
+        return nil
     end
     grab.disabled = true
     grab.visible = false
     local root = to:getTopLevelMenu()
-    local to = grab.children[1]:move({ to = to}) -- currently just one child.
+    local moved = grab.children[1]:move({ to = to}) -- currently just one child.
     -- unregister events?
     grab:updateLayout()
     root:updateLayout()
-    return true
+    return moved
 end
 
 ---@return tes3uiElement?
@@ -359,11 +359,20 @@ end
 
 -- fixme Only notification without direct transition is desirable.
 
+---comment
+---@param element tes3uiElement
+local function UnregisterEvents(element)
+    element:unregister(tes3.uiEvent.mouseOver)
+    element:unregister(tes3.uiEvent.mouseLeave)
+    element:unregister(tes3.uiEvent.mouseClick)
+end
+
 ---@param self KoiKoi.UI
 ---@param element tes3uiElement
 ---@param cardId integer
 ---@param service KoiKoi.Service
 function UI.RegisterHandCardEvent(self, element, cardId, service)
+    UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
@@ -394,6 +403,7 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
         -- keep highlight
         -- grab card
         --e.source:getTopLevelMenu():updateLayout()
+        -- todo can grab
         if GrabCard(e.source) then
             sound.Play(sound.se.pickCard)
         end
@@ -404,10 +414,12 @@ end
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
 function UI.RegisterHandEvent(self, element, service)
+    UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         -- cancel, put back card
+        -- todo if can put (no drawn, self card)
         if ReleaseGrabedCard(e.source) then
             sound.Play(sound.se.putCard)
         end
@@ -419,6 +431,7 @@ end
 ---@param cardId integer
 ---@param service KoiKoi.Service
 function UI.RegisterGroundCardEvent(self, element, cardId, service)
+    UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
@@ -459,17 +472,15 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         if cardId then
             local target = GetCardId(e.source)
             if target and service:CanMatch(cardId, target) then
-                -- -- todo service:Discard(cardId)
-                -- if ReleaseCard(e.source) then
-                --     sound.Play(sound.se.putCard)
-                -- end
+                service:Capture(cardId, false)
+                service:Capture(target, true)
                 -- house rule: multiple captring
                 local grab = GetGrabCard()
                 assert(grab)
                 local root = e.source:getTopLevelMenu()
+                -- todo unregister
                 if CaptureCard(e.source) and CaptureGrabCard() then
                     sound.Play(sound.se.putCard) -- todo
-
                 end
                 root:updateLayout()
             else
@@ -483,22 +494,26 @@ end
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
 function UI.RegisterGroundEvent(self, element, service)
+    UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         -- discard card
-        -- or service:selectedcard
+        -- or service has selectedcard
         local cardId = GetGrabCardId()
         if cardId then
             if service:CanDiscard(cardId) then
-                -- todo service:Discard(cardId)
+                service:Discard(cardId)
                 local root = e.source:getTopLevelMenu()
                 local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
                 local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
                 local g = table.size(g0.children) < table.size(g1.children) and g0 or g1
-                if ReleaseGrabedCard(g) then
+                local moved = ReleaseGrabedCard(g)
+                if moved then
+                    self:RegisterGroundCardEvent(moved, cardId, service)
                     sound.Play(sound.se.putCard)
                 end
+                root:updateLayout()
             else
                 tes3.messageBox("Can't discard this card.")
             end
@@ -519,6 +534,7 @@ end
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
 function UI.RegisterDeckEvent(self, element, service)
+    UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
@@ -526,14 +542,15 @@ function UI.RegisterDeckEvent(self, element, service)
         -- It can grab cards directly after drawing them, -- but it will be difficult to confirm by tooltip or mouseover.
         -- It also makes it difficult to confirm the opponent's draw.
         -- Currently, cards drawn should be placed and then grabbed.
-        -- todo store drawn state
-        local cardId = service:DrawCard()
-        if cardId then
-            local drawn = e.source:getTopLevelMenu():findChild(uiid.boardDrawn)
-            local element = PutCard(drawn, cardId, false)
-            self:RegisterDrawnCardEvent(element, cardId, service)
-            e.source:getTopLevelMenu():updateLayout()
-            sound.Play(sound.se.pickCard)
+        if service:CanDrawCard() then
+            local cardId = service:DrawCard()
+            if cardId then
+                local drawn = e.source:getTopLevelMenu():findChild(uiid.boardDrawn)
+                local element = PutCard(drawn, cardId, false)
+                self:RegisterDrawnCardEvent(element, cardId, service)
+                e.source:getTopLevelMenu():updateLayout()
+                sound.Play(sound.se.pickCard)
+            end
         end
     end)
 end
