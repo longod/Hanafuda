@@ -186,9 +186,34 @@ function KoiKoi.Call(self, player, combination)
     return nil
 end
 
+---@param self KoiKoi
+---@return KoiKoi.Player
 function KoiKoi.SwapPlayer(self)
     self.current = koi.GetOpponent(self.current)
+    return self.current
 end
+
+---@param self KoiKoi
+---@param cardId integer
+---@param targetId integer
+---@return boolean
+function KoiKoi.CanMatch(self, cardId, targetId)
+    -- todo check is in ground?
+    return card.CanMatchSuit(cardId, targetId)
+end
+
+---@param self KoiKoi
+---@param cardId integer
+---@return boolean
+function KoiKoi.CanDiscard(self, cardId)
+    for _, id in pairs(self.groundPool) do
+        if card.CanMatchSuit(cardId, id) then
+            return false
+        end
+    end
+    return true
+end
+
 
 ---@param self KoiKoi
 ---@param player KoiKoi.Player

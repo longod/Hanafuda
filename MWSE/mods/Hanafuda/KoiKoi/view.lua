@@ -36,20 +36,7 @@ local function CreateCombinationList(e)
     --pane.widget:contentsChanged()
 end
 
----@class PlayerView
----@field hand tes3uiElement
----@field [CardType] tes3uiElement
----@field card {[integer] : tes3uiElement} card pool
-
----@class GroundView
----@field pile tes3uiElement
----@field drawn tes3uiElement
----@field ground tes3uiElement
----@field card {[integer] : tes3uiElement} card pool
-
 ---@class KoiKoi.UI
----@field groundView GroundView
----@field playerViews PlayerView[]
 local UI = {}
 
 ---@return KoiKoi.UI
@@ -142,6 +129,17 @@ function UI.InformParent(self, parent)
     end
 end
 
+---@param element tes3uiElement
+---@return integer?
+local function GetCardId(element)
+    local cardId = element:getPropertyInt(cardProperty)
+    if cardId == 0 then
+        logger:error("Tried to get a card ID from a non-card element.")
+        return nil
+    end
+    return cardId
+end
+
 ---@param parent tes3uiElement
 ---@param cardId integer
 ---@param backface boolean
@@ -152,7 +150,7 @@ local function PutCard(parent, cardId, backface)
     local element = parent:createBlock()
     element.autoWidth = true
     element.autoHeight = true
-    element.borderAllSides = 2
+    element.paddingAllSides = 2
     element:setPropertyInt(cardProperty, cardId)
 
     local image = element:createImage({ path = asset.path })
@@ -174,7 +172,8 @@ end
 ---@return tes3uiElement
 local function FlipCard(element)
     -- or query id to service
-    local cardId = element:getPropertyInt(cardProperty)
+    local cardId = GetCardId(element)
+    assert(cardId)
     local asset = card.GetCardAsset(cardId) -- only reveal
 
     element:destroyChildren()
@@ -193,13 +192,11 @@ end
 ---@return tes3uiElement
 local function PutDeck(parent, deck)
     local asset = card.GetCardBackAsset()
-
-    -- todo child for flipping
-    local image = parent:createImage({ path = asset.path })
-    -- image.ignoreLayoutX = true
-    -- image.ignoreLayoutY = true
-    -- image.positionX = 10
-    -- image.positionY = 10
+    local element = parent:createBlock()
+    element.autoWidth = true
+    element.autoHeight = true
+    element.paddingAllSides = 2
+    local image = element:createImage({ path = asset.path })
     image.width = card.GetCardWidth()
     image.height = card.GetCardHeight()
     image.scaleMode = true
@@ -228,38 +225,98 @@ local function HighlightCard(element, highlight)
     end
 end
 
----@param element tes3uiElement
-local function GrabCard(element)
+---@param from tes3uiElement
+---@return boolean
+local function GrabCard(from)
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if table.size(grab.children) > 0 then
         logger:error("GrabCard but has children")
-        return
+        return false
     end
     grab.disabled = false
     grab.visible = true
     -- need to set initial position?
-    local root = element:getTopLevelMenu()
+    local root = from:getTopLevelMenu()
     -- TODO remove from view or no keeping
-    local to = element:move({ to = grab}) -- safe?
+    local to = from:move({ to = grab}) -- safe?
     -- unregister events?
     grab:updateLayout()
     root:updateLayout()
+    return true
 end
 
----@param element tes3uiElement
-local function ReleaseCard(element)
+---@param to tes3uiElement
+---@return boolean
+local function ReleaseGrabedCard(to)
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if table.size(grab.children) == 0 then
         logger:error("ReleaseCard but no child")
-        return
+        return false
     end
     grab.disabled = true
     grab.visible = false
-    local root = element:getTopLevelMenu()
-    local to = grab.children[1]:move({ to = element}) -- currently just one child.
+    local root = to:getTopLevelMenu()
+    local to = grab.children[1]:move({ to = to}) -- currently just one child.
     -- unregister events?
     grab:updateLayout()
     root:updateLayout()
+    return true
+end
+
+---@return tes3uiElement?
+local function GetGrabCard()
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if not grab.visible or grab.disabled then
+        return nil
+    end
+    if table.size(grab.children) == 0 then
+        return nil
+    end
+    return grab.children[1]
+end
+
+---@return integer?
+local function GetGrabCardId()
+    local grab = GetGrabCard()
+    if grab then
+        return GetCardId(grab)
+    end
+    return nil
+end
+
+---@param element tes3uiElement
+local function CaptureCard(element)
+    local cardId = GetCardId(element)
+    assert(cardId)
+    -- todo player or ooponent
+    local destid = {
+        [card.type.bright] = uiid.playerBright,
+        [card.type.animal] = uiid.playerAnimal,
+        [card.type.ribbon] = uiid.playerRibbon,
+        [card.type.chaff] = uiid.playerChaff,
+    }
+
+    local type = card.GetCardData(cardId).type
+    local dest = destid[type]
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local to = gameMenu:findChild(dest)
+
+    local moved = element:move({ to = to })
+    -- TODO unregister
+
+    return moved
+end
+
+local function CaptureGrabCard()
+    local element = GetGrabCard()
+    assert(element)
+    local moved = CaptureCard(element)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    grab.disabled = true
+    grab.visible = false
+    grab:updateLayout()
+    return moved
 end
 
 -- fixme Only notification without direct transition is desirable.
@@ -274,8 +331,12 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
     function(e)
         -- highlight matching ground cards
         -- if can then...
-        for key, value in pairs(self.groundView.card) do
-            HighlightCard(value, card.CanMatchSuit(cardId, key))
+        local ground = e.source:getTopLevelMenu():findChild(uiid.boardGround)
+        for _, value in pairs(ground.children) do
+            local id = GetCardId(value)
+            if id then
+                HighlightCard(value, card.CanMatchSuit(cardId, id))
+            end
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -284,7 +345,8 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
     function(e)
         -- stop highlight
         -- if can then...
-        for key, value in pairs(self.groundView.card) do
+        local ground = e.source:getTopLevelMenu():findChild(uiid.boardGround)
+        for _, value in pairs(ground.children) do
             HighlightCard(value, true)
         end
         e.source:getTopLevelMenu():updateLayout()
@@ -295,7 +357,9 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
         -- keep highlight
         -- grab card
         --e.source:getTopLevelMenu():updateLayout()
-        GrabCard(e.source)
+        if GrabCard(e.source) then
+            sound.Play(sound.se.pickCard)
+        end
     end)
 end
 
@@ -307,7 +371,9 @@ function UI.RegisterHandEvent(self, element, service)
     ---@param e uiEventEventData
     function(e)
         -- cancel, put back card
-        ReleaseCard(e.source)
+        if ReleaseGrabedCard(e.source) then
+            sound.Play(sound.se.putCard)
+        end
     end)
 end
 
@@ -322,9 +388,12 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- highlight matching cards
         -- todo opponent (almost backface, but usefull for manual playing)
         -- if can then...
-
-        for key, value in pairs(self.playerViews[koi.player.you].card) do
-            HighlightCard(value, card.CanMatchSuit(cardId, key))
+        local hand = e.source:getTopLevelMenu():findChild(uiid.playerHand)
+        for _, value in pairs(hand.children) do
+            local id = GetCardId(value)
+            if id then
+                HighlightCard(value, card.CanMatchSuit(cardId, id))
+            end
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
@@ -333,7 +402,8 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
     function(e)
         -- stop highlight
         -- if can then...
-        for key, value in pairs(self.playerViews[koi.player.you].card) do
+        local hand = e.source:getTopLevelMenu():findChild(uiid.playerHand)
+        for key, value in pairs(hand.children) do
             HighlightCard(value, true)
         end
         e.source:getTopLevelMenu():updateLayout()
@@ -348,6 +418,27 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- end
         -- e.source:getTopLevelMenu():updateLayout()
         -- match and capture
+        local cardId = GetGrabCardId()
+        if cardId then
+            local target = GetCardId(e.source)
+            if target and service:CanMatch(cardId, target) then
+                -- -- todo service:Discard(cardId)
+                -- if ReleaseCard(e.source) then
+                --     sound.Play(sound.se.putCard)
+                -- end
+                -- house rule: multiple captring
+                local grab = GetGrabCard()
+                assert(grab)
+                local root = e.source:getTopLevelMenu()
+                if CaptureCard(e.source) and CaptureGrabCard() then
+                    sound.Play(sound.se.putCard) -- todo
+
+                end
+                root:updateLayout()
+            else
+                tes3.messageBox("Can't match this card with ...")
+            end
+        end
     end)
 end
 
@@ -359,6 +450,18 @@ function UI.RegisterGroundEvent(self, element, service)
     ---@param e uiEventEventData
     function(e)
         -- discard card
+        -- or service:selectedcard
+        local cardId = GetGrabCardId()
+        if cardId then
+            if service:CanDiscard(cardId) then
+                -- todo service:Discard(cardId)
+                if ReleaseGrabedCard(e.source) then
+                    sound.Play(sound.se.putCard)
+                end
+            else
+                tes3.messageBox("Can't discard this card.")
+            end
+        end
     end)
 end
 
@@ -394,6 +497,14 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
         local back = parent ~= koi.player.you
         local child = koi.GetOpponent(parent)
 
+        local ground = gameMenu:findChild(uiid.boardGround)
+        local ph = gameMenu:findChild(uiid.playerHand)
+        local oh = gameMenu:findChild(uiid.opponentHand)
+        local childHand = child == koi.player.you and ph or oh
+        local parentHand = child == koi.player.you and oh or ph
+
+
+        -- todo use from service settings
         local initialCards = 8
         local initialDealEach = 2
         -- must be no fraction
@@ -403,10 +514,9 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             -- child
             for i = start, (start + (initialDealEach-1)) do
                 --logger:trace(i)
-                local view = self.playerViews[child].hand
+                local view = childHand
                 local cardId = pools[child].hand[i]
                 local e = PutCard(view, cardId, not back)
-                self.playerViews[child].card[cardId] = e
                 if child == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
@@ -418,8 +528,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             -- ground
             for i = start, (start + (initialDealEach-1)) do
                 local cardId = groundPools[i]
-                local e = PutCard(self.groundView.ground, cardId, false)
-                self.groundView.card[cardId] = e
+                local e = PutCard(ground, cardId, false)
                 self:RegisterGroundCardEvent(e, cardId, service)
                 if not skipAnimation then
                     gameMenu:updateLayout()
@@ -428,10 +537,9 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             end
             -- parent
             for i = start, (start + (initialDealEach-1)) do
-                local view = self.playerViews[parent].hand
+                local view = parentHand
                 local cardId = pools[parent].hand[i]
                 local e = PutCard(view, cardId, back)
-                self.playerViews[parent].card[cardId] = e
                 if parent == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
@@ -447,12 +555,14 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
 
     -- animation with coroutine or timer
     -- todo card animation deck to hand/ground
+
     if skipAnimation then
         putCards()
 
-        local e = PutDeck(self.groundView.pile, deck)
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
         assert(gameMenu)
+        local pile = gameMenu:findChild(uiid.boardPile)
+        local e = PutDeck(pile, deck)
         gameMenu:updateLayout()
         sound.Play(sound.se.putDeck)
         logger:debug("dealing done")
@@ -467,9 +577,10 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                 if deal() == nil then
                     --or infinit and use e.timer.cancel
                     -- notify servic to next phase
-                    local e = PutDeck(self.groundView.pile, deck)
                     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
                     assert(gameMenu)
+                    local pile = gameMenu:findChild(uiid.boardPile)
+                    local e = PutDeck(pile, deck)
                     gameMenu:updateLayout()
                     sound.Play(sound.se.putDeck)
                     logger:debug("dealing done")
@@ -559,7 +670,7 @@ local function CreateTypeArea(parent, id, type)
     area.height = cardLayoutHeight
     area.flowDirection = tes3.flowDirection.leftToRight
     area.alpha = 0.25
-    area.paddingAllSides = 2
+    --area.paddingAllSides = 2
     area.childAlignY = 0.5
     area:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
@@ -575,15 +686,14 @@ end
 local function CreateTypeFrame(parent)
     local frame = parent:createThinBorder()
     frame.widthProportional = 1
-    frame.minHeight = cardLayoutHeight
-    frame.height = cardLayoutHeight
+    frame.minHeight = cardLayoutHeight + 2
+    frame.height = cardLayoutHeight + 2
     frame.flowDirection = tes3.flowDirection.leftToRight
     frame.paddingAllSides = 2
     return frame
 end
 
 ---@param parent tes3uiElement
----@return tes3uiElement
 local function CreateHandView(parent, id, height)
     local border = parent:createThinBorder()
     border.widthProportional = 1
@@ -599,11 +709,9 @@ local function CreateHandView(parent, id, height)
     hand.childAlignY = 0.5
     hand.minWidth= cardLayoutWidth * 8
     hand.minHeight = cardLayoutHeight
-    return hand
 end
 
 ---@param parent tes3uiElement
----@return GroundView
 local function CreateBoard(parent, height)
     local area = parent:createBlock()
     area.widthProportional = 1
@@ -646,11 +754,9 @@ local function CreateBoard(parent, height)
     ground.minWidth = cardLayoutWidth * 8 -- fixme double rows and use 4
     ground.minHeight = cardLayoutHeight * 2
 
-    return { pile = pile, drawn = drawn, ground = ground }
 end
 
 ---@param parent tes3uiElement
----@return PlayerView
 local function CreateYourCaptured(parent)
     local captured = parent:createBlock()
     captured.widthProportional = 1
@@ -668,21 +774,10 @@ local function CreateYourCaptured(parent)
     local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.playerAnimal, card.type.animal)
     local ribbon = CreateTypeArea(CreateTypeFrame(captured), uiid.playerRibbon, card.type.ribbon)
     local chaff = CreateTypeArea(CreateTypeFrame(captured), uiid.playerChaff, card.type.chaff)
-    bright.childAlignX = 1.0
-    animal.childAlignX = 1.0
-    ribbon.childAlignX = 1.0
-    chaff.childAlignX = 1.0
-    return {
-        -- hand later
-        [card.type.bright] = bright,
-        [card.type.animal] = animal,
-        [card.type.ribbon] = ribbon,
-        [card.type.chaff] = chaff,
-    }
+
 end
 
 ---@param parent tes3uiElement
----@return PlayerView
 local function CreateOpponentCaptured(parent)
     local captured = parent:createBlock()
     captured.widthProportional = 1
@@ -702,14 +797,6 @@ local function CreateOpponentCaptured(parent)
     block.widthProportional = 1
     block.autoHeight = true
     local label = block:createLabel({text="Opponent's Captured Cards"}) -- todo name
-
-    return {
-        -- hand later
-        [card.type.bright] = bright,
-        [card.type.animal] = animal,
-        [card.type.ribbon] = ribbon,
-        [card.type.chaff] = chaff,
-    }
 end
 
 local function CreateInfo(parent)
@@ -742,7 +829,7 @@ function UI.OpenGameMenu(self, id, service)
     local menu = tes3ui.createMenu({ id = id, fixedFrame = true })
     menu:destroyChildren()
     --menu.disabled = true
-    local borderSize = 4
+    local borderSize = 0
     menu.absolutePosAlignX = 0.5
 	menu.absolutePosAlignY = 0.5
     menu.borderAllSides = borderSize
@@ -790,9 +877,8 @@ function UI.OpenGameMenu(self, id, service)
 
     CreateInfo(left)
 
-    self.playerViews = {}
-    self.playerViews[koi.player.opponent] = CreateOpponentCaptured(right)
-    self.playerViews[koi.player.you] = CreateYourCaptured(right)
+    CreateOpponentCaptured(right)
+    CreateYourCaptured(right)
 
     local board = center:createRect()
     board.color = { 0.0, 0.0, 0.0 }
@@ -800,18 +886,13 @@ function UI.OpenGameMenu(self, id, service)
     board.widthProportional = 1
     board.heightProportional = 1
     board.flowDirection = tes3.flowDirection.topToBottom
-    self.playerViews[koi.player.opponent].hand = CreateHandView(board, uiid.opponentHand, 0.75)
-    self.groundView = CreateBoard(board, 1.5)
-    self.playerViews[koi.player.you].hand = CreateHandView(board, uiid.playerHand, 0.75)
+    CreateHandView(board, uiid.opponentHand, 0.75)
+    CreateBoard(board, 1.5)
+    CreateHandView(board, uiid.playerHand, 0.75)
 
-    -- allocate card table
-    self.groundView.card = {}
-    self.playerViews[koi.player.opponent].card = {}
-    self.playerViews[koi.player.you].card = {}
-
-    self:RegisterHandEvent(self.playerViews[koi.player.opponent].hand, service)
-    self:RegisterHandEvent(self.playerViews[koi.player.you].hand, service)
-    self:RegisterGroundEvent(self.groundView.ground, service)
+    self:RegisterHandEvent(board:findChild(uiid.opponentHand), service)
+    self:RegisterHandEvent(board:findChild(uiid.playerHand), service)
+    self:RegisterGroundEvent(board:findChild(uiid.boardGround), service)
 
     menu:updateLayout()
     -- getting actual size

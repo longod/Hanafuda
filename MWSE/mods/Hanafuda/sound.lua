@@ -9,7 +9,9 @@ local this = {}
 this.se = {
     dealCard = 1,
     putDeck = 2,
-    turnBegin = 3,
+    pickCard = 3,
+    putCard = 4,
+    turnBegin = 5,
 }
 ---@enum VoiceId
 this.voice = {
@@ -41,6 +43,8 @@ local soundData = {
     -- Menu Size
     [this.se.dealCard] = { sound = "book page2" },
     [this.se.putDeck] = { sound = "book close" },
+    [this.se.pickCard] = { sound = "book page" },
+    [this.se.putCard] = { sound = "book page2" },
     [this.se.turnBegin] = { sound = "Silt_2" },
 }
 local voiceData = {

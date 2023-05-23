@@ -59,6 +59,24 @@ function Service.new(game, view)
 end
 
 ---@param self KoiKoi.Service
+---@param cardId integer
+---@param targetId integer
+---@return boolean
+function Service.CanMatch(self, cardId, targetId)
+    -- todo and check phase
+    return self.game:CanMatch(cardId, targetId)
+end
+
+---@param self KoiKoi.Service
+---@param cardId integer
+---@return boolean
+function Service.CanDiscard(self, cardId)
+    -- todo and check phase
+    return self.game:CanDiscard(cardId)
+end
+
+
+---@param self KoiKoi.Service
 ---@param next KoiKoi.Phase?
 ---@return KoiKoi.Phase
 function Service.TransitPhase(self, next)

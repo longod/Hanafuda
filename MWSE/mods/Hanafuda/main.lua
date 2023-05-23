@@ -201,7 +201,6 @@ local function CreateFrame(parent)
 end
 
 ---@param parent tes3uiElement
----@return PlayerView
 local function CreateOpponentArea(parent)
     local opponent = parent:createBlock()
     opponent.widthProportional = 1
@@ -242,7 +241,6 @@ local function CreateOpponentArea(parent)
 end
 
 ---@param parent tes3uiElement
----@return PlayerView
 local function CreatePlayerArea(parent)
     local player = parent:createBlock()
     player.widthProportional = 1
@@ -283,7 +281,6 @@ end
 
 
 ---@param parent tes3uiElement
----@return GroundView
 local function CreateBoard(parent)
     local area = parent:createBlock()
     area.widthProportional = 1
