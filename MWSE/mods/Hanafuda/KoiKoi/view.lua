@@ -225,9 +225,9 @@ local function HighlightCard(element, highlight)
     end
 end
 
----@param from tes3uiElement
+---@param element tes3uiElement
 ---@return boolean
-local function GrabCard(from)
+local function GrabCard(element)
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if table.size(grab.children) > 0 then
         logger:error("GrabCard but has children")
@@ -236,10 +236,30 @@ local function GrabCard(from)
     grab.disabled = false
     grab.visible = true
     -- need to set initial position?
-    local root = from:getTopLevelMenu()
-    -- TODO remove from view or no keeping
-    local to = from:move({ to = grab}) -- safe?
+    local root = element:getTopLevelMenu()
+
+    -- calculate absolute position
+    -- not use cursor position for AI playing
+    local x = element.positionX
+    local y = element.positionY
+    local p = element.parent
+    while p do
+        x = x + p.positionX
+        y = y + p.positionY
+        p = p.parent
+    end
+    -- transform to screen space
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    x = x + viewportWidth * 0.5
+    y = y - viewportHeight * 0.5
+
+    local to = element:move({ to = grab})
     -- unregister events?
+
+    -- initial position
+    grab.positionX = x
+    grab.positionY = y
+
     grab:updateLayout()
     root:updateLayout()
     return true
@@ -467,12 +487,33 @@ end
 
 ---@param self KoiKoi.UI
 ---@param element tes3uiElement
+---@param cardId integer
+---@param service KoiKoi.Service
+function UI.RegisterDrawnCardEvent(self, element, cardId, service)
+    -- currently same
+    self:RegisterHandCardEvent(element, cardId, service)
+end
+
+---@param self KoiKoi.UI
+---@param element tes3uiElement
 ---@param service KoiKoi.Service
 function UI.RegisterDeckEvent(self, element, service)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         -- draw card
+        -- It can grab cards directly after drawing them, -- but it will be difficult to confirm by tooltip or mouseover.
+        -- It also makes it difficult to confirm the opponent's draw.
+        -- Currently, cards drawn should be placed and then grabbed.
+        -- todo store drawn state
+        local cardId = service:DrawCard()
+        if cardId then
+            local drawn = e.source:getTopLevelMenu():findChild(uiid.boardDrawn)
+            local element = PutCard(drawn, cardId, false)
+            self:RegisterDrawnCardEvent(element, cardId, service)
+            e.source:getTopLevelMenu():updateLayout()
+            sound.Play(sound.se.pickCard)
+        end
     end)
 end
 
@@ -563,6 +604,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
         assert(gameMenu)
         local pile = gameMenu:findChild(uiid.boardPile)
         local e = PutDeck(pile, deck)
+        self:RegisterDeckEvent(e, service)
         gameMenu:updateLayout()
         sound.Play(sound.se.putDeck)
         logger:debug("dealing done")
@@ -581,6 +623,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                     assert(gameMenu)
                     local pile = gameMenu:findChild(uiid.boardPile)
                     local e = PutDeck(pile, deck)
+                    self:RegisterDeckEvent(e, service)
                     gameMenu:updateLayout()
                     sound.Play(sound.se.putDeck)
                     logger:debug("dealing done")

@@ -86,6 +86,12 @@ function Service.TransitPhase(self, next)
     return self.phase
 end
 
+---@param self KoiKoi.Service
+---@return integer?
+function Service.DrawCard(self)
+    return self.game:DrawCard()
+end
+
 ---comment
 ---@param self KoiKoi.Service
 ---@param e enterFrameEventData

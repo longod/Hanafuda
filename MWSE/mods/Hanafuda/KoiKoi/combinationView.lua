@@ -138,7 +138,7 @@ function this.CreateCombinationView(parent, combination, actualPoint)
             condition = string.format("Any 10 %s cards.", card.GetCardTypeText(card.type.chaff).name),
         },
     }
-    local comb = {
+    local combo = {
         [koi.combination.fiveBrights] = function()
             local list = card.Find({type = card.type.bright, findAll = true}) ---@cast list integer[]
             listup(list)
@@ -183,7 +183,7 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         end,
     }
 
-    if comb[combination] and desc[combination] then
+    if combo[combination] and desc[combination] then
         local d = desc[combination]
         local name = block:createLabel({ text = d.name})
         name.color = header
@@ -192,7 +192,7 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         block:createLabel({ text = d.point }).borderLeft = indent
         block:createLabel({ text = d.condition }).borderLeft = indent
 
-        comb[combination]()
+        combo[combination]()
     else
         logger:error("unknown combination %u", combination)
     end

@@ -138,6 +138,13 @@ function KoiKoi.DealInitialCards(self)
 end
 
 ---@param self KoiKoi
+---@return integer?
+function KoiKoi.DrawCard(self)
+    return card.DealCard(self.deck)
+end
+
+
+---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param drawnCardId integer?
 ---@return KoiKoi.MatchCommand?
@@ -220,9 +227,9 @@ end
 ---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
-    local comb = combination.Calculate(pool)
+    local combo = combination.Calculate(pool)
     local latest = self.combinations[player]
-    return comb
+    return combo
 end
 
 ---@param self KoiKoi
