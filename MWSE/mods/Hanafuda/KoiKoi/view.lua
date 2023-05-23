@@ -225,6 +225,24 @@ local function HighlightCard(element, highlight)
     end
 end
 
+---@param parent tes3uiElement
+---@param cardId integer
+local function HighlightCards(parent, cardId)
+    for _, value in pairs(parent.children) do
+        local id = GetCardId(value)
+        if id then
+            HighlightCard(value, card.CanMatchSuit(cardId, id))
+        end
+    end
+end
+
+---@param parent tes3uiElement
+local function ResetHighlightCards(parent)
+    for _, value in pairs(parent.children) do
+        HighlightCard(value, true)
+    end
+end
+
 ---@param element tes3uiElement
 ---@return boolean
 local function GrabCard(element)
@@ -351,25 +369,24 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
     function(e)
         -- highlight matching ground cards
         -- if can then...
-        local ground = e.source:getTopLevelMenu():findChild(uiid.boardGround)
-        for _, value in pairs(ground.children) do
-            local id = GetCardId(value)
-            if id then
-                HighlightCard(value, card.CanMatchSuit(cardId, id))
-            end
-        end
-        e.source:getTopLevelMenu():updateLayout()
+        local root = e.source:getTopLevelMenu()
+        local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
+        local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+        HighlightCards(g0, cardId)
+        HighlightCards(g1, cardId)
+        root:updateLayout()
     end)
     element:register(tes3.uiEvent.mouseLeave,
     ---@param e uiEventEventData
     function(e)
         -- stop highlight
         -- if can then...
-        local ground = e.source:getTopLevelMenu():findChild(uiid.boardGround)
-        for _, value in pairs(ground.children) do
-            HighlightCard(value, true)
-        end
-        e.source:getTopLevelMenu():updateLayout()
+        local root = e.source:getTopLevelMenu()
+        local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
+        local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+        ResetHighlightCards(g0)
+        ResetHighlightCards(g1)
+        root:updateLayout()
     end)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -475,7 +492,11 @@ function UI.RegisterGroundEvent(self, element, service)
         if cardId then
             if service:CanDiscard(cardId) then
                 -- todo service:Discard(cardId)
-                if ReleaseGrabedCard(e.source) then
+                local root = e.source:getTopLevelMenu()
+                local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
+                local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+                local g = table.size(g0.children) < table.size(g1.children) and g0 or g1
+                if ReleaseGrabedCard(g) then
                     sound.Play(sound.se.putCard)
                 end
             else
@@ -538,7 +559,8 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
         local back = parent ~= koi.player.you
         local child = koi.GetOpponent(parent)
 
-        local ground = gameMenu:findChild(uiid.boardGround)
+        local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+        local g1 = gameMenu:findChild(uiid.boardGroundRow1)
         local ph = gameMenu:findChild(uiid.playerHand)
         local oh = gameMenu:findChild(uiid.opponentHand)
         local childHand = child == koi.player.you and ph or oh
@@ -569,7 +591,8 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             -- ground
             for i = start, (start + (initialDealEach-1)) do
                 local cardId = groundPools[i]
-                local e = PutCard(ground, cardId, false)
+                local view = (i % 2 == 0) and g1 or g0
+                local e = PutCard(view, cardId, false)
                 self:RegisterGroundCardEvent(e, cardId, service)
                 if not skipAnimation then
                     gameMenu:updateLayout()
@@ -719,7 +742,7 @@ local function CreateTypeArea(parent, id, type)
     ---@param e uiEventEventData
     function(e)
         local tooltip = tes3ui.createTooltipMenu()
-        local label = tooltip:createLabel({ text = "combination description here" })
+        local label = tooltip:createLabel({ text = card.GetCardTypeText(type).name .. " description here" })
     end)
     return area
 end
@@ -761,6 +784,7 @@ local function CreateBoard(parent, height)
     area.heightProportional = height
     area.flowDirection = tes3.flowDirection.leftToRight
 
+    -- todo tweak layout
     local border = area:createBlock()
     -- for placement dealing card or vertical placement
     border.minWidth = cardLayoutWidth
@@ -786,17 +810,36 @@ local function CreateBoard(parent, height)
     drawn.childAlignX = 0.5
     drawn.childAlignY = 0.5
 
-    -- todo double rows
-    local ground = area:createBlock({id = uiid.boardGround })
-    ground.widthProportional = 1
-    ground.heightProportional = 1
-    ground.flowDirection = tes3.flowDirection.leftToRight
-    --ground.paddingAllSides = 2
-    ground.childAlignX = 0.5
-    ground.childAlignY = 0.5
-    ground.minWidth = cardLayoutWidth * 8 -- fixme double rows and use 4
-    ground.minHeight = cardLayoutHeight * 2
+    -- double rows
+    local block = area:createBlock()
+    -- block.minWidth = cardLayoutWidth * 4
+    -- block.minHeight = cardLayoutHeight * 2
+    block.widthProportional = 1
+    block.heightProportional = 1
+    block.flowDirection = tes3.flowDirection.topToBottom
 
+    ---@param parent tes3uiElement
+    ---@param id number
+    local function CreateGround(parent, id)
+        local ground = parent:createBlock({id = id })
+        ground.widthProportional = 1
+        ground.heightProportional = 1
+        ground.flowDirection = tes3.flowDirection.leftToRight
+        --ground.paddingAllSides = 2
+        ground.childAlignX = 0.5
+        ground.childAlignY = 0.5
+        -- ground.minWidth = cardLayoutWidth * 4 -- double rows and use 4
+        -- ground.minHeight = cardLayoutHeight * 2
+        -- min value affect childAlign, why?
+        return ground
+    end
+
+    local ground = CreateGround(block, uiid.boardGroundRow0)
+    ground.childAlignY = 1.0
+    ground = CreateGround(block, uiid.boardGroundRow1)
+    ground.childAlignY = 0.0
+    -- ground.minWidth = cardLayoutWidth * 4 -- double rows and use 4
+    -- ground.minHeight = cardLayoutHeight * 2
 end
 
 ---@param parent tes3uiElement
@@ -935,7 +978,8 @@ function UI.OpenGameMenu(self, id, service)
 
     self:RegisterHandEvent(board:findChild(uiid.opponentHand), service)
     self:RegisterHandEvent(board:findChild(uiid.playerHand), service)
-    self:RegisterGroundEvent(board:findChild(uiid.boardGround), service)
+    self:RegisterGroundEvent(board:findChild(uiid.boardGroundRow0), service)
+    self:RegisterGroundEvent(board:findChild(uiid.boardGroundRow1), service)
 
     menu:updateLayout()
     -- getting actual size
