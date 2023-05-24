@@ -2,7 +2,6 @@ local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
 
---umm needs sub phase?
 ---@enum KoiKoi.Phase
 local phase = {
     new = 1,
@@ -15,27 +14,14 @@ local phase = {
     beginTurn = 8,
     matchCard = 9,
     drawCard = 10,
-    endTurn = 11,
-    -- roundSetup = 3,
-    -- parentTurnBegin = 1,
-    -- parentMatch = 1,
-    -- parentDraw = 1,
-    -- parentPlace = 1,
-    -- parentCollect = 1,
-    -- parentTurnEnd = 1,
-    -- childTurnBegin = 1,
-    -- childMatch = 1,
-    -- childDraw = 1,
-    -- childPlace = 1,
-    -- childCollect = 1,
-    -- childTurnEnd = 1,
-    -- roundFinish = 1,
-    -- finish = 1,
+    checkCombo = 11,
+    calling = 12,
+    endTurn = 13,
+    noMatch = 14,
+    roundFinish = 15,
 
-    -- waot state -- todo maybe need transition wait time
+    -- wait state -- todo maybe need transition wait time
 }
-
-
 
 --- aka controller
 ---@class KoiKoi.Service
@@ -116,7 +102,7 @@ end
 ---@param self KoiKoi.Service
 ---@return boolean
 function Service.CanDrawCard(self)
-    if self.drawnCard == nil and table.size(self.game.deck) > 0 then
+    if self.drawnCard == nil and not self.game:EmptyDeck() then
         return true
     end
     return false
@@ -185,6 +171,10 @@ function Service.OnEnterFrame(self, e)
             --self:TransitPhase()
         end,
         [phase.matchCard] = function()
+            if self.game:EmptyHand(self.game.current) then
+                self:TransitPhase()
+                return
+            end
             local command = self.game:Simulate(self.game.current, nil)
             if command then
                 -- todo com:Execute()
@@ -203,11 +193,53 @@ function Service.OnEnterFrame(self, e)
                 --self:Next()
             end
         end,
-
-        -- parentMatch = 9,
-        -- parentDraw = 10,
-        -- parentEnd = 11,
-
+        [phase.drawCard] = function()
+            -- TODO draw card if non human
+            local command = self.game:Simulate(self.game.current, nil)
+            if command then
+                -- todo com:Execute()
+                -- todo view
+                if command.selectedCard and command.matchedCard then
+                    -- match
+                    self.game:Capture(self.game.current, command.selectedCard, false, true)
+                    self.game:Capture(self.game.current, command.matchedCard, true, true)
+                elseif not command.matchedCard then
+                    -- discard
+                    self.game:Discard(self.game.current, command.selectedCard, true)
+                else
+                    -- skip
+                end
+                --self.drawnCard = nil
+                --self:Next()
+            end
+        end,
+        [phase.checkCombo] = function()
+            local combo = self.game:CheckCombination(self.game.current)
+            -- fixme if called koi-koi the combination is subtract before combination
+            if combo then
+                self.view:ShowCallingDialog(self.game.current, self) -- todo and combo
+                self:TransitPhase(phase.calling)
+            else
+                -- no comb
+                self:TransitPhase(phase.endTurn)
+            end
+        end,
+        [phase.calling] = function()
+        end,
+        [phase.endTurn] = function()
+            if self.game:CheckEnd() then
+                self:TransitPhase(phase.noMatch)
+            else
+                -- todo self.game:SwapPlayer()
+                self:TransitPhase(phase.beginTurn)
+            end
+        end,
+        [phase.noMatch] = function()
+            -- draw or parent win (house rule)
+        end,
+        [phase.roundFinish] = function()
+            -- win current player
+        end,
     }
     --logger:trace("phase ".. tostring(self.phase) )
     if state[self.phase] then
@@ -220,6 +252,7 @@ end
 ---debugging
 ---@param self KoiKoi.Service
 function Service.DumpData(self)
+    logger:debug("phase      = " .. tostring(self.phase))
     logger:debug("parent      = " .. tostring(self.game.parent))
     logger:debug("current     = " .. tostring(self.game.current))
     logger:debug("drawn       = " .. tostring(self.drawnCard))
@@ -283,5 +316,14 @@ function Service.DecideParent(self, leftRight)
     self.game:DecideParent(leftRight)
     self:TransitPhase()
 end
+
+function Service.KoiKoi(self)
+    self:TransitPhase(phase.endTurn)
+end
+
+function Service.Shobu(self)
+    self:TransitPhase(phase.roundFinish)
+end
+
 
 return Service

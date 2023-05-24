@@ -66,31 +66,11 @@ function this.Run(self)
             end
         end,
         [2] = function()
-            -- todo cache
-            -- fixme if called koi-koi the combination is subtract before combination
-            local combo = self.game:CheckCombination(self.game.current)
-            if combo then
-                local command = self.game:Call(self.game.current, combo) -- todo send combination list
-                if command then
-                    if command.calling == koi.calling.koikoi then
-                        -- continue
-                        self:Next()
-                    elseif command.calling == koi.calling.shobu then
-                        -- finish
-                        self:Next(100) -- fixme temp
-                    end
-                end
-            else
-                -- no comb
-                self:Next()
-            end
-        end,
-        [3] = function()
             -- state is optimizable
             self.drawnCard = card.DealCard(self.game.deck)
             self:Next()
         end,
-        [4] = function()
+        [3] = function()
             local command = self.game:Simulate(self.game.current, self.drawnCard)
             if command then
                 -- todo com:Execute()
@@ -108,7 +88,7 @@ function this.Run(self)
                 self:Next()
             end
         end,
-        [5] = function()
+        [4] = function()
             -- todo cache
             -- fixme if called koi-koi the combination is subtract before combination
             local combo = self.game:CheckCombination(self.game.current)
@@ -128,7 +108,7 @@ function this.Run(self)
                 self:Next()
             end
         end,
-        [6] = function()
+        [5] = function()
             if self.game:CheckEnd() then
                 self:Next(100) -- fixme temp
             else

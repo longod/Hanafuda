@@ -47,18 +47,21 @@ function UI.new()
     return instance
 end
 
-function UI.ShowCallingDialog()
+---@param self KoiKoi.UI
+---@param player KoiKoi.Player
+---@param service KoiKoi.Service
+function UI.ShowCallingDialog(self, player, service)
     tes3ui.showMessageMenu({
         -- id = "Calling",
         header = "Calling",
         message = "here scoring combinations",
         buttons = {
-            -- todo tooltips
             {
+                -- todo condition, if deck 0 is disable
                 text = "Koi-koi",
                 callback = function()
                     sound.PlayVoice(sound.voice.continue, "", false)
-
+                    service:KoiKoi()
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -70,6 +73,7 @@ function UI.ShowCallingDialog()
                 callback = function()
                     -- todo
                     sound.PlayVoice(sound.voice.finish, "", false)
+                    service:Shobu()
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -77,6 +81,7 @@ function UI.ShowCallingDialog()
                 end
             },
         }
+        -- , customBlock combination list
     })
 end
 
@@ -501,6 +506,7 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
                 UnregisterEvents(moved0)
                 UnregisterEvents(moved1)
                 root:updateLayout()
+                service:TransitPhase()
             else
                 tes3.messageBox("Can't match this card with ...")
             end
@@ -533,6 +539,7 @@ function UI.RegisterGroundEvent(self, element, service)
                     sound.Play(sound.se.putCard)
                 end
                 root:updateLayout()
+                service:TransitPhase()
             else
                 tes3.messageBox("Can't discard this card.")
             end

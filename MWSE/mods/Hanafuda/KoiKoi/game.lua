@@ -284,12 +284,26 @@ end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param cardId integer?
+---@return boolean
 function KoiKoi.HasCard(self, player, cardId)
     if cardId then
         local pool = self.pools[player]
         return table.find(pool.hand, cardId) ~= nil
     end
     return false
+end
+
+---@param self KoiKoi
+---@return boolean
+function KoiKoi.EmptyDeck(self)
+    return table.size(self.deck) == 0 -- use empty better
+end
+
+---@param self KoiKoi
+---@param player KoiKoi.Player
+---@return boolean
+function KoiKoi.EmptyHand(self, player)
+    return table.size(self.pools[player].hand) == 0 -- use empty better
 end
 
 return KoiKoi
