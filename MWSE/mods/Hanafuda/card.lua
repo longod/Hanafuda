@@ -206,17 +206,37 @@ end
 ---@field type CardType?
 ---@field symbol CardSymbol?
 ---@field findAll boolean?
+---@field orMatch boolean?
 
 ---@param params Card.Find.Params
 ---@return integer|integer[]?
 function this.Find(params)
     local matched = {}
     for index, ref in ipairs(cardReferenceData) do
-        if params.suit ~= nil and params.suit ~= ref.suit then
-        elseif params.type ~= nil and params.type ~= ref.type then
-        elseif params.symbol ~= nil and params.symbol ~= ref.symbol then
+        local matchSuit = params.suit == nil
+        local matchType = params.type == nil
+        local matchSymbol = params.symbol == nil
+        if params.orMatch then
+            matchSuit = false
+            matchType = false
+            matchSymbol = false
+        end
+        if params.suit ~= nil and params.suit == ref.suit then
+            matchSuit = true
+        end
+        if params.type ~= nil and params.type == ref.type then
+            matchType = true
+        end
+        if params.symbol ~= nil and params.symbol == ref.symbol then
+            matchSymbol = true
+        end
+        local match = false
+        if params.orMatch then
+            match = matchSuit or matchType or matchSymbol
         else
-            -- find
+            match = matchSuit and matchType and matchSymbol
+        end
+        if match then
             if params.findAll then
                 table.insert(matched, index)
             else
