@@ -281,4 +281,15 @@ function KoiKoi.Discard(self, player, cardId, drawn)
     return false
 end
 
+---@param self KoiKoi
+---@param player KoiKoi.Player
+---@param cardId integer?
+function KoiKoi.HasCard(self, player, cardId)
+    if cardId then
+        local pool = self.pools[player]
+        return table.find(pool.hand, cardId) ~= nil
+    end
+    return false
+end
+
 return KoiKoi

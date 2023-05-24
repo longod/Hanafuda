@@ -184,6 +184,8 @@ local function FlipCard(element)
     image.scaleMode = true
     image.consumeMouseEvents = false
 
+    -- todo register/unregister event
+
     return element
 end
 
@@ -217,7 +219,7 @@ end
 
 ---@param element tes3uiElement
 ---@param highlight boolean
-local function HighlightCard(element, highlight)
+local function SetCardColor(element, highlight)
     -- skip toplevel, it's just block
     -- if use rect or background image then it is changed too.
     for key, value in pairs(element.children) do
@@ -231,7 +233,7 @@ local function HighlightCards(parent, cardId)
     for _, value in pairs(parent.children) do
         local id = GetCardId(value)
         if id then
-            HighlightCard(value, card.CanMatchSuit(cardId, id))
+            SetCardColor(value, card.CanMatchSuit(cardId, id))
         end
     end
 end
@@ -239,7 +241,7 @@ end
 ---@param parent tes3uiElement
 local function ResetHighlightCards(parent)
     for _, value in pairs(parent.children) do
-        HighlightCard(value, true)
+        SetCardColor(value, true)
     end
 end
 
@@ -341,8 +343,6 @@ local function CaptureCard(element)
     local to = gameMenu:findChild(dest)
 
     local moved = element:move({ to = to })
-    -- TODO unregister
-
     return moved
 end
 
@@ -360,8 +360,11 @@ end
 -- fixme Only notification without direct transition is desirable.
 
 ---comment
----@param element tes3uiElement
+---@param element tes3uiElement?
 local function UnregisterEvents(element)
+    if not element then
+        return
+    end
     element:unregister(tes3.uiEvent.mouseOver)
     element:unregister(tes3.uiEvent.mouseLeave)
     element:unregister(tes3.uiEvent.mouseClick)
@@ -373,39 +376,42 @@ end
 ---@param service KoiKoi.Service
 function UI.RegisterHandCardEvent(self, element, cardId, service)
     UnregisterEvents(element)
+
     element:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
         -- highlight matching ground cards
         -- if can then...
         local root = e.source:getTopLevelMenu()
-        local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
-        local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+        local g0 = root:findChild(uiid.boardGroundRow0)
+        local g1 = root:findChild(uiid.boardGroundRow1)
         HighlightCards(g0, cardId)
         HighlightCards(g1, cardId)
         root:updateLayout()
     end)
+
     element:register(tes3.uiEvent.mouseLeave,
     ---@param e uiEventEventData
     function(e)
         -- stop highlight
         -- if can then...
         local root = e.source:getTopLevelMenu()
-        local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
-        local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+        local g0 = root:findChild(uiid.boardGroundRow0)
+        local g1 = root:findChild(uiid.boardGroundRow1)
         ResetHighlightCards(g0)
         ResetHighlightCards(g1)
         root:updateLayout()
     end)
+
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         -- keep highlight
         -- grab card
-        --e.source:getTopLevelMenu():updateLayout()
-        -- todo can grab
-        if GrabCard(e.source) then
-            sound.Play(sound.se.pickCard)
+        if service:CanGrabCard(cardId) then
+            if GrabCard(e.source) then -- sync serivice?
+                sound.Play(sound.se.pickCard)
+            end
         end
     end)
 end
@@ -415,13 +421,19 @@ end
 ---@param service KoiKoi.Service
 function UI.RegisterHandEvent(self, element, service)
     UnregisterEvents(element)
+
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         -- cancel, put back card
-        -- todo if can put (no drawn, self card)
-        if ReleaseGrabedCard(e.source) then
-            sound.Play(sound.se.putCard)
+        -- or service has selectedcard
+        local cardId = GetGrabCardId()
+        if cardId then
+            if service:CanPutbackCard(cardId) then
+                if ReleaseGrabedCard(e.source) then -- sync serivice?
+                    sound.Play(sound.se.putCard)
+                end
+            end
         end
     end)
 end
@@ -432,6 +444,7 @@ end
 ---@param service KoiKoi.Service
 function UI.RegisterGroundCardEvent(self, element, cardId, service)
     UnregisterEvents(element)
+
     element:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
@@ -442,11 +455,12 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         for _, value in pairs(hand.children) do
             local id = GetCardId(value)
             if id then
-                HighlightCard(value, card.CanMatchSuit(cardId, id))
+                SetCardColor(value, card.CanMatchSuit(cardId, id))
             end
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
+
     element:register(tes3.uiEvent.mouseLeave,
     ---@param e uiEventEventData
     function(e)
@@ -454,10 +468,11 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- if can then...
         local hand = e.source:getTopLevelMenu():findChild(uiid.playerHand)
         for key, value in pairs(hand.children) do
-            HighlightCard(value, true)
+            SetCardColor(value, true)
         end
         e.source:getTopLevelMenu():updateLayout()
     end)
+
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
@@ -468,20 +483,23 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         -- end
         -- e.source:getTopLevelMenu():updateLayout()
         -- match and capture
-        local cardId = GetGrabCardId()
-        if cardId then
-            local target = GetCardId(e.source)
-            if target and service:CanMatch(cardId, target) then
-                service:Capture(cardId, false)
+        local grab = GetGrabCardId()
+        if grab then
+            local target = GetCardId(e.source) -- or use cardId
+            if target and service:CanMatch(grab, target) then
+                service:Capture(grab, false)
                 service:Capture(target, true)
                 -- house rule: multiple captring
                 local grab = GetGrabCard()
                 assert(grab)
                 local root = e.source:getTopLevelMenu()
-                -- todo unregister
-                if CaptureCard(e.source) and CaptureGrabCard() then
+                local moved0 = CaptureCard(e.source)
+                local moved1 = CaptureGrabCard()
+                if moved0 and moved1 then
                     sound.Play(sound.se.putCard) -- todo
                 end
+                UnregisterEvents(moved0)
+                UnregisterEvents(moved1)
                 root:updateLayout()
             else
                 tes3.messageBox("Can't match this card with ...")
@@ -495,6 +513,7 @@ end
 ---@param service KoiKoi.Service
 function UI.RegisterGroundEvent(self, element, service)
     UnregisterEvents(element)
+
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
@@ -804,25 +823,30 @@ local function CreateBoard(parent, height)
     -- todo tweak layout
     local border = area:createBlock()
     -- for placement dealing card or vertical placement
-    border.minWidth = cardLayoutWidth
-    border.minHeight = cardLayoutHeight * 2
-    border.autoWidth = true
+    -- border.minWidth = cardLayoutWidth
+    -- border.minHeight = cardLayoutHeight * 2
+    --border.autoWidth = true
+    border.width = cardLayoutWidth * 2
     border.heightProportional = 1
     border.flowDirection = tes3.flowDirection.topToBottom
     --border.paddingAllSides = 2
     border.childAlignX = 0.5
     border.childAlignY = 0.5
     local pile = border:createBlock({id = uiid.boardPile })
-    pile.width = cardLayoutWidth * 2
-    pile.minWidth = cardLayoutWidth
-    pile.minHeight = cardLayoutHeight * 2
+    --pile.width = cardLayoutWidth * 2
+    --pile.minWidth = cardLayoutWidth*2
+    -- pile.minHeight = cardLayoutHeight * 2
+    --pile.autoWidth = true -- why?
+    pile.widthProportional = 1
     pile.heightProportional = 1
     pile.childAlignX = 0.5
     pile.childAlignY = 0.5
     local drawn = border:createBlock({id = uiid.boardDrawn })
-    drawn.width = cardLayoutWidth * 2
-    drawn.minWidth = cardLayoutWidth
-    drawn.minHeight = cardLayoutHeight * 2
+    --drawn.width = cardLayoutWidth * 2
+    --drawn.minWidth = cardLayoutWidth*2
+    -- drawn.minHeight = cardLayoutHeight * 2
+    --drawn.autoWidth = true -- why?
+    drawn.widthProportional = 1
     drawn.heightProportional = 1
     drawn.childAlignX = 0.5
     drawn.childAlignY = 0.5

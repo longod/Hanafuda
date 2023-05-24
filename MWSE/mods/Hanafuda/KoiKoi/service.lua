@@ -31,6 +31,8 @@ local phase = {
     -- childTurnEnd = 1,
     -- roundFinish = 1,
     -- finish = 1,
+
+    -- waot state -- todo maybe need transition wait time
 }
 
 
@@ -129,6 +131,26 @@ function Service.DrawCard(self)
     end
     return self.drawnCard
 end
+
+---@param self KoiKoi.Service
+---@param cardId integer
+---@return boolean
+function Service.CanGrabCard(self, cardId)
+    -- todo and check phase
+    if self.drawnCard and self.drawnCard == cardId then
+        return true
+    end
+    return self.game:HasCard(self.game.current, cardId)
+end
+
+---@param self KoiKoi.Service
+---@param cardId integer
+---@return boolean
+function Service.CanPutbackCard(self, cardId)
+    -- todo and check phase
+    return self.game:HasCard(self.game.current, cardId)
+end
+
 
 ---comment
 ---@param self KoiKoi.Service
