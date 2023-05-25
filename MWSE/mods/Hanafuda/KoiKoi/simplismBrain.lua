@@ -20,7 +20,7 @@ end
 function this.Simulate(self, p)
     if p.drawnCard then
         for _, id in ipairs(p.groundPool) do
-            if card.CanMatchSuit(p.drawnCard, id) then
+            if koi.CanMatchSuit(p.drawnCard, id) then
                 logger:trace(string.format("match selectedCard = %d, matchedCard = %d", p.drawnCard, id))
                 return { selectedCard = p.drawnCard, matchedCard = id }
             end
@@ -30,7 +30,7 @@ function this.Simulate(self, p)
     else
         for _, hand in ipairs(p.pool.hand) do
             for _, id in ipairs(p.groundPool) do
-                if card.CanMatchSuit(hand, id) then
+                if koi.CanMatchSuit(hand, id) then
                     logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
                     return { selectedCard = hand, matchedCard = id }
                 end

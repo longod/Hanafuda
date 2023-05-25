@@ -238,7 +238,7 @@ local function HighlightCards(parent, cardId)
     for _, value in pairs(parent.children) do
         local id = GetCardId(value)
         if id then
-            SetCardColor(value, card.CanMatchSuit(cardId, id))
+            SetCardColor(value, koi.CanMatchSuit(cardId, id))
         end
     end
 end
@@ -460,7 +460,7 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
         for _, value in pairs(hand.children) do
             local id = GetCardId(value)
             if id then
-                SetCardColor(value, card.CanMatchSuit(cardId, id))
+                SetCardColor(value, koi.CanMatchSuit(cardId, id))
             end
         end
         e.source:getTopLevelMenu():updateLayout()
@@ -506,7 +506,7 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
                 UnregisterEvents(moved0)
                 UnregisterEvents(moved1)
                 root:updateLayout()
-                service:TransitPhase()
+                service:MatchedCards()
             else
                 tes3.messageBox("Can't match this card with ...")
             end
@@ -539,7 +539,7 @@ function UI.RegisterGroundEvent(self, element, service)
                     sound.Play(sound.se.putCard)
                 end
                 root:updateLayout()
-                service:TransitPhase()
+                service:DiscardCard()
             else
                 tes3.messageBox("Can't discard this card.")
             end
@@ -674,7 +674,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
         gameMenu:updateLayout()
         sound.Play(sound.se.putDeck)
         logger:debug("dealing done")
-        service:TransitPhase()
+        service:DealedInitialCards()
 
     else
         local deal = coroutine.wrap(putCards)
@@ -693,7 +693,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                     gameMenu:updateLayout()
                     sound.Play(sound.se.putDeck)
                     logger:debug("dealing done")
-                    service:TransitPhase()
+                    service:DealedInitialCards()
                 else
                     sound.Play(sound.se.dealCard)
                 end
@@ -719,7 +719,7 @@ function UI.BeginTurn(self, player, parent, service)
     end
     tes3.messageBox("%s Turn", getname(player, parent))
     -- todo jingle
-    service:TransitPhase()
+    service:BeganTurn()
 end
 
 ---@param cardId integer

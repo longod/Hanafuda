@@ -1,3 +1,5 @@
+local card = require("Hanafuda.card")
+
 --- Koi-Koi types
 local this = {}
 
@@ -66,4 +68,12 @@ function this.GetOpponent(player)
     end
     assert()
 end
+
+---@param cardId0 integer
+---@param cardId1 integer
+---@return boolean
+function this.CanMatchSuit(cardId0, cardId1)
+    return card.GetCardData(cardId0).suit == card.GetCardData(cardId1).suit
+end
+
 return this

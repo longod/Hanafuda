@@ -88,7 +88,8 @@ function Service.Discard(self, cardId)
     end
 end
 
-
+-- TODO need delay after end of everyframe, and waiting for game speed.
+--- if it was called before main simulation logic, it is possible mismatch phase.
 ---@param self KoiKoi.Service
 ---@param next KoiKoi.Phase?
 ---@return KoiKoi.Phase
@@ -171,6 +172,7 @@ function Service.OnEnterFrame(self, e)
             --self:TransitPhase()
         end,
         [phase.matchCard] = function()
+            -- Generally, this condition is not true. The deck is empty at the same time then game end. It occurs if player play simgle.
             if self.game:EmptyHand(self.game.current) then
                 self:TransitPhase()
                 return
@@ -317,13 +319,36 @@ function Service.DecideParent(self, leftRight)
     self:TransitPhase()
 end
 
+---@param self KoiKoi.Service
+function Service.DealedInitialCards(self)
+    self:TransitPhase(phase.checkLuckyHand)
+end
+
+---@param self KoiKoi.Service
+function Service.BeganTurn(self)
+    self:TransitPhase(phase.matchCard)
+end
+
+---@param self KoiKoi.Service
+function Service.MatchedCards(self)
+    -- match or draw
+    self:TransitPhase()
+end
+
+---@param self KoiKoi.Service
+function Service.DiscardCard(self)
+    -- match or draw
+    self:TransitPhase()
+end
+
+---@param self KoiKoi.Service
 function Service.KoiKoi(self)
     self:TransitPhase(phase.endTurn)
 end
 
+---@param self KoiKoi.Service
 function Service.Shobu(self)
     self:TransitPhase(phase.roundFinish)
 end
-
 
 return Service

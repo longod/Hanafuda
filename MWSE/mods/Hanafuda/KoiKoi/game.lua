@@ -206,7 +206,7 @@ end
 ---@return boolean
 function KoiKoi.CanMatch(self, cardId, targetId)
     -- todo check is in ground?
-    return card.CanMatchSuit(cardId, targetId)
+    return koi.CanMatchSuit(cardId, targetId)
 end
 
 ---@param self KoiKoi
@@ -214,7 +214,7 @@ end
 ---@return boolean
 function KoiKoi.CanDiscard(self, cardId)
     for _, id in pairs(self.groundPool) do
-        if card.CanMatchSuit(cardId, id) then
+        if koi.CanMatchSuit(cardId, id) then
             return false
         end
     end
