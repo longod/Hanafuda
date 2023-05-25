@@ -61,7 +61,7 @@ function UI.ShowCallingDialog(self, player, service)
                 text = "Koi-koi",
                 callback = function()
                     sound.PlayVoice(sound.voice.continue, "", false)
-                    service:KoiKoi()
+                    service:NotifyKoiKoi()
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -73,7 +73,7 @@ function UI.ShowCallingDialog(self, player, service)
                 callback = function()
                     -- todo
                     sound.PlayVoice(sound.voice.finish, "", false)
-                    service:Shobu()
+                    service:NotifyShobu()
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -363,6 +363,7 @@ local function CaptureCard(element, player)
     local to = gameMenu:findChild(dest)
 
     local moved = element:move({ to = to })
+    SetCardColor(moved, true)
     return moved
 end
 
@@ -523,7 +524,7 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
                 UnregisterEvents(moved0)
                 UnregisterEvents(moved1)
                 root:updateLayout()
-                service:MatchedCards()
+                service:NotifyMatchedCards()
             else
                 tes3.messageBox("Can't match this card with ...")
             end
@@ -556,7 +557,7 @@ function UI.RegisterGroundEvent(self, element, service)
                     sound.Play(sound.se.putCard)
                 end
                 root:updateLayout()
-                service:DiscardCard()
+                service:NotifyDiscardCard()
             else
                 tes3.messageBox("Can't discard this card.")
             end
@@ -691,7 +692,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
         gameMenu:updateLayout()
         sound.Play(sound.se.putDeck)
         logger:debug("dealing done")
-        service:DealedInitialCards()
+        service:NotifyDealedInitialCards()
 
     else
         local deal = coroutine.wrap(putCards)
@@ -710,7 +711,7 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
                     gameMenu:updateLayout()
                     sound.Play(sound.se.putDeck)
                     logger:debug("dealing done")
-                    service:DealedInitialCards()
+                    service:NotifyDealedInitialCards()
                 else
                     sound.Play(sound.se.dealCard)
                 end
@@ -773,7 +774,7 @@ function UI.Capture(self, service, player, selectedCard, matchedCard, drawn, ski
     UnregisterEvents(moved0)
     UnregisterEvents(moved1)
     gameMenu:updateLayout()
-    service:MatchedCards() -- correct usage?
+    service:NotifyMatchedCards() -- correct usage?
 
 end
 
@@ -819,7 +820,7 @@ function UI.Discard(self, service, player, selectedCard, drawn, skipAnimation)
 
     sound.Play(sound.se.putCard)
 
-    service:DiscardCard() -- correct usage?
+    service:NotifyDiscardCard() -- correct usage?
 end
 
 ---@param self KoiKoi.UI
@@ -856,7 +857,7 @@ function UI.BeginTurn(self, player, parent, service)
     end
     tes3.messageBox("%s Turn", getname(player, parent))
     -- todo jingle
-    service:BeganTurn()
+    service:NotifyBeganTurn()
 end
 
 ---@param cardId integer

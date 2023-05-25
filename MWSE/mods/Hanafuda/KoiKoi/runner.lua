@@ -93,7 +93,7 @@ function this.Run(self)
             -- fixme if called koi-koi the combination is subtract before combination
             local combo = self.game:CheckCombination(self.game.current)
             if combo then
-                local command = self.game:Call(self.game.current, combo) -- todo send combination list
+                local command = self.game:Call(self.game.current, combo)
                 if command then
                     if command.calling == koi.calling.koikoi then
                         -- continue

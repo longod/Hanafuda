@@ -13,11 +13,11 @@ local phase = {
     checkLuckyHand = 7,
     beginTurn = 8,
     matchCard = 9, -- rename
-    matchingCard = 10, -- rename
-    drawingCard = 11, -- rename
-    drawingCard2 = 12, -- rename
-    drawCard = 13, -- rename
-    drawnCard = 14, -- rename
+    matchCardWait = 10, -- rename
+    drawCard = 11, -- rename
+    drawCardWait = 12, -- rename
+    matchDrawCard = 13, -- rename
+    matchDrawCardWait = 14, -- rename
     checkCombo = 15,
     calling = 16,
     endTurn = 17,
@@ -178,7 +178,7 @@ function Service.OnEnterFrame(self, e)
         [phase.matchCard] = function()
             -- Generally, this condition is not true. The deck is empty at the same time then game end. It occurs if player play simgle.
             if self.game:EmptyHand(self.game.current) then
-                self:TransitPhase(phase.drawCard)
+                self:TransitPhase(phase.matchDrawCard)
                 return
             end
             local command = self.game:Simulate(self.game.current, nil)
@@ -204,9 +204,9 @@ function Service.OnEnterFrame(self, e)
                 -- thinking or no brain
             end
         end,
-        [phase.matchingCard] = function()
+        [phase.matchCardWait] = function()
         end,
-        [phase.drawingCard] = function()
+        [phase.drawCard] = function()
             if self.game.brains[self.game.current] then
                 local draw = self:DrawCard()
                 assert(draw)
@@ -214,13 +214,13 @@ function Service.OnEnterFrame(self, e)
                 self.view:Draw(self, self.game.current, draw, self.skipAnimation)
             else
                 -- draw? prepare for view
-                self:TransitPhase(phase.drawCard)
+                self:TransitPhase(phase.matchDrawCard)
             end
         end,
-        [phase.drawingCard2] = function()
+        [phase.drawCardWait] = function()
             -- waiting...
         end,
-        [phase.drawCard] = function()
+        [phase.matchDrawCard] = function()
             -- TODO draw card if non human
             local command = self.game:Simulate(self.game.current, self.drawnCard)
             if command then
@@ -252,7 +252,11 @@ function Service.OnEnterFrame(self, e)
             local combo = self.game:CheckCombination(self.game.current)
             -- fixme if called koi-koi the combination is subtract before combination
             if combo then
-                self.view:ShowCallingDialog(self.game.current, self) -- todo and combo
+                if self.game.brains[self.game.current] then
+                    -- todo message? or other notify
+                else
+                    self.view:ShowCallingDialog(self.game.current, self) -- todo and combo
+                end
                 self:TransitPhase(phase.calling)
             else
                 -- no comb
@@ -260,6 +264,16 @@ function Service.OnEnterFrame(self, e)
             end
         end,
         [phase.calling] = function()
+            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current]) -- fixme use accessor
+            if command then
+                if command.calling == koi.calling.koikoi then
+                    -- todo view
+                    self:NotifyKoiKoi()
+                elseif command.calling == koi.calling.shobu then
+                    -- todo view
+                    self:NotifyShobu()
+                end
+            end
         end,
         [phase.endTurn] = function()
             if self.game:CheckEnd() then
@@ -326,6 +340,7 @@ function Service.Initialize(self)
     self.game:SetBrains(brain)
     --self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
+    self.game.current = koi.player.opponent -- testing
     self.view:Initialize(self)
     self:TransitPhase(self.skipDecidingParent and phase.decidedParent or nil )
     -- todo skip deciding parent
@@ -353,41 +368,41 @@ function Service.DecideParent(self, leftRight)
 end
 
 ---@param self KoiKoi.Service
-function Service.DealedInitialCards(self)
+function Service.NotifyDealedInitialCards(self)
     self:TransitPhase(phase.checkLuckyHand)
 end
 
 ---@param self KoiKoi.Service
-function Service.BeganTurn(self)
+function Service.NotifyBeganTurn(self)
     self:TransitPhase(phase.matchCard)
 end
 
 ---@param self KoiKoi.Service
-function Service.MatchedCards(self)
+function Service.NotifyMatchedCards(self)
     -- match or draw
-    local match = self.phase == phase.matchCard or self.phase == phase.matchingCard -- hmm...
-    self:TransitPhase(match and phase.drawingCard or phase.checkCombo)
+    local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
+    self:TransitPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
-function Service.DiscardCard(self)
+function Service.NotifyDiscardCard(self)
     -- match or draw
-    local match = self.phase == phase.matchCard or self.phase == phase.matchingCard -- hmm...
-    self:TransitPhase(match and phase.drawingCard or phase.checkCombo)
+    local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
+    self:TransitPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDrawCard(self)
-    self:TransitPhase(phase.drawCard)
+    self:TransitPhase(phase.matchDrawCard)
 end
 
 ---@param self KoiKoi.Service
-function Service.KoiKoi(self)
+function Service.NotifyKoiKoi(self)
     self:TransitPhase(phase.endTurn)
 end
 
 ---@param self KoiKoi.Service
-function Service.Shobu(self)
+function Service.NotifyShobu(self)
     self:TransitPhase(phase.roundFinish)
 end
 

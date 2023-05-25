@@ -229,7 +229,12 @@ function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
     local combo = combination.Calculate(pool)
     local latest = self.combinations[player]
-    return combo
+    local diff = combination.Different(combo, latest)
+    if diff then
+        self.combinations[player] = combo
+        return combo
+    end
+    return nil
 end
 
 ---@param self KoiKoi
