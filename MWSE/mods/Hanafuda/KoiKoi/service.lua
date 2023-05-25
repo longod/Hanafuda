@@ -12,13 +12,17 @@ local phase = {
     dealingInitial = 6,
     checkLuckyHand = 7,
     beginTurn = 8,
-    matchCard = 9,
-    drawCard = 10,
-    checkCombo = 11,
-    calling = 12,
-    endTurn = 13,
-    noMatch = 14,
-    roundFinish = 15,
+    matchCard = 9, -- rename
+    matchingCard = 10, -- rename
+    drawingCard = 11, -- rename
+    drawingCard2 = 12, -- rename
+    drawCard = 13, -- rename
+    drawnCard = 14, -- rename
+    checkCombo = 15,
+    calling = 16,
+    endTurn = 17,
+    noMatch = 18,
+    roundFinish = 19,
 
     -- wait state -- todo maybe need transition wait time
 }
@@ -174,45 +178,74 @@ function Service.OnEnterFrame(self, e)
         [phase.matchCard] = function()
             -- Generally, this condition is not true. The deck is empty at the same time then game end. It occurs if player play simgle.
             if self.game:EmptyHand(self.game.current) then
-                self:TransitPhase()
+                self:TransitPhase(phase.drawCard)
                 return
             end
             local command = self.game:Simulate(self.game.current, nil)
             if command then
                 -- todo com:Execute()
                 -- todo view
+                self:TransitPhase() -- wait for view
+
                 if command.selectedCard and command.matchedCard then
                     -- match
-                    self.game:Capture(self.game.current, command.selectedCard, false, true)
-                    self.game:Capture(self.game.current, command.matchedCard, true, true)
+                    self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, false, self.skipAnimation)
+                    self:Capture(command.selectedCard, false)
+                    self:Capture(command.matchedCard, true)
                 elseif not command.matchedCard then
                     -- discard
-                    self.game:Discard(self.game.current, command.selectedCard, true)
+                    self.view:Discard(self, self.game.current, command.selectedCard, false, self.skipAnimation)
+                    self:Discard(command.selectedCard)
                 else
-                    -- skip
+                    -- skip?
                 end
                 --self.drawnCard = nil
-                --self:Next()
+            else
+                -- thinking or no brain
             end
+        end,
+        [phase.matchingCard] = function()
+        end,
+        [phase.drawingCard] = function()
+            if self.game.brains[self.game.current] then
+                local draw = self:DrawCard()
+                assert(draw)
+                self:TransitPhase() -- wait for view
+                self.view:Draw(self, self.game.current, draw, self.skipAnimation)
+            else
+                -- draw? prepare for view
+                self:TransitPhase(phase.drawCard)
+            end
+        end,
+        [phase.drawingCard2] = function()
+            -- waiting...
         end,
         [phase.drawCard] = function()
             -- TODO draw card if non human
-            local command = self.game:Simulate(self.game.current, nil)
+            local command = self.game:Simulate(self.game.current, self.drawnCard)
             if command then
                 -- todo com:Execute()
                 -- todo view
+                self:TransitPhase() -- wait for view
+
                 if command.selectedCard and command.matchedCard then
                     -- match
-                    self.game:Capture(self.game.current, command.selectedCard, false, true)
-                    self.game:Capture(self.game.current, command.matchedCard, true, true)
+                    self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, true, self.skipAnimation)
+                    self:Capture(command.selectedCard, false)
+                    self:Capture(command.matchedCard, true)
+                    assert(not self.drawnCard)
                 elseif not command.matchedCard then
                     -- discard
-                    self.game:Discard(self.game.current, command.selectedCard, true)
+                    self.view:Discard(self, self.game.current, command.selectedCard, true, self.skipAnimation)
+                    self:Discard(command.selectedCard)
+                    assert(not self.drawnCard)
                 else
-                    -- skip
+                    -- skip?
                 end
-                --self.drawnCard = nil
+
                 --self:Next()
+            else
+                -- thinking or no brain
             end
         end,
         [phase.checkCombo] = function()
@@ -232,7 +265,7 @@ function Service.OnEnterFrame(self, e)
             if self.game:CheckEnd() then
                 self:TransitPhase(phase.noMatch)
             else
-                -- todo self.game:SwapPlayer()
+                self.game:SwapPlayer()
                 self:TransitPhase(phase.beginTurn)
             end
         end,
@@ -332,13 +365,20 @@ end
 ---@param self KoiKoi.Service
 function Service.MatchedCards(self)
     -- match or draw
-    self:TransitPhase()
+    local match = self.phase == phase.matchCard or self.phase == phase.matchingCard -- hmm...
+    self:TransitPhase(match and phase.drawingCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.DiscardCard(self)
     -- match or draw
-    self:TransitPhase()
+    local match = self.phase == phase.matchCard or self.phase == phase.matchingCard -- hmm...
+    self:TransitPhase(match and phase.drawingCard or phase.checkCombo)
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyDrawCard(self)
+    self:TransitPhase(phase.drawCard)
 end
 
 ---@param self KoiKoi.Service

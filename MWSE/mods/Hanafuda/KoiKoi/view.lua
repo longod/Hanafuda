@@ -145,6 +145,19 @@ local function GetCardId(element)
     return cardId
 end
 
+---@param element tes3uiElement
+---@param cardId integer
+---@return tes3uiElement?
+local function FindCardIdInChildren(element, cardId)
+    -- linear search
+    for index, child in ipairs(element.children) do
+        if GetCardId(child) == cardId  then
+            return child
+        end
+    end
+    return nil
+end
+
 ---@param parent tes3uiElement
 ---@param cardId integer
 ---@param backface boolean
@@ -330,15 +343,17 @@ local function GetGrabCardId()
 end
 
 ---@param element tes3uiElement
-local function CaptureCard(element)
+---@param player KoiKoi.Player
+---@return tes3uiElement
+local function CaptureCard(element, player)
     local cardId = GetCardId(element)
     assert(cardId)
-    -- todo player or ooponent
+    local you = player == koi.player.you
     local destid = {
-        [card.type.bright] = uiid.playerBright,
-        [card.type.animal] = uiid.playerAnimal,
-        [card.type.ribbon] = uiid.playerRibbon,
-        [card.type.chaff] = uiid.playerChaff,
+        [card.type.bright] = you and uiid.playerBright or uiid.opponentBright,
+        [card.type.animal] = you and uiid.playerAnimal or uiid.opponentAnimal,
+        [card.type.ribbon] = you and uiid.playerRibbon or uiid.opponentRibbon,
+        [card.type.chaff] = you and uiid.playerChaff or uiid.opponentChaff,
     }
 
     local type = card.GetCardData(cardId).type
@@ -351,10 +366,12 @@ local function CaptureCard(element)
     return moved
 end
 
-local function CaptureGrabCard()
+---@param player KoiKoi.Player
+---@return tes3uiElement
+local function CaptureGrabCard(player)
     local element = GetGrabCard()
     assert(element)
-    local moved = CaptureCard(element)
+    local moved = CaptureCard(element, player)
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     grab.disabled = true
     grab.visible = false
@@ -498,8 +515,8 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
                 local grab = GetGrabCard()
                 assert(grab)
                 local root = e.source:getTopLevelMenu()
-                local moved0 = CaptureCard(e.source)
-                local moved1 = CaptureGrabCard()
+                local moved0 = CaptureCard(e.source, koi.player.you)
+                local moved1 = CaptureGrabCard(koi.player.you)
                 if moved0 and moved1 then
                     sound.Play(sound.se.putCard) -- todo
                 end
@@ -703,6 +720,126 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
             persist = false,        -- hmm..perhaps false
         })
     end
+end
+
+---@param self KoiKoi.UI
+---@param service KoiKoi.Service
+---@param player KoiKoi.Player
+---@param selectedCard integer
+---@param matchedCard integer
+---@param drawn boolean
+---@param skipAnimation boolean
+function UI.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
+    -- TODO not skipAnimation
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+
+    local selected ---@type tes3uiElement?
+    if drawn then
+        local drawn = gameMenu:findChild(uiid.boardDrawn)
+        selected = FindCardIdInChildren(drawn, selectedCard)
+    else
+        local handId = {
+            [koi.player.you] = uiid.playerHand,
+            [koi.player.opponent] = uiid.opponentHand,
+        }
+        local hand = gameMenu:findChild(handId[player])
+        selected = FindCardIdInChildren(hand, selectedCard)
+        if player == koi.player.opponent and selected then -- fixme set property?
+            FlipCard(selected)
+        end
+    end
+    if not selected then
+        logger:error("not find cardId %d in UI", selectedCard)
+        return
+    end
+    local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+    local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+    local matched = FindCardIdInChildren(g0, matchedCard)
+    if not matched then
+        matched = FindCardIdInChildren(g1, matchedCard)
+    end
+    if not matched then
+        logger:error("not find cardId %d in ground", matchedCard)
+        return
+    end
+
+    assert(selected)
+    local moved0 = CaptureCard(selected, player)
+    local moved1 = CaptureCard(matched, player)
+    if moved0 and moved1 then
+        sound.Play(sound.se.putCard) -- todo
+    end
+    UnregisterEvents(moved0)
+    UnregisterEvents(moved1)
+    gameMenu:updateLayout()
+    service:MatchedCards() -- correct usage?
+
+end
+
+---@param self KoiKoi.UI
+---@param service KoiKoi.Service
+---@param player KoiKoi.Player
+---@param selectedCard integer
+---@param drawn boolean
+---@param skipAnimation boolean
+function UI.Discard(self, service, player, selectedCard, drawn, skipAnimation)
+    -- TODO not skipAnimation
+
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+
+    local selected ---@type tes3uiElement?
+    if drawn then
+        local drawn = gameMenu:findChild(uiid.boardDrawn)
+        selected = FindCardIdInChildren(drawn, selectedCard)
+    else
+        local handId = {
+            [koi.player.you] = uiid.playerHand,
+            [koi.player.opponent] = uiid.opponentHand,
+        }
+        local hand = gameMenu:findChild(handId[player])
+        selected = FindCardIdInChildren(hand, selectedCard)
+        if player == koi.player.opponent and selected then -- fixme set property?
+            FlipCard(selected)
+        end
+    end
+    if not selected then
+        logger:error("not find cardId %d in UI", selectedCard)
+        return
+    end
+    local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+    local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+    local g = table.size(g0.children) < table.size(g1.children) and g0 or g1 -- whitch less
+
+    assert(selected)
+    local moved = selected:move({ to = g })
+    self:RegisterGroundCardEvent(moved, selectedCard, service)
+    gameMenu:updateLayout()
+
+    sound.Play(sound.se.putCard)
+
+    service:DiscardCard() -- correct usage?
+end
+
+---@param self KoiKoi.UI
+---@param service KoiKoi.Service
+---@param player KoiKoi.Player
+---@param cardId integer
+---@param skipAnimation boolean
+function UI.Draw(self, service, player, cardId, skipAnimation)
+    -- TODO not skipAnimation
+
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local drawn = gameMenu:findChild(uiid.boardDrawn)
+    local element = PutCard(drawn, cardId, false)
+    self:RegisterDrawnCardEvent(element, cardId, service) -- only player?
+    gameMenu:updateLayout()
+    sound.Play(sound.se.pickCard)
+
+    service:NotifyDrawCard()
+
 end
 
 ---@param self KoiKoi.UI

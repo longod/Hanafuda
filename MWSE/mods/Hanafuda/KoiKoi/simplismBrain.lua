@@ -21,7 +21,7 @@ function this.Simulate(self, p)
     if p.drawnCard then
         for _, id in ipairs(p.groundPool) do
             if koi.CanMatchSuit(p.drawnCard, id) then
-                logger:trace(string.format("match selectedCard = %d, matchedCard = %d", p.drawnCard, id))
+                logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, id))
                 return { selectedCard = p.drawnCard, matchedCard = id }
             end
         end

@@ -247,12 +247,12 @@ function KoiKoi.Capture(self, player, cardId, ground, drawn)
         local pool = self.pools[player]
         table.insert(pool[card.GetCardData(cardId).type], cardId)
         if ground then
-            logger:trace("captured then removeing ".. tostring(cardId))
+            logger:trace("captured then removeing from ground ".. tostring(cardId))
             logger:trace(table.concat(self.groundPool, ", "))
             local removed = table.removevalue(self.groundPool, cardId)
             assert(removed)
         elseif not drawn then
-            logger:trace("captured then removeing ".. tostring(cardId))
+            logger:trace("captured then removeing from hand ".. tostring(cardId))
             logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
             assert(removed)

@@ -54,8 +54,8 @@ function this.Run(self)
                 -- todo com:Execute()
                 if command.selectedCard and command.matchedCard then
                     -- match
-                    self.game:Capture(self.game.current, command.selectedCard, false, true)
-                    self.game:Capture(self.game.current, command.matchedCard, true, true)
+                    self.game:Capture(self.game.current, command.selectedCard, false, false)
+                    self.game:Capture(self.game.current, command.matchedCard, true, false)
                 elseif not command.matchedCard then
                     -- discard
                     self.game:Discard(self.game.current, command.selectedCard, false)
