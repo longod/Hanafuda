@@ -164,7 +164,7 @@ function Service.OnEnterFrame(self, e)
             self:TransitPhase()
         end,
         [phase.decidedParent] = function()
-            logger:info("inform parent")
+            logger:info("inform parent %d", self.game.parent)
             self.view:InformParent(self.game.parent) -- todo send opened card
             self:TransitPhase()
         end,
@@ -352,10 +352,10 @@ function Service.Initialize(self)
     self.game:SetBrains(brain)
     --self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
-    self.game.current = koi.player.opponent -- testing
+    -- self.game.parent = koi.player.opponent -- testing
+    -- self.game.current = koi.player.opponent -- testing
     self.view:Initialize(self)
     self:TransitPhase(self.skipDecidingParent and phase.decidedParent or nil )
-    -- todo skip deciding parent
 end
 
 ---@param self KoiKoi.Service

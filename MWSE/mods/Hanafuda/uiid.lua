@@ -1,8 +1,10 @@
 -- UI_ID , not UUID
 local this = {
     gameMenu = tes3ui.registerID("KoiKoi"),
-    grabMenu = tes3ui.registerID("KoiKoiGrab"),
-    splashMenu = tes3ui.registerID("KoiKoiSplash"),
+    grabMenu = tes3ui.registerID("KoiKoi.Grab"),
+    helpComboMenu = tes3ui.registerID("KoiKoi.Combo"),
+    helpRuleMenu = tes3ui.registerID("KoiKoi.Rule"),
+    splashMenu = tes3ui.registerID("KoiKoi.Splash"),
     playerHand = tes3ui.registerID("Player.Hand"),
     playerBright = tes3ui.registerID("Player.Bright"),
     playerAnimal = tes3ui.registerID("Player.Animal"),

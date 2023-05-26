@@ -30,13 +30,14 @@ local this = {}
 ---@param actualPoint integer?
 ---@return tes3uiElement
 function this.CreateCombinationView(parent, combination, actualPoint)
+    local indent = 12
+
     local header = tes3ui.getPalette(tes3.palette.headerColor)
     local block = parent:createBlock()
     block.flowDirection = tes3.flowDirection.topToBottom
-    block.autoWidth = true
+    block.widthProportional = 1
     block.autoHeight = true
-
-    local indent = 12
+    block.paddingAllSides = 4
 
     ---@param cardIds integer[]
     local listup = function(cardIds)
@@ -45,7 +46,7 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         pattern.autoHeight = true
         pattern.flowDirection = tes3.flowDirection.leftToRight
         pattern.borderAllSides = 0
-        pattern.borderLeft = indent
+        pattern.borderLeft = indent * 2
 
         for index, cardId in ipairs(cardIds) do
             local asset = card.GetCardAsset(cardId)
@@ -125,12 +126,12 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         [koi.combination.flowerViewingSake] = {
             name = "Hanami de Ippai",
             point = string.format("%u points.", koi.basePoint[koi.combination.flowerViewingSake]),
-            condition = string.format("%s and %s", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
+            condition = string.format("%s and %s.", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
         },
         [koi.combination.moonViewingSake] = {
             name = "Tsukimi de Ippai",
             point = string.format("%u points.", koi.basePoint[koi.combination.moonViewingSake]),
-            condition = string.format("%s and %s", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),
+            condition = string.format("%s and %s.", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),
         },
         [koi.combination.chaff] = {
             name = "Kasu",
@@ -187,12 +188,21 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         local d = desc[combination]
         local name = block:createLabel({ text = d.name})
         name.color = header
+        name.borderLeft = indent
+
         -- todo if actualPoint
         -- todo getting table data
-        block:createLabel({ text = d.point }).borderLeft = indent
-        block:createLabel({ text = d.condition }).borderLeft = indent
+        local point = block:createLabel({ text = d.point })
+        point.borderLeft = indent * 2
+        point.wrapText = true
+
+        local condition = block:createLabel({ text = d.condition })
+        condition.borderLeft = indent * 2
+        condition.wrapText = true
+
 
         combo[combination]()
+        block:createDivider().widthProportional = 1.0
     else
         logger:error("unknown combination %u", combination)
     end

@@ -15,27 +15,116 @@ local disabledCardColor = { 0.2, 0.2, 0.2 }
 local cardProperty = "Hanafuda:CardId"
 
 ---@param e uiEventEventData
-local function CreateCombinationList(e)
-    -- TODO
-    logger:debug("combo help")
-    local menu = tes3ui.createHelpLayerMenu({id = "helpcombo", dragFrame = true })
-    menu:destroyChildren()
-    menu.width = 300
-    menu.height = 300
-    menu.flowDirection = tes3.flowDirection.topToBottom
-    -- local pane = menu:createVerticalScrollPane()
-    -- pane.width = 300
-    -- pane.height = 300
-    -- local parent = pane:getContentElement()
-    -- parent.width = 300
-    -- parent.height = 300
-    for index, value in ipairs(table.values(koi.combination, true)) do
-        combo.CreateCombinationView(menu, value)
-    end
-    menu:updateLayout()
-    --pane.widget:contentsChanged()
+local function OnExit(e)
+    tes3.messageBox({
+        message = "Eixt and you lose.",
+        buttons = {
+            tes3.findGMST(tes3.gmst.sYes).value --[[@as string]],
+            tes3.findGMST(tes3.gmst.sNo).value --[[@as string]],
+        },
+        callback = function(btnCallbackData)
+            if btnCallbackData.button == 0 then
+                -- todo
+            end
+        end,
+    })
 end
 
+---@param e uiEventEventData
+local function CreateCombinationList(e)
+    local menu = tes3ui.findMenu(uiid.helpComboMenu)
+    if menu then
+        -- can be forecround focusing?
+        return
+    end
+
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    local size = math.min(viewportWidth, viewportHeight)
+
+    logger:debug("combo help")
+    local menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
+    menu.width = size * 0.75
+    menu.height = size * 0.75
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local pane = root:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+    local parent = pane:getContentElement()
+    for index, value in ipairs(table.values(koi.combination, true)) do
+        combo.CreateCombinationView(parent, value)
+    end
+    local bottom = root:createBlock()
+    bottom.widthProportional = 1
+    bottom.autoHeight = true
+    bottom.flowDirection = tes3.flowDirection.leftToRight
+    bottom.childAlignX = 1
+    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value }) ---@diagnostic disable-line: assign-type-mismatch
+    close:register(tes3.uiEvent.mouseClick,
+        ---@param ev uiEventEventData
+        function(ev)
+            ev.source:getTopLevelMenu():destroy()
+        end)
+
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+end
+
+---@param e uiEventEventData
+local function CreateRule(e)
+    local menu = tes3ui.findMenu(uiid.helpRuleMenu)
+    if menu then
+        -- can be forecround focusing?
+        return
+    end
+
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    local size = math.min(viewportWidth, viewportHeight)
+
+    logger:debug("rule help")
+    local menu = tes3ui.createMenu({ id = uiid.helpRuleMenu, fixedFrame = true })
+    menu.width = size * 0.75
+    menu.height = size * 0.75
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local pane = root:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+    local parent = pane:getContentElement()
+
+    parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
+    parent:createLabel({ text = "simple rule here"})
+
+    local bottom = root:createBlock()
+    bottom.widthProportional = 1
+    bottom.autoHeight = true
+    bottom.flowDirection = tes3.flowDirection.leftToRight
+    bottom.childAlignX = 1
+    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value }) ---@diagnostic disable-line: assign-type-mismatch
+    close:register(tes3.uiEvent.mouseClick,
+        ---@param ev uiEventEventData
+        function(ev)
+            ev.source:getTopLevelMenu():destroy()
+        end)
+
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+
+end
 ---@class KoiKoi.UI
 local UI = {}
 
@@ -1097,22 +1186,80 @@ local function CreateOpponentCaptured(parent)
 end
 
 local function CreateInfo(parent)
-    -- TODO
-    local exit = parent:createButton({text = "Yield"})
-    local combo = parent:createButton({text = "Combination List"})
-    local rule = parent:createButton({text = "Quick Rule"})
-    parent:createLabel({text = "Round"})
-    parent:createLabel({text = "Opponent Name"})
-    parent:createLabel({text = "Opponent Portrait"})
-    parent:createLabel({text = "Opponent is parent or child"})
-    parent:createLabel({text = "Opponent Score"})
-    parent:createLabel({text = "Opponent Combination"})
-    parent:createLabel({text = "Your Name"})
-    parent:createLabel({text = "Your Portrait"})
-    parent:createLabel({text = "You are parent or child"})
-    parent:createLabel({text = "Your Score"})
-    parent:createLabel({text = "Your Combination"})
+    local upper = parent:createBlock()
+    upper.widthProportional = 1
+    upper.autoHeight = true
+    upper.flowDirection = tes3.flowDirection.leftToRight
+    upper.borderAllSides = 6
+    upper.paddingAllSides = 6
+
+    local exit = upper:createButton({text = "Yield"})
+    upper:createBlock().widthProportional = 1
+    local combo = upper:createButton({text = "Combo List"})
+    local rule = upper:createButton({text = "Quick Rule"})
+    exit:register(tes3.uiEvent.mouseClick, OnExit)
     combo:register(tes3.uiEvent.mouseClick, CreateCombinationList)
+    rule:register(tes3.uiEvent.mouseClick, CreateRule)
+
+    local header = tes3ui.getPalette(tes3.palette.headerColor)
+
+    local split = parent:createBlock()
+    split.widthProportional = 1
+    split.heightProportional = 1
+    split.flowDirection = tes3.flowDirection.topToBottom
+
+    local opponent = split :createThinBorder()
+    opponent.widthProportional = 1
+    opponent.heightProportional = 1
+    opponent.flowDirection = tes3.flowDirection.topToBottom
+    opponent.borderAllSides = 6
+    opponent.paddingAllSides = 6
+
+    local on = opponent:createBlock()
+    on.autoWidth = true
+    on.autoHeight = true
+    on:createLabel({text = "Opponent Name"}).color = header
+    on:createLabel({text = " (Parent)"})
+
+    local os = opponent:createBlock()
+    os.autoWidth = true
+    os.autoHeight = true
+    os:createLabel({text = "Total Score: "})
+    os:createLabel({text = "123"})
+    opponent:createLabel({text = "Round Combination"})
+
+    local rn = split:createBlock()
+    rn.widthProportional = 1
+    rn.autoHeight = true
+    rn.childAlignX = 0.5
+    rn:createLabel({text = "Round: "})
+    rn:createLabel({text = "2"})
+    local tn = split:createBlock()
+    tn.widthProportional = 1
+    tn.autoHeight = true
+    tn.childAlignX = 0.5
+    tn:createLabel({text = "Your Turn"}).color = header
+
+    local you = split:createThinBorder()
+    you.widthProportional = 1
+    you.heightProportional = 1
+    you.flowDirection = tes3.flowDirection.topToBottom
+    you.borderAllSides = 6
+    you.paddingAllSides = 6
+
+    local yn = you:createBlock()
+    yn.autoWidth = true
+    yn.autoHeight = true
+    yn:createLabel({text = "Your Name"}).color = header
+    yn:createLabel({text = " (Child)"})
+
+    local ys = you:createBlock()
+    ys.autoWidth = true
+    ys.autoHeight = true
+    ys:createLabel({text = "Total Score: "})
+    ys:createLabel({text = "456"})
+
+    you:createLabel({text = "Round Combination"})
 end
 
 ---@param id number|string
