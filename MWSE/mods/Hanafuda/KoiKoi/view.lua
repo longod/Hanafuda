@@ -47,10 +47,12 @@ function UI.new()
     return instance
 end
 
+-- todo need driver for test
 ---@param self KoiKoi.UI
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
-function UI.ShowCallingDialog(self, player, service)
+---@param combo { [KoiKoi.CombinationType] : integer }
+function UI.ShowCallingDialog(self, player, service, combo)
     tes3ui.showMessageMenu({
         -- id = "Calling",
         header = "Calling",
@@ -84,6 +86,29 @@ function UI.ShowCallingDialog(self, player, service)
         -- , customBlock combination list
     })
 end
+
+-- todo need driver for test
+
+---@param self KoiKoi.UI
+---@param player KoiKoi.Player
+---@param service KoiKoi.Service
+---@param combo { [KoiKoi.CombinationType] : integer }
+function UI.ShowCombo(self, player, service, combo)
+    tes3ui.showMessageMenu({
+        -- id = "Calling",
+        header = "Calling",
+        message = "here scoring combinations",
+        buttons = {
+            {
+                text = tes3.findGMST(tes3.gmst.sOK).value, ---@diagnostic disable-line: assign-type-mismatch
+                callback = function()
+                    service:NotifyComfirmCombo()
+                end,
+            },
+        }
+    })
+end
+
 
 ---@param self KoiKoi.UI
 ---@param service KoiKoi.Service

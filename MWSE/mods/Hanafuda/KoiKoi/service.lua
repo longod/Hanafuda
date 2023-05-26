@@ -19,10 +19,11 @@ local phase = {
     matchDrawCard = 13, -- rename
     matchDrawCardWait = 14, -- rename
     checkCombo = 15,
-    calling = 16,
-    endTurn = 17,
-    noMatch = 18,
-    roundFinish = 19,
+    checkComboWait = 16,
+    calling = 17,
+    endTurn = 18,
+    noMatch = 19,
+    roundFinish = 20,
 
     -- wait state -- todo maybe need transition wait time
 }
@@ -107,8 +108,10 @@ end
 ---@param self KoiKoi.Service
 ---@return boolean
 function Service.CanDrawCard(self)
-    if self.drawnCard == nil and not self.game:EmptyDeck() then
-        return true
+    if self.game.current == koi.player.you and self.phase == phase.matchDrawCard then
+        if self.drawnCard == nil and not self.game:EmptyDeck() then
+            return true
+        end
     end
     return false
 end
@@ -127,19 +130,25 @@ end
 ---@param cardId integer
 ---@return boolean
 function Service.CanGrabCard(self, cardId)
-    -- todo and check phase
-    if self.drawnCard and self.drawnCard == cardId then
-        return true
+    if self.game.current == koi.player.you and self.phase == phase.matchDrawCard then
+        if self.drawnCard and self.drawnCard == cardId then
+            return true
+        end
     end
-    return self.game:HasCard(self.game.current, cardId)
+    if self.game.current == koi.player.you and self.phase == phase.matchCard then
+        return self.game:HasCard(self.game.current, cardId)
+    end
+    return false
 end
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
 ---@return boolean
 function Service.CanPutbackCard(self, cardId)
-    -- todo and check phase
-    return self.game:HasCard(self.game.current, cardId)
+    if self.game.current == koi.player.you and self.phase == phase.matchCard then
+        return self.game:HasCard(self.game.current, cardId)
+    end
+    return false
 end
 
 
@@ -253,15 +262,18 @@ function Service.OnEnterFrame(self, e)
             -- fixme if called koi-koi the combination is subtract before combination
             if combo then
                 if self.game.brains[self.game.current] then
-                    -- todo message? or other notify
+                    -- message? or other notify
+                    self.view:ShowCombo(self.game.current, self, combo)
                 else
-                    self.view:ShowCallingDialog(self.game.current, self) -- todo and combo
+                    self.view:ShowCallingDialog(self.game.current, self, combo) -- todo and combo
                 end
-                self:TransitPhase(phase.calling)
+                self:TransitPhase(phase.checkComboWait)
             else
                 -- no comb
                 self:TransitPhase(phase.endTurn)
             end
+        end,
+        [phase.checkComboWait] = function()
         end,
         [phase.calling] = function()
             local command = self.game:Call(self.game.current, self.game.combinations[self.game.current]) -- fixme use accessor
@@ -394,6 +406,11 @@ end
 ---@param self KoiKoi.Service
 function Service.NotifyDrawCard(self)
     self:TransitPhase(phase.matchDrawCard)
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyComfirmCombo(self)
+    self:TransitPhase(phase.calling)
 end
 
 ---@param self KoiKoi.Service
