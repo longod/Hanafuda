@@ -52,7 +52,7 @@ function Service.new(game, view)
         game = game,
         view = view,
         drawnCard = nil,
-        skipDecidingParent = true, -- or table flags
+        skipDecidingParent = false, -- or table flags
         skipAnimation = true,
     }
     setmetatable(instance, { __index = Service })
@@ -188,14 +188,15 @@ function Service.OnEnterFrame(self, e)
     -- fixme Transitions should be triggered by notifications from the view.
     local state = {
         [phase.initialized] = function()
-            self:RequestPhase(phase.decidedParent)
             logger:info("initialized")
+            self:RequestPhase(phase.decidingParent)
             self.view:CreateDecidingParent(self)
         end,
+        [phase.decidingParent] = function()
+        end,
         [phase.decidedParent] = function()
-            self:RequestPhase(phase.setupRound)
             logger:info("inform parent %d", self.game.parent)
-            self.view:InformParent(self.game.parent) -- todo send opened card or dice
+            self.view:InformParent(self.game.parent, self) -- todo send opened card or dice
         end,
         [phase.setupRound] = function()
             self:RequestPhase(phase.dealingInitial)
@@ -214,9 +215,8 @@ function Service.OnEnterFrame(self, e)
             --self:TransitPhase()
         end,
         [phase.matchCard] = function()
-            -- Generally, this condition is not true. The deck is empty at the same time then game end. It occurs if player play simgle.
             if self.game:EmptyHand(self.game.current) then
-                self:RequestPhase(phase.matchDrawCard)
+                self:RequestPhase(phase.drawCard)
                 return
             end
             local command = self.game:Simulate(self.game.current, nil)
@@ -261,7 +261,6 @@ function Service.OnEnterFrame(self, e)
             -- waiting...
         end,
         [phase.matchDrawCard] = function()
-            -- TODO draw card if non human
             local command = self.game:Simulate(self.game.current, self.drawnCard)
             if command then
                 -- todo com:Execute()
@@ -383,7 +382,7 @@ function Service.Initialize(self)
         self:DumpData()
     end
     event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
-    local brain = require("Hanafuda.KoiKoi.simplismBrain").new()
+    local brain = require("Hanafuda.KoiKoi.brain.simpleBrain").new()
     -- todo set brain anywhere
     self.game:SetBrains(brain)
     --self.game:SetBrains(brain, true) -- player
@@ -410,9 +409,14 @@ end
 
 ---@param self KoiKoi.Service
 ---@param leftRight boolean
-function Service.DecideParent(self, leftRight)
+function Service.NotifyDecideParent(self, leftRight)
     self.game:DecideParent(leftRight)
     self:RequestPhase(phase.decidedParent)
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyInformParent(self)
+    self:RequestPhase(phase.setupRound)
 end
 
 ---@param self KoiKoi.Service

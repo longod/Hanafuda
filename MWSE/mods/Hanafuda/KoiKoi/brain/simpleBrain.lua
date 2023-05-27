@@ -1,20 +1,19 @@
 --- baseline AI
----@class KoiKoi.SimplismBrain : KoiKoi.IBrain
+---@class KoiKoi.SimpleBrain : KoiKoi.IBrain
 local this = {}
 
-local card = require("Hanafuda.card")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local logger = require("Hanafuda.logger")
 
----@return KoiKoi.SimplismBrain
+---@return KoiKoi.SimpleBrain
 function this.new()
-    local instance = {} ---@type KoiKoi.SimplismBrain
+    local instance = {} ---@type KoiKoi.SimpleBrain
     -- todo setmetatable interface
     setmetatable(instance, { __index = this })
     return instance
 end
 
----@param self KoiKoi.SimplismBrain
+---@param self KoiKoi.SimpleBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.MatchCommand?
 function this.Simulate(self, p)
@@ -46,7 +45,7 @@ function this.Simulate(self, p)
 end
 
 --and current yaku
----@param self KoiKoi.SimplismBrain
+---@param self KoiKoi.SimpleBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)

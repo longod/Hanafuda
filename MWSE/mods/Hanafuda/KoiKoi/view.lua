@@ -10,25 +10,10 @@ local i18n = mwse.loadTranslations("Hanafuda")
 local cardLayoutWidth = card.GetCardWidth() + 4
 local cardLayoutHeight = card.GetCardHeight() + 4
 local enabledCardColor = { 1, 1, 1 }
-local disabledCardColor = { 0.2, 0.2, 0.2 }
+local disabledCardColor = { 0.3, 0.3, 0.3 }
 
 local cardProperty = "Hanafuda:CardId"
 
----@param e uiEventEventData
-local function OnExit(e)
-    tes3.messageBox({
-        message = "Eixt and you lose.",
-        buttons = {
-            tes3.findGMST(tes3.gmst.sYes).value --[[@as string]],
-            tes3.findGMST(tes3.gmst.sNo).value --[[@as string]],
-        },
-        callback = function(btnCallbackData)
-            if btnCallbackData.button == 0 then
-                -- todo
-            end
-        end,
-    })
-end
 
 ---@class KoiKoi.View
 local View = {}
@@ -41,13 +26,28 @@ function View.new()
     return instance
 end
 
+---@param e uiEventEventData
+local function OnExit(e)
+    tes3.messageBox({
+        message = "Eixt and you lose.",
+        buttons = {
+            tes3.findGMST(tes3.gmst.sYes).value --[[@as string]],
+            tes3.findGMST(tes3.gmst.sNo).value --[[@as string]],
+        },
+        callback =
+        function(btnCallbackData)
+            if btnCallbackData.button == 0 then
+                -- todo
+            end
+        end,
+    })
+end
 
 ---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowNoMatch(self, parent, service)
-    tes3.messageBox("No match")
-    -- todo transition
+    tes3.messageBox("Draw in this round.")
     service:NotifyRoundFinished()
 end
 
@@ -55,8 +55,7 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
-    tes3.messageBox("%d Win", player )
-    -- todo transition
+    tes3.messageBox((player == koi.player.you and "You" or "Opponent") .. " win in this round.")
     service:NotifyRoundFinished()
 end
 
@@ -209,7 +208,7 @@ function View.CreateDecidingParent(self, service)
                 text = "Left",
                 callback = function()
                     logger:debug("choose left")
-                    service:DecideParent(false)
+                    service:NotifyDecideParent(false)
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -220,7 +219,7 @@ function View.CreateDecidingParent(self, service)
                 text = "Right",
                 callback = function()
                     logger:debug("choose right")
-                    service:DecideParent(true)
+                    service:NotifyDecideParent(true)
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
@@ -233,14 +232,16 @@ end
 
 ---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
-function View.InformParent(self, parent)
+---@param service KoiKoi.Service
+function View.InformParent(self, parent, service)
     if parent == koi.player.you then
-        tes3.messageBox("Oya is you")
+        tes3.messageBox("Parent is you. Child is opponent.")
     elseif parent == koi.player.opponent then
-        tes3.messageBox("Oya is opponent")
+        tes3.messageBox("Parent is opponent. Child is you.")
     else
         assert()
     end
+    service:NotifyInformParent()
 end
 
 ---@param element tes3uiElement
@@ -545,7 +546,7 @@ function View.RegisterHandCardEvent(self, element, cardId, service)
                 sound.Play(sound.se.pickCard)
             end
         else
-            tes3.messageBox("Can't match from hand.")
+            tes3.messageBox("Can't a card match from hand now.")
         end
     end)
 end
@@ -638,8 +639,11 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 UnregisterEvents(moved1)
                 local g0 = root:findChild(uiid.boardGroundRow0)
                 local g1 = root:findChild(uiid.boardGroundRow1)
+                local h0 = root:findChild(uiid.playerHand)
+                -- local h1 = root:findChild(uiid.opponentHand)
                 ResetHighlightCards(g0)
                 ResetHighlightCards(g1)
+                ResetHighlightCards(h0)
                 root:updateLayout()
                 service:NotifyMatchedCards()
             else
@@ -665,8 +669,8 @@ function View.RegisterGroundEvent(self, element, service)
             if service:CanDiscard(cardId) then
                 service:Discard(cardId)
                 local root = e.source:getTopLevelMenu()
-                local g0 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow0)
-                local g1 = e.source:getTopLevelMenu():findChild(uiid.boardGroundRow1)
+                local g0 = root:findChild(uiid.boardGroundRow0)
+                local g1 = root:findChild(uiid.boardGroundRow1)
                 local g = table.size(g0.children) < table.size(g1.children) and g0 or g1
                 local moved = ReleaseGrabedCard(g)
                 if moved then
@@ -678,7 +682,7 @@ function View.RegisterGroundEvent(self, element, service)
                 root:updateLayout()
                 service:NotifyDiscardCard()
             else
-                tes3.messageBox("Can't discard this card.")
+                tes3.messageBox("Can't discard this card, it shoud be matched.")
             end
         end
     end)
@@ -715,7 +719,7 @@ function View.RegisterDeckEvent(self, element, service)
                 sound.Play(sound.se.pickCard)
             end
         else
-            tes3.messageBox("Can't draw cards now.")
+            tes3.messageBox("Can't draw a card now.")
         end
     end)
 end
@@ -894,6 +898,14 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     end
     UnregisterEvents(moved0)
     UnregisterEvents(moved1)
+
+    local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+    local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+    local h0 = gameMenu:findChild(uiid.playerHand)
+    -- local h1 = gameMenu:findChild(uiid.opponentHand)
+    ResetHighlightCards(g0)
+    ResetHighlightCards(g1)
+    ResetHighlightCards(h0)
     gameMenu:updateLayout()
     service:NotifyMatchedCards() -- correct usage?
 
@@ -969,11 +981,14 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.BeginTurn(self, player, parent, service)
+
+
     local getname = function(player, parent)
+        local name = player == koi.player.you and "Your" or "Opponent's"
         if player == parent then
-            return "Oya " .. tostring(player)
+            return name .. " (Parent)"
         else
-            return "Ko " .. tostring(player)
+            return name .. " (Child)"
         end
     end
     tes3.messageBox("%s Turn", getname(player, parent))
@@ -1181,6 +1196,8 @@ local function CreateInfo(parent)
     opponent.flowDirection = tes3.flowDirection.topToBottom
     opponent.borderAllSides = 6
     --opponent.paddingAllSides = 6
+
+    -- todo display number and names
 
     local on = opponent:createBlock()
     on.autoWidth = true
