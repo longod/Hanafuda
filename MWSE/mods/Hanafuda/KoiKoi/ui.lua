@@ -1,3 +1,7 @@
+-- Regardless of the view representation format, this handles UI that can be used in common.
+local this = {}
+
+local uiid = require("Hanafuda.uiid")
 local card = require("Hanafuda.card")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
@@ -21,9 +25,6 @@ assert(butterfly)
 assert(sakeCup)
 assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
-
----@class KoiKoi.CombinationView
-local this = {}
 
 ---@param parent tes3uiElement
 ---@param combination KoiKoi.CombinationType
@@ -209,5 +210,142 @@ function this.CreateCombinationView(parent, combination, actualPoint)
     return block
 end
 
+---@param e uiEventEventData
+function this.CreateCombinationList(e)
+    local menu = tes3ui.findMenu(uiid.helpComboMenu)
+    if menu then
+        -- can be forecround focusing?
+        return
+    end
+
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    local size = math.min(viewportWidth, viewportHeight)
+
+    logger:debug("combo help")
+    local menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
+    menu.width = size * 0.75
+    menu.height = size * 0.75
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local pane = root:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+    local parent = pane:getContentElement()
+    for index, value in ipairs(table.values(koi.combination, true)) do
+        this.CreateCombinationView(parent, value)
+    end
+    local bottom = root:createBlock()
+    bottom.widthProportional = 1
+    bottom.autoHeight = true
+    bottom.flowDirection = tes3.flowDirection.leftToRight
+    bottom.childAlignX = 1
+    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value --[[@as string]] })
+    close:register(tes3.uiEvent.mouseClick,
+        ---@param ev uiEventEventData
+        function(ev)
+            ev.source:getTopLevelMenu():destroy()
+        end)
+
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+end
+
+---@param e uiEventEventData
+function this.CreateRule(e)
+    local menu = tes3ui.findMenu(uiid.helpRuleMenu)
+    if menu then
+        -- can be forecround focusing?
+        return
+    end
+
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    local size = math.min(viewportWidth, viewportHeight)
+
+    logger:debug("rule help")
+    local menu = tes3ui.createMenu({ id = uiid.helpRuleMenu, fixedFrame = true })
+    menu.width = size * 0.75
+    menu.height = size * 0.75
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local pane = root:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+    local parent = pane:getContentElement()
+
+    parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
+    parent:createLabel({ text = "simple rule here"})
+
+    local bottom = root:createBlock()
+    bottom.widthProportional = 1
+    bottom.autoHeight = true
+    bottom.flowDirection = tes3.flowDirection.leftToRight
+    bottom.childAlignX = 1
+    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value --[[@as string]] })
+    close:register(tes3.uiEvent.mouseClick,
+        ---@param ev uiEventEventData
+        function(ev)
+            ev.source:getTopLevelMenu():destroy()
+        end)
+
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+
+end
+
+---@param cardId integer
+---@param backface boolean
+---@return tes3uiElement?
+function this.CreateCardTooltip(cardId, backface)
+    local tooltip = tes3ui.createTooltipMenu()
+    if backface then
+        tooltip:createLabel { text = "Opponent's card" }
+    else
+        tooltip = tes3ui.createTooltipMenu()
+        local asset = card.GetCardAsset(cardId)
+        local thumb = tooltip:createImage({ path = asset.path })
+        thumb.width = card.GetCardWidth() * 2
+        thumb.height = card.GetCardHeight() * 2
+        thumb.scaleMode = true
+        local ref = card.GetCardData(cardId)
+        local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
+        name.color = tes3ui.getPalette(tes3.palette.headerColor)
+        tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
+        local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
+        type.color = card.GetCardTypeColor(ref.type)
+        -- todo add flavor
+        tooltip:createDivider().widthProportional = 0.8
+        local desc = tooltip:createBlock()
+        desc.minWidth = thumb.width
+        desc.maxWidth = thumb.width * 1.5
+        desc.autoWidth = true
+        desc.autoHeight = true
+        local flavor = desc:createLabel({text = "flavor text here"})
+        flavor.wrapText = true
+    end
+    return tooltip
+end
+
+---@param deck integer[]
+---@return tes3uiElement tooltip
+function this.CreateDeckTooltip(deck)
+    local tooltip = tes3ui.createTooltipMenu()
+    local label = tooltip:createLabel({ text = tostring(table.size(deck)) .. " cards remaining" })
+    label.color = tes3ui.getPalette(tes3.palette.headerColor)
+    return tooltip
+end
 
 return this

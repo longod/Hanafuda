@@ -3,7 +3,7 @@ local card = require("Hanafuda.card")
 local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
-local combo = require("Hanafuda.KoiKoi.combinationView")
+local ui = require("Hanafuda.KoiKoi.ui")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 -- with mergin
@@ -30,118 +30,57 @@ local function OnExit(e)
     })
 end
 
----@param e uiEventEventData
-local function CreateCombinationList(e)
-    local menu = tes3ui.findMenu(uiid.helpComboMenu)
-    if menu then
-        -- can be forecround focusing?
-        return
-    end
+---@class KoiKoi.View
+local View = {}
 
-    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
-    local size = math.min(viewportWidth, viewportHeight)
-
-    logger:debug("combo help")
-    local menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
-    menu.width = size * 0.75
-    menu.height = size * 0.75
-    menu.autoWidth = false
-    menu.autoHeight = false
-    menu.flowDirection = tes3.flowDirection.topToBottom
-
-    local root = menu:createBlock()
-    root.widthProportional = 1
-    root.heightProportional = 1
-    root.flowDirection = tes3.flowDirection.topToBottom
-
-    local pane = root:createVerticalScrollPane()
-    pane.widthProportional = 1
-    pane.heightProportional = 1
-    local parent = pane:getContentElement()
-    for index, value in ipairs(table.values(koi.combination, true)) do
-        combo.CreateCombinationView(parent, value)
-    end
-    local bottom = root:createBlock()
-    bottom.widthProportional = 1
-    bottom.autoHeight = true
-    bottom.flowDirection = tes3.flowDirection.leftToRight
-    bottom.childAlignX = 1
-    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value }) ---@diagnostic disable-line: assign-type-mismatch
-    close:register(tes3.uiEvent.mouseClick,
-        ---@param ev uiEventEventData
-        function(ev)
-            ev.source:getTopLevelMenu():destroy()
-        end)
-
-    menu:updateLayout()
-    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
-end
-
----@param e uiEventEventData
-local function CreateRule(e)
-    local menu = tes3ui.findMenu(uiid.helpRuleMenu)
-    if menu then
-        -- can be forecround focusing?
-        return
-    end
-
-    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
-    local size = math.min(viewportWidth, viewportHeight)
-
-    logger:debug("rule help")
-    local menu = tes3ui.createMenu({ id = uiid.helpRuleMenu, fixedFrame = true })
-    menu.width = size * 0.75
-    menu.height = size * 0.75
-    menu.autoWidth = false
-    menu.autoHeight = false
-    menu.flowDirection = tes3.flowDirection.topToBottom
-
-    local root = menu:createBlock()
-    root.widthProportional = 1
-    root.heightProportional = 1
-    root.flowDirection = tes3.flowDirection.topToBottom
-
-    local pane = root:createVerticalScrollPane()
-    pane.widthProportional = 1
-    pane.heightProportional = 1
-    local parent = pane:getContentElement()
-
-    parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
-    parent:createLabel({ text = "simple rule here"})
-
-    local bottom = root:createBlock()
-    bottom.widthProportional = 1
-    bottom.autoHeight = true
-    bottom.flowDirection = tes3.flowDirection.leftToRight
-    bottom.childAlignX = 1
-    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value }) ---@diagnostic disable-line: assign-type-mismatch
-    close:register(tes3.uiEvent.mouseClick,
-        ---@param ev uiEventEventData
-        function(ev)
-            ev.source:getTopLevelMenu():destroy()
-        end)
-
-    menu:updateLayout()
-    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
-
-end
----@class KoiKoi.UI
-local UI = {}
-
----@return KoiKoi.UI
-function UI.new()
+---@return KoiKoi.View
+function View.new()
     --@type KoiKoi.UI
     local instance = {}
-    setmetatable(instance, { __index = UI })
+    setmetatable(instance, { __index = View })
     return instance
 end
 
+
+---@param self KoiKoi.View
+---@param parent KoiKoi.Player
+---@param service KoiKoi.Service
+function View.ShowNoMatch(self, parent, service)
+    tes3.messageBox("No match")
+    -- todo transition
+    service:NotifyRoundFinished()
+end
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param service KoiKoi.Service
+function View.ShowWin(self, player, service)
+    tes3.messageBox("%d win", player )
+    -- todo transition
+    service:NotifyRoundFinished()
+end
+
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param service KoiKoi.Service
+---@param calling KoiKoi.Calling
+function View.ShowCalling(self, player, service, calling)
+    tes3.messageBox("Opponent choices %s", calling == koi.calling.koikoi and "Koi-Koi" or "Shobu" )
+    if calling == koi.calling.koikoi then
+        sound.PlayVoice(sound.voice.continue, "", false)
+    elseif calling == koi.calling.shobu then
+        sound.PlayVoice(sound.voice.finish, "", false)
+    end
+    service:NotifyCalling(calling)
+end
+
 -- todo need driver for test
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 ---@param combo { [KoiKoi.CombinationType] : integer }
-function UI.ShowCallingDialog(self, player, service, combo)
+function View.ShowCallingDialog(self, player, service, combo)
     tes3ui.showMessageMenu({
         -- id = "Calling",
         header = "Calling",
@@ -162,7 +101,6 @@ function UI.ShowCallingDialog(self, player, service, combo)
             {
                 text = "Shobu",
                 callback = function()
-                    -- todo
                     sound.PlayVoice(sound.voice.finish, "", false)
                     service:NotifyShobu()
                 end,
@@ -178,18 +116,18 @@ end
 
 -- todo need driver for test
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 ---@param combo { [KoiKoi.CombinationType] : integer }
-function UI.ShowCombo(self, player, service, combo)
+function View.ShowCombo(self, player, service, combo)
     tes3ui.showMessageMenu({
         -- id = "Calling",
         header = "Calling",
         message = "here scoring combinations",
         buttons = {
             {
-                text = tes3.findGMST(tes3.gmst.sOK).value, ---@diagnostic disable-line: assign-type-mismatch
+                text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
                 callback = function()
                     service:NotifyComfirmCombo()
                 end,
@@ -199,9 +137,9 @@ function UI.ShowCombo(self, player, service, combo)
 end
 
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
-function UI.CreateDecidingParent(self, service)
+function View.CreateDecidingParent(self, service)
     -- I want to wait for a selection using coroutine,
     -- but for some reason the coroutine suspended by yield is runnning in selection callbacks.
     -- Therefore, cannot resume it in callbacks.
@@ -236,9 +174,9 @@ function UI.CreateDecidingParent(self, service)
     })
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
-function UI.InformParent(self, parent)
+function View.InformParent(self, parent)
     if parent == koi.player.you then
         tes3.messageBox("Parent is you")
     elseif parent == koi.player.opponent then
@@ -294,7 +232,7 @@ local function PutCard(parent, cardId, backface)
     element:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        UI.CreateCardTooltip(cardId, backface)
+        ui.CreateCardTooltip(cardId, backface)
     end)
 
     return element
@@ -340,7 +278,7 @@ local function PutDeck(parent, deck)
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        UI.CreateDeckTooltip(deck)
+        ui.CreateDeckTooltip(deck)
     end)
 
     -- todo if empty it is invisible
@@ -507,11 +445,11 @@ local function UnregisterEvents(element)
     element:unregister(tes3.uiEvent.mouseClick)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param cardId integer
 ---@param service KoiKoi.Service
-function UI.RegisterHandCardEvent(self, element, cardId, service)
+function View.RegisterHandCardEvent(self, element, cardId, service)
     UnregisterEvents(element)
 
     element:register(tes3.uiEvent.mouseOver,
@@ -549,14 +487,16 @@ function UI.RegisterHandCardEvent(self, element, cardId, service)
             if GrabCard(e.source) then -- sync serivice?
                 sound.Play(sound.se.pickCard)
             end
+        else
+            tes3.messageBox("Can't match from hand.")
         end
     end)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
-function UI.RegisterHandEvent(self, element, service)
+function View.RegisterHandEvent(self, element, service)
     UnregisterEvents(element)
 
     element:register(tes3.uiEvent.mouseClick,
@@ -570,16 +510,18 @@ function UI.RegisterHandEvent(self, element, service)
                 if ReleaseGrabedCard(e.source) then -- sync serivice?
                     sound.Play(sound.se.putCard)
                 end
+            else
+                -- must not be reached
             end
         end
     end)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param cardId integer
 ---@param service KoiKoi.Service
-function UI.RegisterGroundCardEvent(self, element, cardId, service)
+function View.RegisterGroundCardEvent(self, element, cardId, service)
     UnregisterEvents(element)
 
     element:register(tes3.uiEvent.mouseOver,
@@ -637,6 +579,10 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
                 end
                 UnregisterEvents(moved0)
                 UnregisterEvents(moved1)
+                local g0 = root:findChild(uiid.boardGroundRow0)
+                local g1 = root:findChild(uiid.boardGroundRow1)
+                ResetHighlightCards(g0)
+                ResetHighlightCards(g1)
                 root:updateLayout()
                 service:NotifyMatchedCards()
             else
@@ -646,10 +592,10 @@ function UI.RegisterGroundCardEvent(self, element, cardId, service)
     end)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
-function UI.RegisterGroundEvent(self, element, service)
+function View.RegisterGroundEvent(self, element, service)
     UnregisterEvents(element)
 
     element:register(tes3.uiEvent.mouseClick,
@@ -670,6 +616,8 @@ function UI.RegisterGroundEvent(self, element, service)
                     self:RegisterGroundCardEvent(moved, cardId, service)
                     sound.Play(sound.se.putCard)
                 end
+                ResetHighlightCards(g0)
+                ResetHighlightCards(g1)
                 root:updateLayout()
                 service:NotifyDiscardCard()
             else
@@ -679,19 +627,19 @@ function UI.RegisterGroundEvent(self, element, service)
     end)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param cardId integer
 ---@param service KoiKoi.Service
-function UI.RegisterDrawnCardEvent(self, element, cardId, service)
+function View.RegisterDrawnCardEvent(self, element, cardId, service)
     -- currently same
     self:RegisterHandCardEvent(element, cardId, service)
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
-function UI.RegisterDeckEvent(self, element, service)
+function View.RegisterDeckEvent(self, element, service)
     UnregisterEvents(element)
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -709,6 +657,8 @@ function UI.RegisterDeckEvent(self, element, service)
                 e.source:getTopLevelMenu():updateLayout()
                 sound.Play(sound.se.pickCard)
             end
+        else
+            tes3.messageBox("Can't draw cards now.")
         end
     end)
 end
@@ -718,14 +668,14 @@ end
 -- or register and unregister the necessary events in each phase for each phase.
 -- Here, I try to use the CanPerform method as in a general application.
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
 ---@param pools KoiKoi.PlayerPool[]
 ---@param groundPools integer[]
 ---@param deck integer[]
 ---@param service KoiKoi.Service
 ---@param skipAnimation boolean
-function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, skipAnimation)
+function View.DealInitialCards(self, parent, pools, groundPools, deck, service, skipAnimation)
     ---@return any
     local function putCards()
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -837,14 +787,14 @@ function UI.DealInitialCards(self, parent, pools, groundPools, deck, service, sk
     end
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
 ---@param matchedCard integer
 ---@param drawn boolean
 ---@param skipAnimation boolean
-function UI.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
+function View.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
     -- TODO not skipAnimation
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
@@ -892,13 +842,13 @@ function UI.Capture(self, service, player, selectedCard, matchedCard, drawn, ski
 
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
 ---@param drawn boolean
 ---@param skipAnimation boolean
-function UI.Discard(self, service, player, selectedCard, drawn, skipAnimation)
+function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
     -- TODO not skipAnimation
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -937,12 +887,12 @@ function UI.Discard(self, service, player, selectedCard, drawn, skipAnimation)
     service:NotifyDiscardCard() -- correct usage?
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param cardId integer
 ---@param skipAnimation boolean
-function UI.Draw(self, service, player, cardId, skipAnimation)
+function View.Draw(self, service, player, cardId, skipAnimation)
     -- TODO not skipAnimation
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -957,11 +907,11 @@ function UI.Draw(self, service, player, cardId, skipAnimation)
 
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
-function UI.BeginTurn(self, player, parent, service)
+function View.BeginTurn(self, player, parent, service)
     local getname = function(player, parent)
         if player == parent then
             return "Parent " .. tostring(player)
@@ -973,49 +923,6 @@ function UI.BeginTurn(self, player, parent, service)
     -- todo jingle
     service:NotifyBeganTurn()
 end
-
----@param cardId integer
----@param backface boolean
----@return tes3uiElement?
-function UI.CreateCardTooltip(cardId, backface)
-    local tooltip = tes3ui.createTooltipMenu()
-    if backface then
-        tooltip:createLabel { text = "Opponent's card" }
-    else
-        tooltip = tes3ui.createTooltipMenu()
-        local asset = card.GetCardAsset(cardId)
-        local thumb = tooltip:createImage({ path = asset.path })
-        thumb.width = card.GetCardWidth() * 2
-        thumb.height = card.GetCardHeight() * 2
-        thumb.scaleMode = true
-        local ref = card.GetCardData(cardId)
-        local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
-        name.color = tes3ui.getPalette(tes3.palette.headerColor)
-        tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
-        local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
-        type.color = card.GetCardTypeColor(ref.type)
-        -- todo add flavor
-        tooltip:createDivider().widthProportional = 0.8
-        local desc = tooltip:createBlock()
-        desc.minWidth = thumb.width
-        desc.maxWidth = thumb.width * 1.5
-        desc.autoWidth = true
-        desc.autoHeight = true
-        local flavor = desc:createLabel({text = "flavor text here"})
-        flavor.wrapText = true
-    end
-    return tooltip
-end
-
----@param deck integer[]
----@return tes3uiElement tooltip
-function UI.CreateDeckTooltip(deck)
-    local tooltip = tes3ui.createTooltipMenu()
-    local label = tooltip:createLabel({ text = tostring(table.size(deck)) .. " cards remaining" })
-    label.color = tes3ui.getPalette(tes3.palette.headerColor)
-    return tooltip
-end
-
 
 --- in card gamae, player means each 'player'
 --- but in this video game, player is you.
@@ -1198,8 +1105,8 @@ local function CreateInfo(parent)
     local combo = upper:createButton({text = "Combo List"})
     local rule = upper:createButton({text = "Quick Rule"})
     exit:register(tes3.uiEvent.mouseClick, OnExit)
-    combo:register(tes3.uiEvent.mouseClick, CreateCombinationList)
-    rule:register(tes3.uiEvent.mouseClick, CreateRule)
+    combo:register(tes3.uiEvent.mouseClick, ui.CreateCombinationList)
+    rule:register(tes3.uiEvent.mouseClick, ui.CreateRule)
 
     local header = tes3ui.getPalette(tes3.palette.headerColor)
 
@@ -1264,7 +1171,7 @@ end
 
 ---@param id number|string
 ---@param service KoiKoi.Service
-function UI.OpenGameMenu(self, id, service)
+function View.OpenGameMenu(self, id, service)
 
     -- pre-load all resources?
 
@@ -1358,17 +1265,17 @@ function UI.OpenGameMenu(self, id, service)
     return menu
 end
 
----@param self KoiKoi.UI
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
-function UI.Initialize(self, service)
+function View.Initialize(self, service)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(not gameMenu)
     gameMenu = self:OpenGameMenu(uiid.gameMenu, service)
     tes3ui.enterMenuMode(gameMenu.id)
 end
 
----@param self KoiKoi.UI
-function UI.Shutdown(self)
+---@param self KoiKoi.View
+function View.Shutdown(self)
     local overlayMenu = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if overlayMenu then
         overlayMenu:destroy()
@@ -1382,7 +1289,7 @@ function UI.Shutdown(self)
 end
 
 ---@param e enterFrameEventData
-function UI:OnEnterFrame(e)
+function View:OnEnterFrame(e)
     -- follow cursor
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if grab and grab.visible and not grab.disabled then
@@ -1394,4 +1301,4 @@ function UI:OnEnterFrame(e)
     end
 end
 
-return UI
+return View

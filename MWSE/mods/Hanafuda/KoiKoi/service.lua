@@ -23,28 +23,32 @@ local phase = {
     calling = 17,
     endTurn = 18,
     noMatch = 19,
-    roundFinish = 20,
+    win = 20,
+    roundFinished = 21,
 
+    wait = 100,
     -- wait state -- todo maybe need transition wait time
 }
 
 --- aka controller
 ---@class KoiKoi.Service
 ---@field phase KoiKoi.Phase
+---@field phaseNext KoiKoi.Phase
 ---@field game KoiKoi
----@field view KoiKoi.UI
+---@field view KoiKoi.View
 ---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
 local Service = {}
 
 ---@param game KoiKoi
----@param view KoiKoi.UI
+---@param view KoiKoi.View
 ---@return KoiKoi.Service
 function Service.new(game, view)
     --@type KoiKoi.Service
     local instance = {
         phase = phase.new,
+        phaseNext = phase.new,
         game = game,
         view = view,
         drawnCard = nil,
@@ -93,22 +97,47 @@ function Service.Discard(self, cardId)
     end
 end
 
--- TODO need delay after end of everyframe, and waiting for game speed.
---- if it was called before main simulation logic, it is possible mismatch phase.
 ---@param self KoiKoi.Service
----@param next KoiKoi.Phase?
+---@param next KoiKoi.Phase
 ---@return KoiKoi.Phase
-function Service.TransitPhase(self, next)
+function Service.RequestPhase(self, next)
     local n = next or (self.phase + 1)
-    logger:debug("Transit Phase %d -> %d", self.phase, n)
-    self.phase = n
-    return self.phase
+    logger:trace("Request Phase %d -> %d", self.phase, n)
+    -- self.phase = n
+    -- return self.phase
+    self.phaseNext = n
+    return self.phaseNext
+end
+
+---@param self KoiKoi.Service
+---@return boolean
+function Service.TransitPhase(self)
+    if self.phase == self.phaseNext then
+        return false
+    end
+    if self.phase == phase.wait then
+        return false
+    end
+    self.phase = phase.wait
+    -- todo when player input available, no wait
+    timer.start({
+        type = timer.real,
+        ---@param e mwseTimerCallbackData
+        callback = function(e)
+            logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
+            self.phase = self.phaseNext
+        end,
+        iterations = 1,
+        duration = 0.5,
+        persist = false,
+    })
+    return true
 end
 
 ---@param self KoiKoi.Service
 ---@return boolean
 function Service.CanDrawCard(self)
-    if self.game.current == koi.player.you and self.phase == phase.matchDrawCard then
+    if self.game.current == koi.player.you and (self.phase == phase.matchDrawCard or self.phase == phase.matchDrawCardWait) then
         if self.drawnCard == nil and not self.game:EmptyDeck() then
             return true
         end
@@ -130,12 +159,12 @@ end
 ---@param cardId integer
 ---@return boolean
 function Service.CanGrabCard(self, cardId)
-    if self.game.current == koi.player.you and self.phase == phase.matchDrawCard then
+    if self.game.current == koi.player.you and (self.phase == phase.matchDrawCard or self.phase == phase.matchDrawCardWait) then
         if self.drawnCard and self.drawnCard == cardId then
             return true
         end
     end
-    if self.game.current == koi.player.you and self.phase == phase.matchCard then
+    if self.game.current == koi.player.you and (self.phase == phase.matchCard or self.phase == phase.matchCardWait) then
         return self.game:HasCard(self.game.current, cardId)
     end
     return false
@@ -145,7 +174,7 @@ end
 ---@param cardId integer
 ---@return boolean
 function Service.CanPutbackCard(self, cardId)
-    if self.game.current == koi.player.you and self.phase == phase.matchCard then
+    if self.game.current == koi.player.you and (self.phase == phase.matchCard or self.phase == phase.matchCardWait) then
         return self.game:HasCard(self.game.current, cardId)
     end
     return false
@@ -159,26 +188,26 @@ function Service.OnEnterFrame(self, e)
     -- fixme Transitions should be triggered by notifications from the view.
     local state = {
         [phase.initialized] = function()
+            self:RequestPhase(phase.decidedParent)
             logger:info("initialized")
             self.view:CreateDecidingParent(self)
-            self:TransitPhase()
         end,
         [phase.decidedParent] = function()
+            self:RequestPhase(phase.setupRound)
             logger:info("inform parent %d", self.game.parent)
-            self.view:InformParent(self.game.parent) -- todo send opened card
-            self:TransitPhase()
+            self.view:InformParent(self.game.parent) -- todo send opened card or dice
         end,
         [phase.setupRound] = function()
-            self.game:DealInitialCards() -- todo animation
+            self:RequestPhase(phase.dealingInitial)
+            self.game:DealInitialCards()
             self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
-            self:TransitPhase()
         end,
         [phase.dealingInitial] = function()
             -- wait for view
         end,
         [phase.checkLuckyHand] = function()
             -- todo
-            self:TransitPhase()
+            self:RequestPhase(phase.beginTurn)
         end,
         [phase.beginTurn] = function()
             self.view:BeginTurn(self.game.current, self.game.parent, self)
@@ -187,14 +216,13 @@ function Service.OnEnterFrame(self, e)
         [phase.matchCard] = function()
             -- Generally, this condition is not true. The deck is empty at the same time then game end. It occurs if player play simgle.
             if self.game:EmptyHand(self.game.current) then
-                self:TransitPhase(phase.matchDrawCard)
+                self:RequestPhase(phase.matchDrawCard)
                 return
             end
             local command = self.game:Simulate(self.game.current, nil)
             if command then
                 -- todo com:Execute()
-                -- todo view
-                self:TransitPhase() -- wait for view
+                self:RequestPhase(phase.matchCardWait) -- wait for view
 
                 if command.selectedCard and command.matchedCard then
                     -- match
@@ -211,6 +239,9 @@ function Service.OnEnterFrame(self, e)
                 --self.drawnCard = nil
             else
                 -- thinking or no brain
+                -- if no brain
+                -- tes3.messageBox("match in your hand or discard")
+                -- self:RequestPhase(phase.matchCardWait)
             end
         end,
         [phase.matchCardWait] = function()
@@ -219,11 +250,11 @@ function Service.OnEnterFrame(self, e)
             if self.game.brains[self.game.current] then
                 local draw = self:DrawCard()
                 assert(draw)
-                self:TransitPhase() -- wait for view
+                self:RequestPhase(phase.drawCardWait) -- wait for view
                 self.view:Draw(self, self.game.current, draw, self.skipAnimation)
             else
                 -- draw? prepare for view
-                self:TransitPhase(phase.matchDrawCard)
+                self:RequestPhase(phase.matchDrawCard)
             end
         end,
         [phase.drawCardWait] = function()
@@ -235,7 +266,7 @@ function Service.OnEnterFrame(self, e)
             if command then
                 -- todo com:Execute()
                 -- todo view
-                self:TransitPhase() -- wait for view
+                self:RequestPhase(phase.matchDrawCardWait) -- wait for view
 
                 if command.selectedCard and command.matchedCard then
                     -- match
@@ -255,7 +286,12 @@ function Service.OnEnterFrame(self, e)
                 --self:Next()
             else
                 -- thinking or no brain
+                -- if no brain
+                -- tes3.messageBox("draw card and match it or discard")
+                -- self:RequestPhase(phase.matchDrawCardWait)
             end
+        end,
+        [phase.matchDrawCardWait] = function()
         end,
         [phase.checkCombo] = function()
             local combo = self.game:CheckCombination(self.game.current)
@@ -267,10 +303,10 @@ function Service.OnEnterFrame(self, e)
                 else
                     self.view:ShowCallingDialog(self.game.current, self, combo) -- todo and combo
                 end
-                self:TransitPhase(phase.checkComboWait)
+                self:RequestPhase(phase.checkComboWait)
             else
                 -- no comb
-                self:TransitPhase(phase.endTurn)
+                self:RequestPhase(phase.endTurn)
             end
         end,
         [phase.checkComboWait] = function()
@@ -278,28 +314,26 @@ function Service.OnEnterFrame(self, e)
         [phase.calling] = function()
             local command = self.game:Call(self.game.current, self.game.combinations[self.game.current]) -- fixme use accessor
             if command then
-                if command.calling == koi.calling.koikoi then
-                    -- todo view
-                    self:NotifyKoiKoi()
-                elseif command.calling == koi.calling.shobu then
-                    -- todo view
-                    self:NotifyShobu()
-                end
+                self.view:ShowCalling(self.game.current, self, command.calling)
             end
         end,
         [phase.endTurn] = function()
             if self.game:CheckEnd() then
-                self:TransitPhase(phase.noMatch)
+                self:RequestPhase(phase.noMatch)
             else
                 self.game:SwapPlayer()
-                self:TransitPhase(phase.beginTurn)
+                self:RequestPhase(phase.beginTurn)
             end
         end,
         [phase.noMatch] = function()
+            self.view:ShowNoMatch(self.game.parent, self)
             -- draw or parent win (house rule)
+            -- todo next round or end
         end,
-        [phase.roundFinish] = function()
+        [phase.win] = function()
+            self.view:ShowWin(self.game.current, self)
             -- win current player
+            -- todo next round or end
         end,
     }
     --logger:trace("phase ".. tostring(self.phase) )
@@ -308,6 +342,8 @@ function Service.OnEnterFrame(self, e)
     end
     -- after?
     self.view:OnEnterFrame(e)
+
+    self:TransitPhase()
 end
 
 ---debugging
@@ -355,7 +391,7 @@ function Service.Initialize(self)
     -- self.game.parent = koi.player.opponent -- testing
     -- self.game.current = koi.player.opponent -- testing
     self.view:Initialize(self)
-    self:TransitPhase(self.skipDecidingParent and phase.decidedParent or nil )
+    self:RequestPhase(self.skipDecidingParent and phase.decidedParent or phase.initialized )
 end
 
 ---@param self KoiKoi.Service
@@ -376,51 +412,66 @@ end
 ---@param leftRight boolean
 function Service.DecideParent(self, leftRight)
     self.game:DecideParent(leftRight)
-    self:TransitPhase()
+    self:RequestPhase(phase.decidedParent)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDealedInitialCards(self)
-    self:TransitPhase(phase.checkLuckyHand)
+    self:RequestPhase(phase.checkLuckyHand)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyBeganTurn(self)
-    self:TransitPhase(phase.matchCard)
+    self:RequestPhase(phase.matchCard)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyMatchedCards(self)
     -- match or draw
     local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
-    self:TransitPhase(match and phase.drawCard or phase.checkCombo)
+    self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDiscardCard(self)
     -- match or draw
     local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
-    self:TransitPhase(match and phase.drawCard or phase.checkCombo)
+    self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDrawCard(self)
-    self:TransitPhase(phase.matchDrawCard)
+    self:RequestPhase(phase.matchDrawCard)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyComfirmCombo(self)
-    self:TransitPhase(phase.calling)
+    self:RequestPhase(phase.calling)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyKoiKoi(self)
-    self:TransitPhase(phase.endTurn)
+    self:RequestPhase(phase.endTurn)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyShobu(self)
-    self:TransitPhase(phase.roundFinish)
+    self:RequestPhase(phase.win)
+end
+
+---@param self KoiKoi.Service
+---@param calling KoiKoi.Calling
+function Service.NotifyCalling(self, calling)
+    if calling == koi.calling.koikoi then
+        self:NotifyKoiKoi()
+    elseif calling == koi.calling.shobu then
+        self:NotifyShobu()
+    end
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyRoundFinished(self)
+    self:RequestPhase(phase.roundFinished)
 end
 
 return Service
