@@ -55,7 +55,7 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
-    tes3.messageBox("%d win", player )
+    tes3.messageBox("%d Win", player )
     -- todo transition
     service:NotifyRoundFinished()
 end
@@ -75,42 +75,91 @@ function View.ShowCalling(self, player, service, calling)
     service:NotifyCalling(calling)
 end
 
+---@param combo { [KoiKoi.CombinationType] : integer }
+---@return integer
+local function SumTotalPoint(combo)
+    local total = 0
+    for _, value in pairs(combo) do
+        total = total + value
+    end
+    return total
+end
+
+--- custom block has max width. and it excluding frame size...
+---@param parent tes3uiElement?
+---@return integer?
+local function ComputeParentMaxWidth(parent)
+    local maxWidth = nil
+    local p = parent
+    while p do
+        if p.maxWidth then
+            if maxWidth then
+                maxWidth = math.min(p.maxWidth, maxWidth)
+            else
+                maxWidth = p.maxWidth
+            end
+        end
+        p = p.parent
+    end
+    return maxWidth
+end
+
+---@param parent tes3uiElement
+---@param combo { [KoiKoi.CombinationType] : integer }
+local function CreateTightCombinationList(parent, combo)
+    local maxWidth = ComputeParentMaxWidth(parent)
+    for _, value in ipairs(table.keys(combo, true)) do
+        logger:trace(value)
+        ui.CreateCombinationView(parent, value, combo[value], maxWidth, 0.5)
+    end
+    parent:createDivider().widthProportional = 1.0
+end
+
 -- todo need driver for test
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
----@param service KoiKoi.Service
+---@param service KoiKoi.Service?
 ---@param combo { [KoiKoi.CombinationType] : integer }
 function View.ShowCallingDialog(self, player, service, combo)
+    local total = SumTotalPoint(combo)
+
     tes3ui.showMessageMenu({
-        -- id = "Calling",
-        header = "Calling",
-        message = "here scoring combinations",
+        header = "Your Calling",
+        message = string.format("Koi-Koi or Shobu %u points" , total),
         buttons = {
             {
                 -- todo condition, if deck 0 is disable
-                text = "Koi-koi",
+                text = "Koi-Koi",
                 callback = function()
                     sound.PlayVoice(sound.voice.continue, "", false)
-                    service:NotifyKoiKoi()
+                    if service then
+                        service:NotifyKoiKoi()
+                    end
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
-                    tooltip:createLabel({ text = "continue" })
+                    tooltip:createLabel({ text = "Continue for more combos" })
                 end
             },
             {
                 text = "Shobu",
                 callback = function()
                     sound.PlayVoice(sound.voice.finish, "", false)
-                    service:NotifyShobu()
+                    if service then
+                        service:NotifyShobu()
+                    end
                 end,
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
-                    tooltip:createLabel({ text = "you win" })
+                    tooltip:createLabel({ text = "You Win" })
                 end
             },
-        }
-        -- , customBlock combination list
+        },
+        customBlock =
+        ---@param parent tes3uiElement
+        function(parent)
+            CreateTightCombinationList(parent, combo)
+        end
     })
 end
 
@@ -118,21 +167,29 @@ end
 
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
----@param service KoiKoi.Service
+---@param service KoiKoi.Service?
 ---@param combo { [KoiKoi.CombinationType] : integer }
 function View.ShowCombo(self, player, service, combo)
+    local total = SumTotalPoint(combo)
+
     tes3ui.showMessageMenu({
-        -- id = "Calling",
-        header = "Calling",
-        message = "here scoring combinations",
+        header = "Opponent Calling",
+        message = string.format("Opponent has arranged combos. %u points", total),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
                 callback = function()
-                    service:NotifyComfirmCombo()
+                    if service then
+                        service:NotifyComfirmCombo()
+                    end
                 end,
             },
-        }
+        },
+        customBlock =
+        ---@param parent tes3uiElement
+        function(parent)
+            CreateTightCombinationList(parent, combo)
+        end
     })
 end
 
@@ -178,9 +235,9 @@ end
 ---@param parent KoiKoi.Player
 function View.InformParent(self, parent)
     if parent == koi.player.you then
-        tes3.messageBox("Parent is you")
+        tes3.messageBox("Oya is you")
     elseif parent == koi.player.opponent then
-        tes3.messageBox("Parent is opponent")
+        tes3.messageBox("Oya is opponent")
     else
         assert()
     end
@@ -217,7 +274,7 @@ end
 local function PutCard(parent, cardId, backface)
     local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
 
-    local element = parent:createBlock()
+    local element = parent:createBlock() -- drop shadow better
     element.autoWidth = true
     element.autoHeight = true
     element.paddingAllSides = 2
@@ -914,9 +971,9 @@ end
 function View.BeginTurn(self, player, parent, service)
     local getname = function(player, parent)
         if player == parent then
-            return "Parent " .. tostring(player)
+            return "Oya " .. tostring(player)
         else
-            return "Child " .. tostring(player)
+            return "Ko " .. tostring(player)
         end
     end
     tes3.messageBox("%s Turn", getname(player, parent))
@@ -964,6 +1021,7 @@ end
 ---@param parent tes3uiElement
 local function CreateHandView(parent, id, height)
     local border = parent:createThinBorder()
+    border.borderAllSides = 6
     border.widthProportional = 1
     border.heightProportional = height
     border.flowDirection = tes3.flowDirection.topToBottom
@@ -1052,6 +1110,7 @@ end
 ---@param parent tes3uiElement
 local function CreateYourCaptured(parent)
     local captured = parent:createBlock()
+    --captured.borderAllSides = 6
     captured.widthProportional = 1
     captured.heightProportional = 1
     captured.flowDirection = tes3.flowDirection.topToBottom
@@ -1073,6 +1132,7 @@ end
 ---@param parent tes3uiElement
 local function CreateOpponentCaptured(parent)
     local captured = parent:createBlock()
+    --captured.borderAllSides = 6
     captured.widthProportional = 1
     captured.autoHeight = true
     captured.flowDirection = tes3.flowDirection.topToBottom
@@ -1098,7 +1158,7 @@ local function CreateInfo(parent)
     upper.autoHeight = true
     upper.flowDirection = tes3.flowDirection.leftToRight
     upper.borderAllSides = 6
-    upper.paddingAllSides = 6
+    --upper.paddingAllSides = 6
 
     local exit = upper:createButton({text = "Yield"})
     upper:createBlock().widthProportional = 1
@@ -1120,7 +1180,7 @@ local function CreateInfo(parent)
     opponent.heightProportional = 1
     opponent.flowDirection = tes3.flowDirection.topToBottom
     opponent.borderAllSides = 6
-    opponent.paddingAllSides = 6
+    --opponent.paddingAllSides = 6
 
     local on = opponent:createBlock()
     on.autoWidth = true
@@ -1152,7 +1212,7 @@ local function CreateInfo(parent)
     you.heightProportional = 1
     you.flowDirection = tes3.flowDirection.topToBottom
     you.borderAllSides = 6
-    you.paddingAllSides = 6
+    --you.paddingAllSides = 6
 
     local yn = you:createBlock()
     yn.autoWidth = true
@@ -1268,6 +1328,26 @@ end
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 function View.Initialize(self, service)
+    -- driver for testing
+    ----[[
+    event.register(tes3.event.keyDown,
+    ---@param e keyDownEventData
+    function(e)
+        local combo ={
+            [koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights],
+            [koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly],
+            [koi.combination.animals] = koi.basePoint[koi.combination.animals] + (10 - 5),
+            [koi.combination.poetryAndBlueRibbons] = koi.basePoint[koi.combination.poetryAndBlueRibbons] + (10 - 6),
+            [koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake],
+            [koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake],
+            [koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (12 - 10),
+        }
+
+        --self:ShowCallingDialog(koi.player.you, nil, combo)
+        self:ShowCombo(koi.player.you, nil, combo)
+    end, {filter = tes3.scanCode.c} )
+    --]]
+
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(not gameMenu)
     gameMenu = self:OpenGameMenu(uiid.gameMenu, service)

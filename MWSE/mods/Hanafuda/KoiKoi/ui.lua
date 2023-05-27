@@ -29,16 +29,25 @@ assert(blueRibbon and table.size(blueRibbon) == 3)
 ---@param parent tes3uiElement
 ---@param combination KoiKoi.CombinationType
 ---@param actualPoint integer?
+---@param maxWidth integer?
+---@param cardScale number?
 ---@return tes3uiElement
-function this.CreateCombinationView(parent, combination, actualPoint)
-    local indent = 12
-
-    local header = tes3ui.getPalette(tes3.palette.headerColor)
+function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, cardScale)
+    --local indent = 0
+    --local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
     local block = parent:createBlock()
     block.flowDirection = tes3.flowDirection.topToBottom
     block.widthProportional = 1
+    block.autoWidth = true
     block.autoHeight = true
-    block.paddingAllSides = 4
+    --block.borderAllSides = 8
+    block.paddingAllSides = 0
+    block.paddingLeft = 8
+    block.paddingRight = 8
+    if maxWidth then
+        block.maxWidth = maxWidth
+    end
+    local scale = cardScale or 0.75
 
     ---@param cardIds integer[]
     local listup = function(cardIds)
@@ -46,21 +55,21 @@ function this.CreateCombinationView(parent, combination, actualPoint)
         pattern.autoWidth = true
         pattern.autoHeight = true
         pattern.flowDirection = tes3.flowDirection.leftToRight
-        pattern.borderAllSides = 0
-        pattern.borderLeft = indent * 2
+        -- pattern.borderAllSides = 0
+        -- pattern.borderLeft = indent * 2
 
         for index, cardId in ipairs(cardIds) do
             local asset = card.GetCardAsset(cardId)
             local ref = card.GetCardData(cardId)
             local b = pattern:createBlock()
-            b.borderAllSides = 0
+            --b.borderAllSides = 0
             b.autoWidth = true
             b.autoHeight = true
             b.flowDirection = tes3.flowDirection.topToBottom
             b.childAlignX = 0.5
             local image = b:createImage({ path = asset.path })
-            image.width = card.GetCardWidth() * 0.75
-            image.height = card.GetCardHeight() * 0.75
+            image.width = card.GetCardWidth() * scale
+            image.height = card.GetCardHeight() * scale
             image.scaleMode = true
             image.consumeMouseEvents = false
             image.borderAllSides = 2
@@ -76,66 +85,79 @@ function this.CreateCombinationView(parent, combination, actualPoint)
     local desc = {
         [koi.combination.fiveBrights] = {
             name = "Goko",
+            type = card.type.bright,
             point = string.format("%u points.", koi.basePoint[koi.combination.fiveBrights]),
             condition = string.format("All 5 %s cards.", card.GetCardTypeText(card.type.bright).name),
         },
         [koi.combination.fourBrights] = {
             name = "Shiko",
+            type = card.type.bright,
             point = string.format("%u points.", koi.basePoint[koi.combination.fourBrights]),
             condition = string.format("All 4 %s cards without %s.", card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name),
         },
         [koi.combination.rainyFourBrights] = {
             name = "Ame-Shiko",
+            type = card.type.bright,
             point = string.format("%u points.", koi.basePoint[koi.combination.rainyFourBrights]),
             condition = string.format("Any 4 %s cards.", card.GetCardTypeText(card.type.bright).name),
         },
         [koi.combination.threeBrights] = {
             name = "Sanko",
+            type = card.type.bright,
             point = string.format("%u points.", koi.basePoint[koi.combination.threeBrights]),
             condition = string.format("Any 3 %s cards.", card.GetCardTypeText(card.type.bright).name),
         },
         [koi.combination.boarDeerButterfly] = {
             name = "Ino-Shika-Cho",
+            type = card.type.animal,
             point = string.format("%u points.", koi.basePoint[koi.combination.boarDeerButterfly]),
             condition = string.format("%s, %s and %s", card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name),
         },
         [koi.combination.animals] = {
             name = "Tane",
+            type = card.type.animal,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name),
             condition = string.format("Any five %s cards.", card.GetCardTypeText(card.type.animal).name),
         },
         [koi.combination.poetryAndBlueRibbons] = {
             name = "Akatan-Aotan",
+            type = card.type.ribbon,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name),
             condition = string.format("All 3 Red Poetry %s cards and all 3 Blue %s cards.", card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name),
         },
         [koi.combination.poetryRibbons] = {
             name = "Akatan",
+            type = card.type.ribbon,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name),
             condition = string.format("%s, %s and %s", card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name, card.GetCardText(redPoetry[3]).name),
         },
         [koi.combination.blueRibbons] = {
             name = "Aotan",
+            type = card.type.ribbon,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name),
             condition = string.format("%s, %s and %s", card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name, card.GetCardText(blueRibbon[3]).name),
         },
         [koi.combination.ribbons] = {
             name = "Tan",
+            type = card.type.ribbon,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name),
             condition = string.format("Any 5 %s cards.", card.GetCardTypeText(card.type.ribbon).name),
         },
         [koi.combination.flowerViewingSake] = {
             name = "Hanami de Ippai",
+            type = card.type.chaff, -- no chaff but no suitable type
             point = string.format("%u points.", koi.basePoint[koi.combination.flowerViewingSake]),
             condition = string.format("%s and %s.", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
         },
         [koi.combination.moonViewingSake] = {
             name = "Tsukimi de Ippai",
+            type = card.type.chaff, -- no chaff but no suitable type
             point = string.format("%u points.", koi.basePoint[koi.combination.moonViewingSake]),
             condition = string.format("%s and %s.", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),
         },
         [koi.combination.chaff] = {
             name = "Kasu",
+            type = card.type.chaff,
             point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name),
             condition = string.format("Any 10 %s cards.", card.GetCardTypeText(card.type.chaff).name),
         },
@@ -187,23 +209,33 @@ function this.CreateCombinationView(parent, combination, actualPoint)
 
     if combo[combination] and desc[combination] then
         local d = desc[combination]
-        local name = block:createLabel({ text = d.name})
-        name.color = header
-        name.borderLeft = indent
 
-        -- todo if actualPoint
-        -- todo getting table data
-        local point = block:createLabel({ text = d.point })
-        point.borderLeft = indent * 2
-        point.wrapText = true
+        local head = block:createBlock()
+        head.widthProportional = 1
+        head.autoHeight = true
+        local name = head:createLabel({ text = d.name})
+        name.color = card.GetCardTypeColor(d.type)
+        --name.borderLeft = indent
+        local right = head:createBlock()
+        right.widthProportional = 1
+        right.autoHeight = true
+        right.childAlignX = 1
+
+        if actualPoint then
+            local point = right:createLabel({ text = string.format("%u points", actualPoint) })
+            --point.borderRight = indent * 2
+            --point.wrapText = true
+        else
+            local point = block:createLabel({ text = d.point })
+            --point.borderLeft = indent * 2
+            point.wrapText = true
+        end
 
         local condition = block:createLabel({ text = d.condition })
-        condition.borderLeft = indent * 2
+        --condition.borderLeft = indent * 2
         condition.wrapText = true
 
-
         combo[combination]()
-        block:createDivider().widthProportional = 1.0
     else
         logger:error("unknown combination %u", combination)
     end
@@ -222,7 +254,7 @@ function this.CreateCombinationList(e)
     local size = math.min(viewportWidth, viewportHeight)
 
     logger:debug("combo help")
-    local menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
+    menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
     menu.width = size * 0.75
     menu.height = size * 0.75
     menu.autoWidth = false
@@ -238,8 +270,9 @@ function this.CreateCombinationList(e)
     pane.widthProportional = 1
     pane.heightProportional = 1
     local parent = pane:getContentElement()
-    for index, value in ipairs(table.values(koi.combination, true)) do
+    for _, value in ipairs(table.values(koi.combination, true)) do
         this.CreateCombinationView(parent, value)
+        parent:createDivider().widthProportional = 1.0
     end
     local bottom = root:createBlock()
     bottom.widthProportional = 1
