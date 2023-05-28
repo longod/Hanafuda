@@ -199,6 +199,8 @@ function View.CreateDecidingParent(self, service)
     -- I want to wait for a selection using coroutine,
     -- but for some reason the coroutine suspended by yield is runnning in selection callbacks.
     -- Therefore, cannot resume it in callbacks.
+
+    -- use messagebox? showMessageMenu buttons top and bottom...
     tes3ui.showMessageMenu({
         id = "DecideParent",
         header = "Decide Parent",
@@ -473,6 +475,7 @@ local function CaptureCard(element, player)
     local to = gameMenu:findChild(dest)
 
     local moved = element:move({ to = to })
+    -- todo scale or overlap
     SetCardColor(moved, true)
     return moved
 end

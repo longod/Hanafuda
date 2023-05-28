@@ -360,6 +360,7 @@ function this.CreateCardTooltip(cardId, backface)
         local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
         type.color = card.GetCardTypeColor(ref.type)
         -- todo add flavor
+        --[[
         tooltip:createDivider().widthProportional = 0.8
         local desc = tooltip:createBlock()
         desc.minWidth = thumb.width
@@ -368,6 +369,7 @@ function this.CreateCardTooltip(cardId, backface)
         desc.autoHeight = true
         local flavor = desc:createLabel({text = "flavor text here"})
         flavor.wrapText = true
+        ]]
     end
     return tooltip
 end
