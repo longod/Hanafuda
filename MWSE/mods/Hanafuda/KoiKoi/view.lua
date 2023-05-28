@@ -999,6 +999,38 @@ function View.BeginTurn(self, player, parent, service)
     service:NotifyBeganTurn()
 end
 
+---@param self KoiKoi.View
+function View.CleanUpCards(self)
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+
+    local cards = {
+        uiid.playerHand,
+        uiid.playerBright,
+        uiid.playerAnimal,
+        uiid.playerRibbon,
+        uiid.playerChaff,
+        uiid.playerCombination,
+        uiid.opponentHand,
+        uiid.opponentBright,
+        uiid.opponentAnimal,
+        uiid.opponentRibbon,
+        uiid.opponentChaff,
+        uiid.opponentCombination,
+        uiid.boardPile,
+        uiid.boardDrawn,
+        uiid.boardGroundRow0,
+        uiid.boardGroundRow1,
+    }
+    for index, value in ipairs(cards) do
+        local element = gameMenu:findChild(value)
+        if element then
+            element:destroyChildren()
+        end
+    end
+    gameMenu:updateLayout()
+end
+
 --- in card gamae, player means each 'player'
 --- but in this video game, player is you.
 

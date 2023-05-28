@@ -25,9 +25,10 @@ local phase = {
     noMatch = 19,
     win = 20,
     roundFinished = 21,
+    gameFinished = 22,
+    terminate = 23,
 
     wait = 100,
-    -- wait state -- todo maybe need transition wait time
 }
 
 --- aka controller
@@ -200,6 +201,7 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.setupRound] = function()
             self:RequestPhase(phase.dealingInitial)
+            self.game:SetCurrentPlayer(self.game.parent)
             self.game:DealInitialCards()
             self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
         end,
@@ -327,12 +329,27 @@ function Service.OnEnterFrame(self, e)
         [phase.noMatch] = function()
             self.view:ShowNoMatch(self.game.parent, self)
             -- draw or parent win (house rule)
-            -- todo next round or end
         end,
         [phase.win] = function()
             self.view:ShowWin(self.game.current, self)
             -- win current player
-            -- todo next round or end
+            self.game:SetWinner(self.game.current)
+        end,
+        [phase.roundFinished] = function ()
+            if self.game:NextRound() then
+                -- clean up
+                self.game:Initialize()
+                self.view:CleanUpCards()
+                self:RequestPhase(phase.decidedParent)
+            else
+                self:RequestPhase(phase.gameFinished)
+            end
+        end,
+        [phase.gameFinished] = function ()
+            -- todo show result
+        end,
+        [phase.terminate] = function ()
+            -- todo shutdown and release instance, how do inside?
         end,
     }
     --logger:trace("phase ".. tostring(self.phase) )

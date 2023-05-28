@@ -15,14 +15,16 @@ local combination = require("Hanafuda.KoiKoi.combination")
 
 --- ruleset aka model
 ---@class KoiKoi
----@field settings KoiKoi.Settings
 ---@field parent KoiKoi.Player
 ---@field current KoiKoi.Player
+---@field round integer
+---@field settings KoiKoi.Settings
 ---@field deck integer[] card deck
 ---@field pools KoiKoi.PlayerPool[]
 ---@field groundPool integer[]
 ---@field brains KoiKoi.IBrain[]
----@field combinations { [KoiKoi.CombinationType] : integer }[]
+---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
+---@field points { KoiKoi.Player : integer }
 local KoiKoi = {}
 
 
@@ -32,6 +34,7 @@ local KoiKoi = {}
 local defaults = {
     parent = koi.player.you,
     current = koi.player.you,
+    round = 1,
     settings = {
         round = 3,           -- 6, 12
         initialCards = 8,
@@ -59,6 +62,10 @@ local defaults = {
     groundPool = {},
     brains = {},
     combinations = {},
+    points = {
+        [koi.player.you] = 0,
+        [koi.player.opponent] = 0,
+    },
 }
 
 ---@param settings KoiKoi.Settings
@@ -83,8 +90,6 @@ end
 -- event base or command base
 -- important split view and logic for replacing visualize using MVC or like as
 
--- todo phase transition in controller?
-
 ---comment
 ---@param self KoiKoi
 ---@param brain KoiKoi.IBrain
@@ -102,6 +107,7 @@ function KoiKoi.Initialize(self)
     self.deck = card.ShuffleDeck(self.deck)
     self.pools = table.deepcopy(defaults.pools)
     self.groundPool = {}
+    self.combinations = {}
 end
 
 -- Better to be able to choose between two cut cards to decide.
@@ -112,6 +118,11 @@ function KoiKoi.DecideParent(self, leftRight)
     self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent
     logger:debug("Parent is ".. tostring(self.parent))
+end
+
+---@param self KoiKoi
+function KoiKoi.SetCurrentPlayer(self, player)
+    self.current = player
 end
 
 -- Better with animation to hand out one card at a time.
@@ -142,7 +153,6 @@ end
 function KoiKoi.DrawCard(self)
     return card.DealCard(self.deck)
 end
-
 
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
@@ -196,7 +206,7 @@ end
 ---@param self KoiKoi
 ---@return KoiKoi.Player
 function KoiKoi.SwapPlayer(self)
-    self.current = koi.GetOpponent(self.current)
+    self:SetCurrentPlayer(koi.GetOpponent(self.current))
     return self.current
 end
 
@@ -309,6 +319,38 @@ end
 ---@return boolean
 function KoiKoi.EmptyHand(self, player)
     return table.size(self.pools[player].hand) == 0 -- use empty better
+end
+---@param self KoiKoi
+---@param player KoiKoi.Player
+function KoiKoi.SetWinner(self, player)
+
+    ---@param combo { [KoiKoi.CombinationType] : integer }
+    ---@return integer
+    local function SumTotalPoint(combo)
+        local total = 0
+        for _, value in pairs(combo) do
+            total = total + value
+        end
+        return total
+    end
+    if self.combinations[player] then
+        local sum = SumTotalPoint(self.combinations[player])
+        self.points[player] = self.points[player] + sum
+        logger:info("player %d gain %u points, total %u points", player, sum, self.points[player])
+    end
+
+    self.parent = player
+end
+
+---@param self KoiKoi
+---@return boolean
+function KoiKoi.NextRound(self)
+    if self.round < self.settings.round then
+        self.round = self.round + 1
+        logger:debug("go to next round %d", self.round)
+        return true
+    end
+    return false
 end
 
 return KoiKoi

@@ -224,6 +224,24 @@ this.suitText = {
 }
 assert(table.size(this.suitText) == table.size(this.cardSuit))
 
+-- tamriel version
+--[[
+this.suitText = {
+    { name = "Morning Star" },
+    { name = "Sun's Dawn" },
+    { name = "First Seed" },
+    { name = "Rain's Hand" },
+    { name = "Second Seed" },
+    { name = "Midyear" },
+    { name = "Sun's Height" },
+    { name = "Last Seed" },
+    { name = "Hearthfire" },
+    { name = "Frostfall" },
+    { name = "Sun's Dusk" },
+    { name = "Evening Star" },
+}
+]]
+
 ---@type CardText[]
 this.typeText = {
     { name = "Hikari" },
