@@ -108,10 +108,17 @@ end
 local function CreateTightCombinationList(parent, combo)
     local maxWidth = ComputeParentMaxWidth(parent)
     for _, value in ipairs(table.keys(combo, true)) do
-        logger:trace(value)
         ui.CreateCombinationView(parent, value, combo[value], maxWidth, 0.5)
     end
     parent:createDivider().widthProportional = 1.0
+end
+
+---@param parent tes3uiElement
+---@param combo { [KoiKoi.CombinationType] : integer }
+local function CreateSummaryCombinationList(parent, combo)
+    for _, value in ipairs(table.keys(combo, true)) do
+        ui.CreateCombinationView(parent, value, combo[value], nil, nil, true)
+    end
 end
 
 -- todo need driver for test
@@ -160,6 +167,17 @@ function View.ShowCallingDialog(self, player, service, combo)
             CreateTightCombinationList(parent, combo)
         end
     })
+
+    local blockId = {
+        [koi.player.you] = uiid.playerCombination,
+        [koi.player.opponent] = uiid.opponentCombination,
+    }
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local parent = gameMenu:findChild(blockId[player])
+    parent:destroyChildren()
+    CreateSummaryCombinationList(parent, combo)
+    gameMenu:updateLayout()
 end
 
 -- todo need driver for test
@@ -190,6 +208,18 @@ function View.ShowCombo(self, player, service, combo)
             CreateTightCombinationList(parent, combo)
         end
     })
+
+    local blockId = {
+        [koi.player.you] = uiid.playerCombination,
+        [koi.player.opponent] = uiid.opponentCombination,
+    }
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local parent = gameMenu:findChild(blockId[player])
+    parent:destroyChildren()
+    CreateSummaryCombinationList(parent, combo)
+    gameMenu:updateLayout()
+
 end
 
 
@@ -1246,6 +1276,12 @@ local function CreateInfo(parent)
     os:createLabel({text = "Total Score: "})
     os:createLabel({text = "123"})
     opponent:createLabel({text = "Round Combination"})
+    -- todo drivre for test
+    local opponentCombo = opponent:createBlock({id = uiid.opponentCombination })
+    opponentCombo.widthProportional = 1
+    opponentCombo.autoWidth = true
+    opponentCombo.autoHeight = true
+    opponentCombo.flowDirection = tes3.flowDirection.topToBottom
 
     local rn = split:createBlock()
     rn.widthProportional = 1
@@ -1279,6 +1315,12 @@ local function CreateInfo(parent)
     ys:createLabel({text = "456"})
 
     you:createLabel({text = "Round Combination"})
+    -- todo drivre for test
+    local yourCombo = you:createBlock({id = uiid.playerCombination })
+    yourCombo.widthProportional = 1
+    yourCombo.autoWidth = true
+    yourCombo.autoHeight = true
+    yourCombo.flowDirection = tes3.flowDirection.topToBottom
 end
 
 ---@param id number|string

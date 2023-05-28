@@ -31,8 +31,9 @@ assert(blueRibbon and table.size(blueRibbon) == 3)
 ---@param actualPoint integer?
 ---@param maxWidth integer?
 ---@param cardScale number?
+---@param summary boolean?
 ---@return tes3uiElement
-function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, cardScale)
+function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, cardScale, summary)
     --local indent = 0
     --local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
     local block = parent:createBlock()
@@ -231,11 +232,14 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
             point.wrapText = true
         end
 
-        local condition = block:createLabel({ text = d.condition })
-        --condition.borderLeft = indent * 2
-        condition.wrapText = true
-
-        combo[combination]()
+        if summary then
+            -- not showing
+        else
+            local condition = block:createLabel({ text = d.condition })
+            --condition.borderLeft = indent * 2
+            condition.wrapText = true
+            combo[combination]()
+        end
     else
         logger:error("unknown combination %u", combination)
     end

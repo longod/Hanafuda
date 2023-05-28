@@ -3,6 +3,7 @@
 local defaultConfig = {
     enable = true,
     -- language?
+    -- game speed x1.0 for wait time
     koikoi = {
         houseRule = {
             flowerViewingSake = true,

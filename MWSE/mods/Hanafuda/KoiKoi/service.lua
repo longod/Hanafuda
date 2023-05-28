@@ -186,7 +186,6 @@ end
 ---@param self KoiKoi.Service
 ---@param e enterFrameEventData
 function Service.OnEnterFrame(self, e)
-    -- fixme Transitions should be triggered by notifications from the view.
     local state = {
         [phase.initialized] = function()
             logger:info("initialized")
@@ -366,6 +365,7 @@ end
 ---@param self KoiKoi.Service
 function Service.DumpData(self)
     logger:debug("phase      = " .. tostring(self.phase))
+    logger:debug("round      = " .. tostring(self.game.round))
     logger:debug("parent      = " .. tostring(self.game.parent))
     logger:debug("current     = " .. tostring(self.game.current))
     logger:debug("drawn       = " .. tostring(self.drawnCard))
