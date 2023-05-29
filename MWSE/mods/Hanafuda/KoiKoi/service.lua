@@ -13,20 +13,22 @@ local phase = {
     checkLuckyHand = 7,
     beginTurn = 8,
     matchCard = 9, -- rename
-    matchCardWait = 10, -- rename
-    drawCard = 11, -- rename
-    drawCardWait = 12, -- rename
-    matchDrawCard = 13, -- rename
-    matchDrawCardWait = 14, -- rename
-    checkCombo = 15,
-    checkComboWait = 16,
-    calling = 17,
-    endTurn = 18,
-    noMatch = 19,
-    win = 20,
-    roundFinished = 21,
-    gameFinished = 22,
-    terminate = 23,
+    matchCardFlip = 10, -- rename
+    matchCardFlipWait = 11, -- rename
+    matchCardWait = 12, -- rename
+    drawCard = 13, -- rename
+    drawCardWait = 14, -- rename
+    matchDrawCard = 15, -- rename
+    matchDrawCardWait = 16, -- rename
+    checkCombo = 17,
+    checkComboWait = 18,
+    calling = 19,
+    endTurn = 20,
+    noMatch = 21,
+    win = 22,
+    roundFinished = 23,
+    gameFinished = 24,
+    terminate = 25,
 
     wait = 100,
 }
@@ -40,6 +42,7 @@ local phase = {
 ---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
+---@field lastCommand KoiKoi.ICommand?
 local Service = {}
 
 ---@param game KoiKoi
@@ -55,6 +58,7 @@ function Service.new(game, view)
         drawnCard = nil,
         skipDecidingParent = false, -- or table flags
         skipAnimation = true,
+        lastCommand = nil,
     }
     setmetatable(instance, { __index = Service })
     return instance
@@ -222,22 +226,24 @@ function Service.OnEnterFrame(self, e)
             end
             local command = self.game:Simulate(self.game.current, nil)
             if command then
+                -- first flip card
+                self.lastCommand = command
                 -- todo com:Execute()
-                self:RequestPhase(phase.matchCardWait) -- wait for view
+                if command.selectedCard then
+                    self:RequestPhase(phase.matchCardFlip) -- wait for view
+                    self.view:Flip(self, self.game.current, command.selectedCard, self.skipAnimation)
 
-                if command.selectedCard and command.matchedCard then
-                    -- match
-                    self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, false, self.skipAnimation)
-                    self:Capture(command.selectedCard, false)
-                    self:Capture(command.matchedCard, true)
-                elseif not command.matchedCard then
-                    -- discard
-                    self.view:Discard(self, self.game.current, command.selectedCard, false, self.skipAnimation)
-                    self:Discard(command.selectedCard)
+                    if command.matchedCard then
+                        -- match
+                        self:Capture(command.selectedCard, false)
+                        self:Capture(command.matchedCard, true)
+                    else
+                        -- discard
+                        self:Discard(command.selectedCard)
+                    end
                 else
-                    -- skip?
+                    -- error?
                 end
-                --self.drawnCard = nil
             else
                 -- thinking or no brain
                 -- if no brain
@@ -245,7 +251,29 @@ function Service.OnEnterFrame(self, e)
                 -- self:RequestPhase(phase.matchCardWait)
             end
         end,
+        [phase.matchCardFlip] = function()
+            -- wait view
+        end,
+        [phase.matchCardFlipWait] = function()
+            if self.lastCommand then
+                local command = self.lastCommand ---@cast command KoiKoi.MatchCommand
+                if command.selectedCard then
+                    self:RequestPhase(phase.matchCardWait) -- wait for view
+
+                    if command.matchedCard then
+                        -- match
+                        self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, false, self.skipAnimation)
+                    else
+                        -- discard
+                        self.view:Discard(self, self.game.current, command.selectedCard, false, self.skipAnimation)
+                    end
+                else
+                    -- error?
+                end
+            end
+        end,
         [phase.matchCardWait] = function()
+            -- wait view
         end,
         [phase.drawCard] = function()
             if self.game.brains[self.game.current] then
@@ -453,16 +481,21 @@ function Service.NotifyBeganTurn(self)
 end
 
 ---@param self KoiKoi.Service
+function Service.NotifyFlipCard(self)
+    self:RequestPhase(phase.matchCardFlipWait)
+end
+
+---@param self KoiKoi.Service
 function Service.NotifyMatchedCards(self)
     -- match or draw
-    local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- hmm...
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDiscardCard(self)
     -- match or draw
-    local match = self.phase == phase.matchCard or self.phase == phase.matchCardWait -- hmm...
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- hmm...
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 

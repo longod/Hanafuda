@@ -938,6 +938,32 @@ end
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
+---@param skipAnimation boolean
+function View.Flip(self, service, player, selectedCard, skipAnimation)
+    -- TODO not skipAnimation
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+
+    local handId = {
+        [koi.player.you] = uiid.playerHand,
+        [koi.player.opponent] = uiid.opponentHand,
+    }
+    local hand = gameMenu:findChild(handId[player])
+    local selected = FindCardIdInChildren(hand, selectedCard)
+    if selected then
+        FlipCard(selected)
+        sound.Play(sound.se.pickCard) -- todo
+    else
+        logger:error("%u does not contain in %u", selectedCard, player)
+    end
+    gameMenu:updateLayout()
+    service:NotifyFlipCard()
+end
+
+---@param self KoiKoi.View
+---@param service KoiKoi.Service
+---@param player KoiKoi.Player
+---@param selectedCard integer
 ---@param matchedCard integer
 ---@param drawn boolean
 ---@param skipAnimation boolean
@@ -957,9 +983,6 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
         }
         local hand = gameMenu:findChild(handId[player])
         selected = FindCardIdInChildren(hand, selectedCard)
-        if player == koi.player.opponent and selected then -- fixme set property?
-            FlipCard(selected)
-        end
     end
     if not selected then
         logger:error("not find cardId %d in UI", selectedCard)
