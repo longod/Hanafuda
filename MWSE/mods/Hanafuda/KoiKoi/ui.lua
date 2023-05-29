@@ -349,7 +349,8 @@ end
 function this.CreateCardTooltip(cardId, backface)
     local tooltip = tes3ui.createTooltipMenu()
     if backface then
-        tooltip:createLabel { text = "Opponent's card" }
+        -- It would be better if it could be replaced with a person's name. but it not make sence to receive in args.
+        tooltip:createLabel({ text = "Opponent's card" })
     else
         tooltip = tes3ui.createTooltipMenu()
         local asset = card.GetCardAsset(cardId)
@@ -382,7 +383,8 @@ end
 ---@return tes3uiElement tooltip
 function this.CreateDeckTooltip(deck)
     local tooltip = tes3ui.createTooltipMenu()
-    local label = tooltip:createLabel({ text = tostring(table.size(deck)) .. " cards remaining" })
+    tooltip:createLabel({text = "Deck"})
+    local label = tooltip:createLabel({ text = string.format("%u cards remaining", table.size(deck)) })
     label.color = tes3ui.getPalette(tes3.palette.headerColor)
     return tooltip
 end

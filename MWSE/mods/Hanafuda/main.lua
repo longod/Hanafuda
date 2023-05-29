@@ -1,4 +1,5 @@
 local config = require("Hanafuda.config")
+local utils = require("Hanafuda.utils")
 
 ---@param _ initializedEventData
 local function OnInitialized(_)
@@ -19,7 +20,7 @@ local function OnInitialized(_)
         else
             service = require("Hanafuda.KoiKoi.service").new(
                 require("Hanafuda.KoiKoi.game").new(),
-                require("Hanafuda.KoiKoi.view").new()
+                require("Hanafuda.KoiKoi.view").new(utils.GetPlayerName(), utils.GetNPCName())
             )
             service:Initialize()
         end

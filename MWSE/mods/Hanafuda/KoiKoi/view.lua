@@ -16,12 +16,20 @@ local cardProperty = "Hanafuda:CardId"
 
 
 ---@class KoiKoi.View
+---@field names { KoiKoi.Player : string }
 local View = {}
 
+---@param playerName string?
+---@param opponentName string?
 ---@return KoiKoi.View
-function View.new()
+function View.new(playerName, opponentName)
     --@type KoiKoi.UI
-    local instance = {}
+    local instance = {
+        names = {
+            [koi.player.you] = playerName or "Player",
+            [koi.player.opponent] = opponentName or "Opponent",
+        },
+    }
     setmetatable(instance, { __index = View })
     return instance
 end
@@ -55,7 +63,8 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
-    tes3.messageBox((player == koi.player.you and "You" or "Opponent") .. " win in this round.")
+    local name = self.names[player]
+    tes3.messageBox("%s win in this round.", name)
     service:NotifyRoundFinished()
 end
 
@@ -65,7 +74,8 @@ end
 ---@param service KoiKoi.Service
 ---@param calling KoiKoi.Calling
 function View.ShowCalling(self, player, service, calling)
-    tes3.messageBox("Opponent choices %s", calling == koi.calling.koikoi and "Koi-Koi" or "Shobu" )
+    local name = self.names[player]
+    tes3.messageBox("%s choices %s", name, calling == koi.calling.koikoi and "Koi-Koi" or "Shobu" )
     if calling == koi.calling.koikoi then
         sound.PlayVoice(sound.voice.continue, "", false)
     elseif calling == koi.calling.shobu then
@@ -130,7 +140,7 @@ function View.ShowCallingDialog(self, player, service, combo)
     local total = SumTotalPoint(combo)
 
     tes3ui.showMessageMenu({
-        header = "Your Calling",
+        header = string.format("%s's Calling", self.names[player]),
         message = string.format("Koi-Koi or Shobu %u points" , total),
         buttons = {
             {
@@ -189,9 +199,11 @@ end
 function View.ShowCombo(self, player, service, combo)
     local total = SumTotalPoint(combo)
 
+    local name = self.names[player]
+
     tes3ui.showMessageMenu({
-        header = "Opponent Calling",
-        message = string.format("Opponent has arranged combos. %u points", total),
+        header = string.format("%s's Calling", name),
+        message = string.format("%s has arranged combos. %u points", name, total),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -340,7 +352,7 @@ end
 ---@return tes3uiElement?
 local function FindCardIdInChildren(element, cardId)
     -- linear search
-    for index, child in ipairs(element.children) do
+    for _, child in ipairs(element.children) do
         if GetCardId(child) == cardId  then
             return child
         end
@@ -1062,20 +1074,14 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.BeginTurn(self, player, parent, service)
+    local text = string.format("%s's Turn", self.names[player])
+
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local turn = gameMenu:findChild(uiid.turn)
-    turn.text = (player == koi.player.you) and "Your Turn" or "Opponent's Turn"
+    turn.text = text
 
-    local getname = function(player, parent)
-        local name = player == koi.player.you and "Your" or "Opponent's"
-        if player == parent then
-            return name .. " (Parent)"
-        else
-            return name .. " (Child)"
-        end
-    end
-    tes3.messageBox("%s Turn", getname(player, parent))
+    tes3.messageBox(text)
 
     -- todo jingle
     service:NotifyBeganTurn()
@@ -1239,8 +1245,9 @@ local function CreateBoard(parent, height)
     -- ground.minHeight = cardLayoutHeight * 2
 end
 
+---@param self KoiKoi.View
 ---@param parent tes3uiElement
-local function CreateYourCaptured(parent)
+function View.CreateYourCaptured(self, parent)
     local captured = parent:createBlock()
     --captured.borderAllSides = 6
     captured.widthProportional = 1
@@ -1252,7 +1259,7 @@ local function CreateYourCaptured(parent)
     block.childAlignX = 0
     block.widthProportional = 1
     block.autoHeight = true
-    block:createLabel({text="Your Captured Cards"}) -- todo name
+    block:createLabel({text = string.format("%s's Captured Cards", self.names[koi.player.you])})
 
     local bright = CreateTypeArea(CreateTypeFrame(captured), uiid.playerBright, card.type.bright)
     local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.playerAnimal, card.type.animal)
@@ -1261,8 +1268,9 @@ local function CreateYourCaptured(parent)
 
 end
 
+---@param self KoiKoi.View
 ---@param parent tes3uiElement
-local function CreateOpponentCaptured(parent)
+function View.CreateOpponentCaptured(self, parent)
     local captured = parent:createBlock()
     --captured.borderAllSides = 6
     captured.widthProportional = 1
@@ -1281,10 +1289,12 @@ local function CreateOpponentCaptured(parent)
     block.childAlignX = 1
     block.widthProportional = 1
     block.autoHeight = true
-    local label = block:createLabel({text="Opponent's Captured Cards"}) -- todo name
+    local label = block:createLabel({text = string.format("%s's Captured Cards", self.names[koi.player.opponent])})
 end
 
-local function CreateInfo(parent)
+---@param self KoiKoi.View
+---@param parent tes3uiElement
+function View.CreateInfo(self, parent)
     local upper = parent:createBlock()
     upper.widthProportional = 1
     upper.autoHeight = true
@@ -1319,7 +1329,7 @@ local function CreateInfo(parent)
     local on = opponent:createBlock()
     on.autoWidth = true
     on.autoHeight = true
-    on:createLabel({id = uiid.opponentName, text = "Opponent Name"}).color = header
+    on:createLabel({id = uiid.opponentName, text = self.names[koi.player.opponent]}).color = header
     on:createLabel({id = uiid.opponentDealer, text = ""})
 
     local os = opponent:createBlock()
@@ -1357,7 +1367,7 @@ local function CreateInfo(parent)
     local yn = you:createBlock()
     yn.autoWidth = true
     yn.autoHeight = true
-    yn:createLabel({id = uiid.playerName, text = "Your Name"}).color = header
+    yn:createLabel({id = uiid.playerName, text = self.names[koi.player.you]}).color = header
     yn:createLabel({id = uiid.playerDealer, text = ""})
 
     local ys = you:createBlock()
@@ -1432,10 +1442,10 @@ function View.OpenGameMenu(self, id, service)
     right.flowDirection = tes3.flowDirection.topToBottom
     right.childAlignY = 0.5
 
-    CreateInfo(left)
+    self:CreateInfo(left)
 
-    CreateOpponentCaptured(right)
-    CreateYourCaptured(right)
+    self:CreateOpponentCaptured(right)
+    self:CreateYourCaptured(right)
 
     local board = center:createRect()
     board.color = { 0.0, 0.0, 0.0 }
