@@ -12,6 +12,8 @@ local this = {
     playerChaff = tes3ui.registerID("Player.Chaff"),
     playerScore = tes3ui.registerID("Player.Score"),
     playerCombination = tes3ui.registerID("Player.Combination"),
+    playerName = tes3ui.registerID("Player.Name"),
+    playerDealer = tes3ui.registerID("Player.Dealer"),
     opponentHand = tes3ui.registerID("Opponent.Hand"),
     opponentBright = tes3ui.registerID("Opponent.Bright"),
     opponentAnimal = tes3ui.registerID("Opponent.Animal"),
@@ -19,10 +21,13 @@ local this = {
     opponentChaff = tes3ui.registerID("Opponent.Chaff"),
     opponentScore = tes3ui.registerID("Opponent.Score"),
     opponentCombination = tes3ui.registerID("Opponent.Combination"),
+    opponentName = tes3ui.registerID("Opponent.Name"),
+    opponentDealer = tes3ui.registerID("Opponent.Dealer"),
     boardPile = tes3ui.registerID("Board.Pile"),
     boardDrawn = tes3ui.registerID("Board.Drawn"),
     boardGroundRow0 = tes3ui.registerID("Board.GroundRow0"),
     boardGroundRow1 = tes3ui.registerID("Board.GroundRow1"),
-    boardRound = tes3ui.registerID("Board.Round"),
+    round = tes3ui.registerID("Board.Round"),
+    turn = tes3ui.registerID("Board.Turn"),
 }
 return this

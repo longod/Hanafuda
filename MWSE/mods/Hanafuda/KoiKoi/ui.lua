@@ -145,13 +145,13 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
             condition = string.format("Any 5 %s cards.", card.GetCardTypeText(card.type.ribbon).name),
         },
         [koi.combination.flowerViewingSake] = {
-            name = "Hanami de Ippai",
+            name = "Hanami-Zake",
             type = card.type.chaff, -- no chaff but no suitable type
             point = string.format("%u points.", koi.basePoint[koi.combination.flowerViewingSake]),
             condition = string.format("%s and %s.", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
         },
         [koi.combination.moonViewingSake] = {
-            name = "Tsukimi de Ippai",
+            name = "Tsukimi-Zake",
             type = card.type.chaff, -- no chaff but no suitable type
             point = string.format("%u points.", koi.basePoint[koi.combination.moonViewingSake]),
             condition = string.format("%s and %s.", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),

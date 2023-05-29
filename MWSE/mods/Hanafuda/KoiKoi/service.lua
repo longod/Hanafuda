@@ -333,12 +333,15 @@ function Service.OnEnterFrame(self, e)
             self.view:ShowWin(self.game.current, self)
             -- win current player
             self.game:SetWinner(self.game.current)
+            self.view:UpdateScorePoint(self.game.current, self.game.points[self.game.current])
         end,
         [phase.roundFinished] = function ()
             if self.game:NextRound() then
                 -- clean up
                 self.game:Initialize()
                 self.view:CleanUpCards()
+                self.view:UpdateRound(self.game.round, self.game.settings.round)
+                self.view:UpdateParent(self.game.parent)
                 self:RequestPhase(phase.decidedParent)
             else
                 self:RequestPhase(phase.gameFinished)
@@ -407,6 +410,9 @@ function Service.Initialize(self)
     -- self.game.parent = koi.player.opponent -- testing
     -- self.game.current = koi.player.opponent -- testing
     self.view:Initialize(self)
+    self.view:UpdateRound(self.game.round, self.game.settings.round)
+    self.view:UpdateScorePoint(koi.player.you, self.game.points[koi.player.you])
+    self.view:UpdateScorePoint(koi.player.opponent, self.game.points[koi.player.opponent])
     self:RequestPhase(self.skipDecidingParent and phase.decidedParent or phase.initialized )
 end
 

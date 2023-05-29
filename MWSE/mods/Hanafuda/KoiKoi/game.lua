@@ -15,7 +15,7 @@ local combination = require("Hanafuda.KoiKoi.combination")
 
 --- ruleset aka model
 ---@class KoiKoi
----@field parent KoiKoi.Player
+---@field parent KoiKoi.Player means dealer + alpha
 ---@field current KoiKoi.Player
 ---@field round integer
 ---@field settings KoiKoi.Settings

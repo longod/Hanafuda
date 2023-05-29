@@ -8,6 +8,7 @@ local defaultConfig = {
         houseRule = {
             flowerViewingSake = true,
             moonViewingSake = true,
+            -- nov cards rain off, dec cards fog
         },
     },
     audio = {

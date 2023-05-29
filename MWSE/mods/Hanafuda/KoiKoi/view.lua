@@ -222,6 +222,52 @@ function View.ShowCombo(self, player, service, combo)
 
 end
 
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param score integer
+function View.UpdateScorePoint(self, player, score)
+    local labelId = {
+        [koi.player.you] = uiid.playerScore,
+        [koi.player.opponent] = uiid.opponentScore,
+    }
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local label = gameMenu:findChild(labelId[player])
+    label.text = string.format("%u", score)
+    --gameMenu:updateLayout()
+end
+
+---@param self KoiKoi.View
+---@param current integer
+---@param max integer
+function View.UpdateRound(self, current, max)
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local label = gameMenu:findChild(uiid.round)
+    label.text = string.format("%u/%u", current, max)
+    --gameMenu:updateLayout()
+end
+
+---@param self KoiKoi.View
+---@param parent KoiKoi.Player
+function View.UpdateParent(self, parent)
+    local labelId = {
+        [koi.player.you] = uiid.playerDealer,
+        [koi.player.opponent] = uiid.opponentDealer,
+    }
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    do
+        local label = gameMenu:findChild(labelId[parent])
+        label.text = " (Parent)"
+    end
+    do
+        local child = koi.GetOpponent(parent)
+        local label = gameMenu:findChild(labelId[child])
+        label.text = " (Child)"
+    end
+    --gameMenu:updateLayout()
+end
 
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
@@ -273,6 +319,8 @@ function View.InformParent(self, parent, service)
     else
         assert()
     end
+    self:UpdateParent(parent)
+
     service:NotifyInformParent()
 end
 
@@ -1014,7 +1062,10 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.BeginTurn(self, player, parent, service)
-
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local turn = gameMenu:findChild(uiid.turn)
+    turn.text = (player == koi.player.you) and "Your Turn" or "Opponent's Turn"
 
     local getname = function(player, parent)
         local name = player == koi.player.you and "Your" or "Opponent's"
@@ -1025,6 +1076,7 @@ function View.BeginTurn(self, player, parent, service)
         end
     end
     tes3.messageBox("%s Turn", getname(player, parent))
+
     -- todo jingle
     service:NotifyBeganTurn()
 end
@@ -1267,15 +1319,15 @@ local function CreateInfo(parent)
     local on = opponent:createBlock()
     on.autoWidth = true
     on.autoHeight = true
-    on:createLabel({text = "Opponent Name"}).color = header
-    on:createLabel({text = " (Parent)"})
+    on:createLabel({id = uiid.opponentName, text = "Opponent Name"}).color = header
+    on:createLabel({id = uiid.opponentDealer, text = ""})
 
     local os = opponent:createBlock()
     os.autoWidth = true
     os.autoHeight = true
     os:createLabel({text = "Total Score: "})
-    os:createLabel({text = "123"})
-    opponent:createLabel({text = "Round Combination"})
+    os:createLabel({id = uiid.opponentScore, text = ""})
+    opponent:createLabel({text = "Combination in this round:"})
     -- todo drivre for test
     local opponentCombo = opponent:createBlock({id = uiid.opponentCombination })
     opponentCombo.widthProportional = 1
@@ -1288,12 +1340,12 @@ local function CreateInfo(parent)
     rn.autoHeight = true
     rn.childAlignX = 0.5
     rn:createLabel({text = "Round: "})
-    rn:createLabel({text = "2"})
+    rn:createLabel({id = uiid.round, text = ""})
     local tn = split:createBlock()
     tn.widthProportional = 1
     tn.autoHeight = true
     tn.childAlignX = 0.5
-    tn:createLabel({text = "Your Turn"}).color = header
+    tn:createLabel({id = uiid.turn, text = ""}).color = header
 
     local you = split:createThinBorder()
     you.widthProportional = 1
@@ -1305,16 +1357,16 @@ local function CreateInfo(parent)
     local yn = you:createBlock()
     yn.autoWidth = true
     yn.autoHeight = true
-    yn:createLabel({text = "Your Name"}).color = header
-    yn:createLabel({text = " (Child)"})
+    yn:createLabel({id = uiid.playerName, text = "Your Name"}).color = header
+    yn:createLabel({id = uiid.playerDealer, text = ""})
 
     local ys = you:createBlock()
     ys.autoWidth = true
     ys.autoHeight = true
     ys:createLabel({text = "Total Score: "})
-    ys:createLabel({text = "456"})
+    ys:createLabel({id = uiid.playerScore, text = ""})
 
-    you:createLabel({text = "Round Combination"})
+    you:createLabel({text = "Combination in this round:"})
     -- todo drivre for test
     local yourCombo = you:createBlock({id = uiid.playerCombination })
     yourCombo.widthProportional = 1
