@@ -324,15 +324,8 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.InformParent(self, parent, service)
-    if parent == koi.player.you then
-        tes3.messageBox("Parent is you. Child is opponent.")
-    elseif parent == koi.player.opponent then
-        tes3.messageBox("Parent is opponent. Child is you.")
-    else
-        assert()
-    end
+    tes3.messageBox("Parent is %s.\nChild is %s.", self.names[parent], self.names[koi.GetOpponent(parent)])
     self:UpdateParent(parent)
-
     service:NotifyInformParent()
 end
 
@@ -1322,7 +1315,7 @@ function View.CreateInfo(self, parent)
     opponent.heightProportional = 1
     opponent.flowDirection = tes3.flowDirection.topToBottom
     opponent.borderAllSides = 6
-    --opponent.paddingAllSides = 6
+    opponent.paddingAllSides = 6
 
     -- todo display number and names
 
@@ -1362,7 +1355,7 @@ function View.CreateInfo(self, parent)
     you.heightProportional = 1
     you.flowDirection = tes3.flowDirection.topToBottom
     you.borderAllSides = 6
-    --you.paddingAllSides = 6
+    you.paddingAllSides = 6
 
     local yn = you:createBlock()
     yn.autoWidth = true
