@@ -5,7 +5,8 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
 
 ## How to play
 - This is where `Data Files` is located.
-- Currently, the game can be played instantly by pressing `K` key. Exit is also `K` key.
+- You can play against NPCs from the service menu by talking to them.
+- Or the game can be played instantly by pressing `K` key. Exit is also `K` key.
    - This is a debugging function.
 - The game rule is `Koi-Koi` only.
 - For information on `Hanafuda` and `Koi-Koi`, please refer to the following documents and others.
@@ -21,6 +22,7 @@ I hope you can do it together.
 Especially since I lack skill sets to create assets, I find creating them very time consuming and the quality is not good.
 
 ## Future Work
+- Skill Module (optional)
 - Playing on 3D
 - Generalize as a card or board game such as framework
 - Other game rules using Hanafuda
