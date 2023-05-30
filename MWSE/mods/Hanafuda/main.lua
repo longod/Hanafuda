@@ -20,11 +20,20 @@ local function OnInitialized(_)
         else
             service = require("Hanafuda.KoiKoi.service").new(
                 require("Hanafuda.KoiKoi.game").new(),
-                require("Hanafuda.KoiKoi.view").new(utils.GetPlayerName(), utils.GetNPCName())
+                require("Hanafuda.KoiKoi.view").new(utils.GetPlayerName(), utils.GetNPCName()),
+                function(_)
+                    if service then
+                        service:Destory()
+                        service = nil
+                    end
+                end
             )
             service:Initialize()
         end
     end, {filter = tes3.scanCode.k} )
+
+    require("Hanafuda.Dialog.service")
+
 end
 event.register(tes3.event.initialized, OnInitialized)
 dofile("Hanafuda/mcm.lua")

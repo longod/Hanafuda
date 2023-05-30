@@ -34,8 +34,34 @@ function View.new(playerName, opponentName)
     return instance
 end
 
+---@param self KoiKoi.View
+---@param service KoiKoi.Service
+---@param player KoiKoi.Player?
+function View.ShowResult(self, service, player)
+    -- show round histroy?
+    -- todo more rich
+    local msg = "Draw Game"
+    if player then
+        local name = self.names[player]
+        msg = string.format("%s Won!", name)
+    end
+    tes3ui.showMessageMenu({
+        message = msg,
+        buttons = {
+            {
+                text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
+                callback = function()
+                    service:NotifyTerminate()
+                end,
+            },
+        },
+    })
+end
+
+---@param self KoiKoi.View
 ---@param e uiEventEventData
-local function OnExit(e)
+---@param service KoiKoi.Service
+function View.OnExit(self, e, service)
     tes3.messageBox({
         message = "Eixt and you lose.",
         buttons = {
@@ -45,7 +71,8 @@ local function OnExit(e)
         callback =
         function(btnCallbackData)
             if btnCallbackData.button == 0 then
-                -- todo
+                logger:info("Yield the game")
+                service:Exit(koi.player.opponent)
             end
         end,
     })
@@ -68,7 +95,6 @@ function View.ShowWin(self, player, service)
     service:NotifyRoundFinished()
 end
 
-
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
@@ -77,9 +103,9 @@ function View.ShowCalling(self, player, service, calling)
     local name = self.names[player]
     tes3.messageBox("%s choices %s", name, calling == koi.calling.koikoi and "Koi-Koi" or "Shobu" )
     if calling == koi.calling.koikoi then
-        sound.PlayVoice(sound.voice.continue, "", false)
+        --sound.PlayVoice(sound.voice.continue, "", false)
     elseif calling == koi.calling.shobu then
-        sound.PlayVoice(sound.voice.finish, "", false)
+        --sound.PlayVoice(sound.voice.finish, "", false)
     end
     service:NotifyCalling(calling)
 end
@@ -1310,7 +1336,8 @@ end
 
 ---@param self KoiKoi.View
 ---@param parent tes3uiElement
-function View.CreateInfo(self, parent)
+---@param service KoiKoi.Service
+function View.CreateInfo(self, parent, service)
     local upper = parent:createBlock()
     upper.widthProportional = 1
     upper.autoHeight = true
@@ -1322,7 +1349,12 @@ function View.CreateInfo(self, parent)
     upper:createBlock().widthProportional = 1
     local combo = upper:createButton({text = "Combo List"})
     local rule = upper:createButton({text = "Quick Rule"})
-    exit:register(tes3.uiEvent.mouseClick, OnExit)
+    -- todo exit enabled condition
+    exit:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        self:OnExit(e, service)
+    end)
     combo:register(tes3.uiEvent.mouseClick, ui.CreateCombinationList)
     rule:register(tes3.uiEvent.mouseClick, ui.CreateRule)
 
@@ -1458,7 +1490,7 @@ function View.OpenGameMenu(self, id, service)
     right.flowDirection = tes3.flowDirection.topToBottom
     right.childAlignY = 0.5
 
-    self:CreateInfo(left)
+    self:CreateInfo(left, service)
 
     self:CreateOpponentCaptured(right)
     self:CreateYourCaptured(right)

@@ -86,11 +86,11 @@ function this.Calculate(captured)
         if card.Contain(sakeCup, animal) then
             if hasCurtain then
                 combo[koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake]
-                logger:debug("Hanami-Zake" .. tostring(combo[koi.combination.flowerViewingSake]))
+                logger:debug("Hanami-Zake " .. tostring(combo[koi.combination.flowerViewingSake]))
             end
             if hasMoon then
                 combo[koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake]
-                logger:debug("Tsukimi-Zake" .. tostring(combo[koi.combination.moonViewingSake]))
+                logger:debug("Tsukimi-Zake " .. tostring(combo[koi.combination.moonViewingSake]))
             end
         end
     end

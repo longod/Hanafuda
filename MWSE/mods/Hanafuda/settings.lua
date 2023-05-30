@@ -6,6 +6,7 @@ local defaultConfig = {
     -- game speed x1.0 for wait time
     koikoi = {
         houseRule = {
+            -- multiplier variations
             flowerViewingSake = true,
             moonViewingSake = true,
             -- nov cards rain off, dec cards fog

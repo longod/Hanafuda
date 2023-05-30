@@ -28,7 +28,8 @@ local phase = {
     win = 22,
     roundFinished = 23,
     gameFinished = 24,
-    terminate = 25,
+    resultWait = 25,
+    terminate = 26,
 
     wait = 100,
 }
@@ -43,12 +44,14 @@ local phase = {
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
 ---@field lastCommand KoiKoi.ICommand?
+---@field onExit fun(winner: KoiKoi.Player?)?
 local Service = {}
 
 ---@param game KoiKoi
 ---@param view KoiKoi.View
+---@param onExit fun(winner: KoiKoi.Player)?
 ---@return KoiKoi.Service
-function Service.new(game, view)
+function Service.new(game, view, onExit)
     --@type KoiKoi.Service
     local instance = {
         phase = phase.new,
@@ -59,6 +62,7 @@ function Service.new(game, view)
         skipDecidingParent = false, -- or table flags
         skipAnimation = true,
         lastCommand = nil,
+        onExit = onExit,
     }
     setmetatable(instance, { __index = Service })
     return instance
@@ -342,6 +346,7 @@ function Service.OnEnterFrame(self, e)
         [phase.calling] = function()
             local command = self.game:Call(self.game.current, self.game.combinations[self.game.current]) -- fixme use accessor
             if command then
+                self.lastCommand = command
                 self.view:ShowCalling(self.game.current, self, command.calling)
             end
         end,
@@ -360,7 +365,7 @@ function Service.OnEnterFrame(self, e)
         [phase.win] = function()
             self.view:ShowWin(self.game.current, self)
             -- win current player
-            self.game:SetWinner(self.game.current)
+            self.game:SetRoundWinner(self.game.current)
             self.view:UpdateScorePoint(self.game.current, self.game.points[self.game.current])
         end,
         [phase.roundFinished] = function ()
@@ -376,10 +381,14 @@ function Service.OnEnterFrame(self, e)
             end
         end,
         [phase.gameFinished] = function ()
-            -- todo show result
+            self:RequestPhase(phase.resultWait)
+            self.view:ShowResult(self, self.game:GetGameWinner())
+        end,
+        [phase.resultWait] = function ()
+            -- waiting
         end,
         [phase.terminate] = function ()
-            -- todo shutdown and release instance, how do inside?
+            self:Exit(self.game:GetGameWinner())
         end,
     }
     --logger:trace("phase ".. tostring(self.phase) )
@@ -459,6 +468,22 @@ function Service.Destory(self)
 end
 
 ---@param self KoiKoi.Service
+---@param winner KoiKoi.Player?
+---@return boolean
+function Service.Exit(self, winner)
+    logger:debug("Exit Koi-Koi" .. tostring(winner))
+    if not winner then
+        -- no game
+    end
+
+    -- callback or event trigger?
+    if self.onExit then
+        self.onExit(winner)
+    end
+    return true
+end
+
+---@param self KoiKoi.Service
 ---@param leftRight boolean
 function Service.NotifyDecideParent(self, leftRight)
     self.game:DecideParent(leftRight)
@@ -532,6 +557,11 @@ end
 ---@param self KoiKoi.Service
 function Service.NotifyRoundFinished(self)
     self:RequestPhase(phase.roundFinished)
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyTerminate(self)
+    self:RequestPhase(phase.terminate)
 end
 
 return Service

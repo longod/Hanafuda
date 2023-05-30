@@ -322,7 +322,7 @@ function KoiKoi.EmptyHand(self, player)
 end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
-function KoiKoi.SetWinner(self, player)
+function KoiKoi.SetRoundWinner(self, player)
 
     ---@param combo { [KoiKoi.CombinationType] : integer }
     ---@return integer
@@ -351,6 +351,15 @@ function KoiKoi.NextRound(self)
         return true
     end
     return false
+end
+
+---@param self KoiKoi
+---@return KoiKoi.Player? -- nil is draw
+function KoiKoi.GetGameWinner(self)
+    local a = self.points[koi.player.you]
+    local b = self.points[koi.player.opponent]
+    local winner = (a == b) and nil or (a > b and koi.player.you or koi.player.opponent)
+    return winner
 end
 
 return KoiKoi
