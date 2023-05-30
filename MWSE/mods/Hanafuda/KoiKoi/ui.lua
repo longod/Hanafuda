@@ -326,6 +326,91 @@ function this.CreateRule(e)
     parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
     parent:createLabel({ text = "simple rule here"})
 
+    -- card table
+    parent:createLabel({ text = "Card List"})
+    local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
+    local scale = 1
+    local padding = 4
+    local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
+    local suitWidth = math.max(card.GetCardWidth() * scale + padding, 96)
+    local frame = parent:createThinBorder()
+    frame.widthProportional = 1
+    frame.autoWidth = true
+    frame.autoHeight = true
+    frame.flowDirection = tes3.flowDirection.topToBottom
+    do
+        local row = frame:createBlock()
+        row.widthProportional = 1
+        row.autoWidth = true
+        row.autoHeight = true
+        row.flowDirection = tes3.flowDirection.leftToRight
+        row.paddingAllSides = 2
+        do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.minWidth = suitWidth
+            col.width = suitWidth
+        end
+        for _, j in ipairs(table.values(card.type, true)) do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.flowDirection = tes3.flowDirection.leftToRight
+            col.minWidth = minWidth
+            col.width = minWidth
+            col:createLabel({text = card.GetCardTypeText(j ).name}).color = card.GetCardTypeColor(j)
+        end
+    end
+    frame:createDivider().widthProportional = 1
+    for _, i in ipairs(table.values(card.suit, true)) do
+        local row = frame:createBlock()
+        row.widthProportional = 1
+        row.autoWidth = true
+        row.autoHeight = true
+        row.flowDirection = tes3.flowDirection.leftToRight
+        row.paddingAllSides = 2
+        do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.minWidth = suitWidth
+            col.width = suitWidth
+            col.flowDirection = tes3.flowDirection.topToBottom
+            -- not working...
+            -- col.childAlignX = 1
+            -- col.childAlignY = 0.5
+            local text = card.GetCardSuitText(i)
+            col:createLabel({text = tostring(i) })
+            col:createLabel({text = text.name }).color = headerColor
+            if text.alt then
+                col:createLabel({text = text.alt })
+            end
+        end
+
+        for _, j in ipairs(table.values(card.type, true)) do
+            local col = row:createBlock()
+            col.autoWidth = true
+            col.autoHeight = true
+            col.minWidth = minWidth
+            col.flowDirection = tes3.flowDirection.leftToRight
+            local cards = card.Find({ suit = i, type = j, findAll = true }) --[[@as integer[]?]]
+            if cards then
+                for _, cardId in ipairs(cards) do
+                    local asset = card.GetCardAsset(cardId)
+                    local b = col:createBlock()
+                    b.autoWidth = true
+                    b.autoHeight = true
+                    b.paddingAllSides = 0
+                    b.paddingRight = padding
+                    local image = b:createImage({ path = asset.path })
+                    image.width = card.GetCardWidth() * scale
+                    image.height = card.GetCardHeight() * scale
+                    image.scaleMode = true
+                end
+            end
+        end
+        frame:createDivider().widthProportional = 1
+
+    end
+
     local bottom = root:createBlock()
     bottom.widthProportional = 1
     bottom.autoHeight = true

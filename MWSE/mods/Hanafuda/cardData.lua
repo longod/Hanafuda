@@ -153,6 +153,7 @@ this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
 
 ---@class CardText
 ---@field name string
+---@field alt string?
 
 ---@type CardText[]
 this.cardText = {
@@ -209,18 +210,18 @@ assert(table.size(this.cardText) == this.cardCount)
 
 ---@type CardText[]
 this.suitText = {
-    { name = "Mutsuki" },
-    { name = "Kisaragi" },
-    { name = "Yayoi" },
-    { name = "Uzuki" },
-    { name = "Satsuki" },
-    { name = "Minazuki" },
-    { name = "Fumizuki" },
-    { name = "Hazuki" },
-    { name = "Nagatsuki" },
-    { name = "Kannazuki" },
-    { name = "Shimotsuki" },
-    { name = "Shiwasu" },
+    { name = "Mutsuki", alt = "Matsu" },
+    { name = "Kisaragi", alt = "Ume" },
+    { name = "Yayoi", alt = "Sakura" },
+    { name = "Uzuki", alt = "Fuji" },
+    { name = "Satsuki", alt = "Kakitsubata" },
+    { name = "Minazuki", alt = "Botan" },
+    { name = "Fumizuki", alt = "Hagi" },
+    { name = "Hazuki", alt = "Susuki" },
+    { name = "Nagatsuki", alt = "Kiku" },
+    { name = "Kannazuki", alt = "Momiji" },
+    { name = "Shimotsuki", alt = "Yanagi" },
+    { name = "Shiwasu", alt = "Kiri" },
 }
 assert(table.size(this.suitText) == table.size(this.cardSuit))
 

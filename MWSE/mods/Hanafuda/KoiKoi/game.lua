@@ -114,8 +114,8 @@ end
 ---@param self KoiKoi
 ---@param leftRight boolean
 function KoiKoi.DecideParent(self, leftRight)
-    --self.parent = math.random(koi.player.you, koi.player.opponent)
-    self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
+    self.parent = math.random(koi.player.you, koi.player.opponent)
+    --self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent
     logger:debug("Parent is ".. tostring(self.parent))
 end
