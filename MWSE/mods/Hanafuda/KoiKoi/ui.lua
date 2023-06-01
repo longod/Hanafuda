@@ -85,82 +85,82 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
     end
     local desc = {
         [koi.combination.fiveBrights] = {
-            name = "Goko",
+            name = i18n("koi.combo.fiveBrights.name"),
             type = card.type.bright,
-            point = string.format("%u points.", koi.basePoint[koi.combination.fiveBrights]),
-            condition = string.format("All 5 %s cards.", card.GetCardTypeText(card.type.bright).name),
+            point = i18n("koi.combo.fiveBrights.point", {koi.basePoint[koi.combination.fiveBrights]}),
+            condition = i18n("koi.combo.fiveBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
         },
         [koi.combination.fourBrights] = {
-            name = "Shiko",
+            name = i18n("koi.combo.fourBrights.name"),
             type = card.type.bright,
-            point = string.format("%u points.", koi.basePoint[koi.combination.fourBrights]),
-            condition = string.format("All 4 %s cards without %s.", card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name),
+            point = i18n("koi.combo.fourBrights.point", {koi.basePoint[koi.combination.fourBrights]}),
+            condition = i18n("koi.combo.fourBrights.condition", {card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name}),
         },
         [koi.combination.rainyFourBrights] = {
-            name = "Ame-Shiko",
+            name = i18n("koi.combo.rainyFourBrights.name"),
             type = card.type.bright,
-            point = string.format("%u points.", koi.basePoint[koi.combination.rainyFourBrights]),
-            condition = string.format("Any 4 %s cards.", card.GetCardTypeText(card.type.bright).name),
+            point = i18n("koi.combo.rainyFourBrights.point", {koi.basePoint[koi.combination.rainyFourBrights]}),
+            condition = i18n("koi.combo.rainyFourBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
         },
         [koi.combination.threeBrights] = {
-            name = "Sanko",
+            name = i18n("koi.combo.threeBrights.name"),
             type = card.type.bright,
-            point = string.format("%u points.", koi.basePoint[koi.combination.threeBrights]),
-            condition = string.format("Any 3 %s cards.", card.GetCardTypeText(card.type.bright).name),
+            point = i18n("koi.combo.threeBrights.point", {koi.basePoint[koi.combination.threeBrights]}),
+            condition = i18n("koi.combo.threeBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
         },
         [koi.combination.boarDeerButterfly] = {
-            name = "Ino-Shika-Cho",
+            name = i18n("koi.combo.boarDeerButterfly.name"),
             type = card.type.animal,
-            point = string.format("%u points.", koi.basePoint[koi.combination.boarDeerButterfly]),
-            condition = string.format("%s, %s and %s", card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name),
+            point = i18n("koi.combo.boarDeerButterfly.point", {koi.basePoint[koi.combination.boarDeerButterfly]}),
+            condition = i18n("koi.combo.boarDeerButterfly.condition", {card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name}),
         },
         [koi.combination.animals] = {
-            name = "Tane",
+            name = i18n("koi.combo.animals.name"),
             type = card.type.animal,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name),
-            condition = string.format("Any five %s cards.", card.GetCardTypeText(card.type.animal).name),
+            point = i18n("koi.combo.animals.point", {koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name}),
+            condition = i18n("koi.combo.animals.condition", {card.GetCardTypeText(card.type.animal).name}),
         },
         [koi.combination.poetryAndBlueRibbons] = {
-            name = "Akatan-Aotan",
+            name = i18n("koi.combo.poetryAndBlueRibbons.name"),
             type = card.type.ribbon,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("All 3 Red Poetry %s cards and all 3 Blue %s cards.", card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name),
+            point = i18n("koi.combo.poetryAndBlueRibbons.point", {koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name}),
+            condition = i18n("koi.combo.poetryAndBlueRibbons.condition", {card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name}),
         },
         [koi.combination.poetryRibbons] = {
-            name = "Akatan",
+            name = i18n("koi.combo.poetryRibbons.name"),
             type = card.type.ribbon,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("%s, %s and %s", card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name, card.GetCardText(redPoetry[3]).name),
+            point = i18n("koi.combo.poetryRibbons.point", {koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name}),
+            condition = i18n("koi.combo.poetryRibbons.condition", {card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name, card.GetCardText(redPoetry[3]).name}),
         },
         [koi.combination.blueRibbons] = {
-            name = "Aotan",
+            name = i18n("koi.combo.blueRibbons.name"),
             type = card.type.ribbon,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("%s, %s and %s", card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name, card.GetCardText(blueRibbon[3]).name),
+            point = i18n("koi.combo.blueRibbons.point", {koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name}),
+            condition = i18n("koi.combo.blueRibbons.condition", {card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name, card.GetCardText(blueRibbon[3]).name}),
         },
         [koi.combination.ribbons] = {
-            name = "Tan",
+            name = i18n("koi.combo.ribbons.name"),
             type = card.type.ribbon,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name),
-            condition = string.format("Any 5 %s cards.", card.GetCardTypeText(card.type.ribbon).name),
+            point = i18n("koi.combo.ribbons.point", {koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name}),
+            condition = i18n("koi.combo.ribbons.condition", {card.GetCardTypeText(card.type.ribbon).name}),
         },
         [koi.combination.flowerViewingSake] = {
-            name = "Hanami-Zake",
+            name = i18n("koi.combo.flowerViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = string.format("%u points.", koi.basePoint[koi.combination.flowerViewingSake]),
-            condition = string.format("%s and %s.", card.GetCardText(curtain).name, card.GetCardText(sakeCup).name),
+            point = i18n("koi.combo.flowerViewingSake.point", {koi.basePoint[koi.combination.flowerViewingSake]}),
+            condition = i18n("koi.combo.flowerViewingSake.condition", {card.GetCardText(curtain).name, card.GetCardText(sakeCup).name}),
         },
         [koi.combination.moonViewingSake] = {
-            name = "Tsukimi-Zake",
+            name = i18n("koi.combo.moonViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = string.format("%u points.", koi.basePoint[koi.combination.moonViewingSake]),
-            condition = string.format("%s and %s.", card.GetCardText(moon).name, card.GetCardText(sakeCup).name),
+            point = i18n("koi.combo.moonViewingSake.point", {koi.basePoint[koi.combination.moonViewingSake]}),
+            condition = i18n("koi.combo.moonViewingSake.condition", {card.GetCardText(moon).name, card.GetCardText(sakeCup).name}),
         },
         [koi.combination.chaff] = {
-            name = "Kasu",
+            name = i18n("koi.combo.chaff.name"),
             type = card.type.chaff,
-            point = string.format("%u points and 1 additional point for each additional %s card.", koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name),
-            condition = string.format("Any 10 %s cards.", card.GetCardTypeText(card.type.chaff).name),
+            point = i18n("koi.combo.chaff.point", {koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name}),
+            condition = i18n("koi.combo.chaff.condition", {card.GetCardTypeText(card.type.chaff).name}),
         },
     }
     local combo = {
@@ -223,7 +223,7 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         right.childAlignX = 1
 
         if actualPoint then
-            local point = right:createLabel({ text = string.format("%u points", actualPoint) })
+            local point = right:createLabel({ text = i18n("koi.point", {actualPoint}) })
             --point.borderRight = indent * 2
             --point.wrapText = true
         else
@@ -324,10 +324,10 @@ function this.CreateRule(e)
     local parent = pane:getContentElement()
 
     parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
-    parent:createLabel({ text = "simple rule here"})
+    parent:createLabel({ text = i18n("koi.rule")})
 
     -- card table
-    parent:createLabel({ text = "Card List"})
+    parent:createLabel({ text = i18n("koi.cardList")})
     local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
     local scale = 1
     local padding = 4
@@ -435,7 +435,7 @@ function this.CreateCardTooltip(cardId, backface)
     local tooltip = tes3ui.createTooltipMenu()
     if backface then
         -- It would be better if it could be replaced with a person's name. but it not make sence to receive in args.
-        tooltip:createLabel({ text = "Opponent's card" })
+        tooltip:createLabel({ text = i18n("koi.opponentCard") })
     else
         tooltip = tes3ui.createTooltipMenu()
         local asset = card.GetCardAsset(cardId)
@@ -469,9 +469,11 @@ end
 function this.CreateDeckTooltip(deck)
     local tooltip = tes3ui.createTooltipMenu()
     tooltip:createLabel({text = "Deck"})
-    local label = tooltip:createLabel({ text = string.format("%u cards remaining", table.size(deck)) })
+    local label = tooltip:createLabel({ text = i18n("koi.deck.remain", {table.size(deck)}) })
     label.color = tes3ui.getPalette(tes3.palette.headerColor)
     return tooltip
 end
+
+--mwse.log(i18n("itemCountNotification", { point = 2}))
 
 return this

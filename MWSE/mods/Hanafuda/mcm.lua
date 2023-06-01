@@ -1,17 +1,17 @@
+local i18n = mwse.loadTranslations("Hanafuda")
+
 --- @param e modConfigReadyEventData
 local function OnModConfigReady(e)
 
     ---@param value boolean
     ---@return string
     local function GetOnOff(value)
-        ---@diagnostic disable-next-line: return-type-mismatch
-        return "Default: " .. (value and tes3.findGMST(tes3.gmst.sOn).value or tes3.findGMST(tes3.gmst.sOff).value)
+        return (value and tes3.findGMST(tes3.gmst.sOn).value --[[@as string]] or tes3.findGMST(tes3.gmst.sOff).value --[[@as string]])
     end
     ---@param value boolean
     ---@return string
     local function GetYesNo(value)
-        ---@diagnostic disable-next-line: return-type-mismatch
-        return "Default: " .. (value and tes3.findGMST(tes3.gmst.sYes).value or tes3.findGMST(tes3.gmst.sNo).value)
+        return (value and tes3.findGMST(tes3.gmst.sYes).value --[[@as string]] or tes3.findGMST(tes3.gmst.sNo).value --[[@as string]])
     end
 
     local settings = require("Hanafuda.settings")
@@ -22,15 +22,15 @@ local function OnModConfigReady(e)
     template:register()
 
     local page = template:createSideBarPage({
-        label = "Settings",
-        description = "placeholder"
+        label = i18n("mcm.page.label"), -- does not show
+        description = i18n("mcm.page.description")
     })
 
     do
-        local sub = page:createCategory("Development")
+        local sub = page:createCategory(i18n("mcm.development.category"))
         sub:createDropdown({
-            label = "Logging Level",
-            description = "Set the log level.\n\nDefault: "  .. defaults.development.logLevel,
+            label = i18n("mcm.development.logLevel.label"),
+            description = i18n("mcm.development.logLevel.description") .. "\n\n" .. i18n("mcm.default") .. defaults.development.logLevel,
             options = {
                 { label = "TRACE", value = "TRACE" },
                 { label = "DEBUG", value = "DEBUG" },
@@ -46,16 +46,16 @@ local function OnModConfigReady(e)
             end
         })
         sub:createOnOffButton({
-            label = "Log to Console",
-            description = "Output the log to console.\n\n" .. GetOnOff(defaults.development.logToConsole),
+            label = i18n("mcm.development.logToConsole.label"),
+            description = i18n("mcm.development.logToConsole.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.development.logToConsole),
             variable = mwse.mcm.createTableVariable({
                 id = "logToConsole",
                 table = config.development,
             })
         })
         sub:createOnOffButton({
-            label = "Unit-Test",
-            description = "Run unit-test.\n\n" .. GetOnOff(defaults.development.unittest),
+            label = i18n("mcm.development.unittest.label"),
+            description = i18n("mcm.development.unittest.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.development.unittest),
             variable = mwse.mcm.createTableVariable({
                 id = "unittest",
                 table = config.development,

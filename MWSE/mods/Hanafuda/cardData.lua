@@ -1,4 +1,5 @@
 -- define card data, user non configuable.
+local i18n = mwse.loadTranslations("Hanafuda")
 
 -- todo test missing indices
 
@@ -157,98 +158,80 @@ this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
 
 ---@type CardText[]
 this.cardText = {
-    { name = "Matsu ni Tsuru" },
-    { name = "Matsu ni Akatan" }, -- Akayoroshi
-    { name = "Matsu no Kasu" },
-    { name = "Matsu no Kasu" },
-    { name = "Ume ni Uguisu" },
-    { name = "Ume ni Akatan" }, -- Akayoroshi
-    { name = "Ume no Kasu" },
-    { name = "Ume no Kasu" },
-    { name = "Sakura ni Maku" },
-    { name = "Sakura ni Akatan" }, -- mi-Yoshino
-    { name = "Sakura no Kasu" },
-    { name = "Sakura no Kasu" },
-    { name = "Fuji ni Hototogisu" },
-    { name = "Fuji ni Tanzaku" },
-    { name = "Fuji no Kasu" },
-    { name = "Fuji no Kasu" },
-    { name = "Ayame ni Yatsuhashi" },
-    { name = "Ayame ni Tanzaku" },
-    { name = "Ayame no Kasu" },
-    { name = "Ayame no Kasu" },
-    { name = "Botan ni Chou" },
-    { name = "Botan ni Aotan" },
-    { name = "Botan no Kasu" },
-    { name = "Botan no Kasu" },
-    { name = "Hagi ni Inoshishi" },
-    { name = "Hagi ni Tanzaku" },
-    { name = "Hagi no Kasu" },
-    { name = "Hagi no Kasu" },
-    { name = "Susuki ni Tsuki" },
-    { name = "Susuki ni Kari" },
-    { name = "Susuki no Kasu" },
-    { name = "Susuki no Kasu" },
-    { name = "Kiku ni Sakazuki" }, -- Kotobuki
-    { name = "Kiku ni Aotan" },
-    { name = "Kiku no Kasu" },
-    { name = "Kiku no Kasu" },
-    { name = "Momiji ni Shika" },
-    { name = "Momiji ni Aotan" },
-    { name = "Momiji no Kasu" },
-    { name = "Momiji no Kasu" },
-    { name = "Yanagi ni Ono no Michikaze" },
-    { name = "Yanagi ni Tsubame" },
-    { name = "Yanagi no Kasu" },
-    { name = "Yanagi no Kasu" },
-    { name = "Kiri ni Hou-ou" },
-    { name = "Kiri no Kasu" },
-    { name = "Kiri no Kasu" },
-    { name = "Kiri no Kasu" },
+    { name = i18n("hanafuda.card.name_01_1") },
+    { name = i18n("hanafuda.card.name_01_2") },
+    { name = i18n("hanafuda.card.name_01_3") },
+    { name = i18n("hanafuda.card.name_01_4") },
+    { name = i18n("hanafuda.card.name_02_1") },
+    { name = i18n("hanafuda.card.name_02_2") },
+    { name = i18n("hanafuda.card.name_02_3") },
+    { name = i18n("hanafuda.card.name_02_4") },
+    { name = i18n("hanafuda.card.name_03_1") },
+    { name = i18n("hanafuda.card.name_03_2") },
+    { name = i18n("hanafuda.card.name_03_3") },
+    { name = i18n("hanafuda.card.name_03_4") },
+    { name = i18n("hanafuda.card.name_04_1") },
+    { name = i18n("hanafuda.card.name_04_2") },
+    { name = i18n("hanafuda.card.name_04_3") },
+    { name = i18n("hanafuda.card.name_04_4") },
+    { name = i18n("hanafuda.card.name_05_1") },
+    { name = i18n("hanafuda.card.name_05_2") },
+    { name = i18n("hanafuda.card.name_05_3") },
+    { name = i18n("hanafuda.card.name_05_4") },
+    { name = i18n("hanafuda.card.name_06_1") },
+    { name = i18n("hanafuda.card.name_06_2") },
+    { name = i18n("hanafuda.card.name_06_3") },
+    { name = i18n("hanafuda.card.name_06_4") },
+    { name = i18n("hanafuda.card.name_07_1") },
+    { name = i18n("hanafuda.card.name_07_2") },
+    { name = i18n("hanafuda.card.name_07_3") },
+    { name = i18n("hanafuda.card.name_07_4") },
+    { name = i18n("hanafuda.card.name_08_1") },
+    { name = i18n("hanafuda.card.name_08_2") },
+    { name = i18n("hanafuda.card.name_08_3") },
+    { name = i18n("hanafuda.card.name_08_4") },
+    { name = i18n("hanafuda.card.name_09_1") },
+    { name = i18n("hanafuda.card.name_09_2") },
+    { name = i18n("hanafuda.card.name_09_3") },
+    { name = i18n("hanafuda.card.name_09_4") },
+    { name = i18n("hanafuda.card.name_10_1") },
+    { name = i18n("hanafuda.card.name_10_2") },
+    { name = i18n("hanafuda.card.name_10_3") },
+    { name = i18n("hanafuda.card.name_10_4") },
+    { name = i18n("hanafuda.card.name_11_1") },
+    { name = i18n("hanafuda.card.name_11_2") },
+    { name = i18n("hanafuda.card.name_11_3") },
+    { name = i18n("hanafuda.card.name_11_4") },
+    { name = i18n("hanafuda.card.name_12_1") },
+    { name = i18n("hanafuda.card.name_12_2") },
+    { name = i18n("hanafuda.card.name_12_3") },
+    { name = i18n("hanafuda.card.name_12_4") },
 }
 assert(table.size(this.cardText) == this.cardCount)
 
 ---@type CardText[]
 this.suitText = {
-    { name = "Mutsuki", alt = "Matsu" },
-    { name = "Kisaragi", alt = "Ume" },
-    { name = "Yayoi", alt = "Sakura" },
-    { name = "Uzuki", alt = "Fuji" },
-    { name = "Satsuki", alt = "Kakitsubata" },
-    { name = "Minazuki", alt = "Botan" },
-    { name = "Fumizuki", alt = "Hagi" },
-    { name = "Hazuki", alt = "Susuki" },
-    { name = "Nagatsuki", alt = "Kiku" },
-    { name = "Kannazuki", alt = "Momiji" },
-    { name = "Shimotsuki", alt = "Yanagi" },
-    { name = "Shiwasu", alt = "Kiri" },
+    { name = i18n("hanafuda.card.suit_01"), alt = i18n("hanafuda.card.suit_alt_01") },
+    { name = i18n("hanafuda.card.suit_02"), alt = i18n("hanafuda.card.suit_alt_02") },
+    { name = i18n("hanafuda.card.suit_03"), alt = i18n("hanafuda.card.suit_alt_03") },
+    { name = i18n("hanafuda.card.suit_04"), alt = i18n("hanafuda.card.suit_alt_04") },
+    { name = i18n("hanafuda.card.suit_05"), alt = i18n("hanafuda.card.suit_alt_05") },
+    { name = i18n("hanafuda.card.suit_06"), alt = i18n("hanafuda.card.suit_alt_06") },
+    { name = i18n("hanafuda.card.suit_07"), alt = i18n("hanafuda.card.suit_alt_07") },
+    { name = i18n("hanafuda.card.suit_08"), alt = i18n("hanafuda.card.suit_alt_08") },
+    { name = i18n("hanafuda.card.suit_09"), alt = i18n("hanafuda.card.suit_alt_09") },
+    { name = i18n("hanafuda.card.suit_10"), alt = i18n("hanafuda.card.suit_alt_10") },
+    { name = i18n("hanafuda.card.suit_11"), alt = i18n("hanafuda.card.suit_alt_11") },
+    { name = i18n("hanafuda.card.suit_12"), alt = i18n("hanafuda.card.suit_alt_12") },
 }
 assert(table.size(this.suitText) == table.size(this.cardSuit))
 
--- tamriel version
---[[
-this.suitText = {
-    { name = "Morning Star" },
-    { name = "Sun's Dawn" },
-    { name = "First Seed" },
-    { name = "Rain's Hand" },
-    { name = "Second Seed" },
-    { name = "Midyear" },
-    { name = "Sun's Height" },
-    { name = "Last Seed" },
-    { name = "Hearthfire" },
-    { name = "Frostfall" },
-    { name = "Sun's Dusk" },
-    { name = "Evening Star" },
-}
-]]
-
 ---@type CardText[]
 this.typeText = {
-    { name = "Hikari" },
-    { name = "Tane" },
-    { name = "Tanzaku" },
-    { name = "Kasu" },
+    { name = i18n("hanafuda.card.type_0") },
+    { name = i18n("hanafuda.card.type_1") },
+    { name = i18n("hanafuda.card.type_2") },
+    { name = i18n("hanafuda.card.type_3") },
 }
 assert(table.size(this.typeText) == table.size(this.cardType))
 
