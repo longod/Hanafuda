@@ -1,6 +1,10 @@
-return {
+local this = {
     ["playerDefaultName"] = "Player",
     ["opponentDefaultName"] = "Opponent",
+    ["gamble.collected"] = "You collected %{actual} gold.",
+    ["gamble.collectedInsufficient"] = "You tried to collect %{expected} gold, but were only able to collect %{actual} gold.",
+    ["gamble.paid"] = "You paid %{actual} gold.",
+    ["gamble.paidInsufficient"] = "You have to pay %{expected} gold, but you could only pay %{actual} gold.",
     -- hanafuda card suit (month)
     ["hanafuda.card.suit_01"] = "Mutsuki",
     ["hanafuda.card.suit_02"] = "Kisaragi",
@@ -14,19 +18,6 @@ return {
     ["hanafuda.card.suit_10"] = "Kannazuki",
     ["hanafuda.card.suit_11"] = "Shimotsuki",
     ["hanafuda.card.suit_12"] = "Shiwasu",
-    -- hanafuda card suit tamriel (month)
-    ["hanafuda.card.suit_01_t"] = "Morning Star",
-    ["hanafuda.card.suit_02_t"] = "Sun's Dawn",
-    ["hanafuda.card.suit_03_t"] = "First Seed",
-    ["hanafuda.card.suit_04_t"] = "Rain's Hand",
-    ["hanafuda.card.suit_05_t"] = "Second Seed",
-    ["hanafuda.card.suit_06_t"] = "Midyear",
-    ["hanafuda.card.suit_07_t"] = "Sun's Height",
-    ["hanafuda.card.suit_08_t"] = "Last Seed",
-    ["hanafuda.card.suit_09_t"] = "Hearthfire",
-    ["hanafuda.card.suit_10_t"] = "Frostfall",
-    ["hanafuda.card.suit_11_t"] = "Sun's Dusk",
-    ["hanafuda.card.suit_12_t"] = "Evening Star",
     -- hanafuda card suit alt (flower)
     ["hanafuda.card.suit_alt_01"] = "Matsu",
     ["hanafuda.card.suit_alt_02"] = "Ume",
@@ -96,6 +87,8 @@ return {
     ["hanafuda.card.name_12_4"] = "Kiri no Kasu",
     -- koikoi
     -- todo Use %{} for different types, since swapping the order is not allowed
+    ["koi.service.label"] = "Koi-Koi",
+    ["koi.service.tooltip"] = "Koi-Koi",
     ["koi.koikoi"] = "Koi-Koi",
     ["koi.shobu"] = "Shobu",
     ["koi.combinations"] = "Yaku",
@@ -106,7 +99,9 @@ return {
     ["koi.rule"] = "rule here",
     ["koi.cardList"] = "Card List", -- todo hanafuda
     ["koi.view.drawGame"] = "Draw Game",
-    ["koi.view.winGame"] = "%s Won!",
+    ["koi.view.winGame"] = "%s Win!",
+    ["koi.view.loseGame"] = "%s Lose!",
+    ["koi.view.gameResult"] = "%s: %u point\n%s: %u point\n",
     ["koi.view.exitMessage"] = "Eixt and you lose.",
     ["koi.view.drawRound"] = "Draw in this round.",
     ["koi.view.winRound"] = "%s wins in this round.",
@@ -127,6 +122,7 @@ return {
     ["koi.view.rightCard"] = "Right card",
     ["koi.view.informParent"] = "Parent is %s.\nChild is %s.",
     ["koi.view.infoGround"] = "Can't a card match from hand now.",
+    ["koi.view.infoPutback"] = "Can't put back this card in hand",
     ["koi.view.infoHand"] = "Can't match this card with",
     ["koi.view.infoDiscard"] = "Can't discard this card, it shoud be matched.",
     ["koi.view.infoDraw"] = "Can't draw a card now.",
@@ -191,3 +187,27 @@ return {
     ["mcm.development.unittest.label"] = "Unit-Test",
     ["mcm.development.unittest.description"] = "Run unit-test.",
 }
+
+-- partial localization
+local tamriel = {
+    -- hanafuda card suit tamriel (month)
+    ["hanafuda.card.suit_01"] = "Morning Star",
+    ["hanafuda.card.suit_02"] = "Sun's Dawn",
+    ["hanafuda.card.suit_03"] = "First Seed",
+    ["hanafuda.card.suit_04"] = "Rain's Hand",
+    ["hanafuda.card.suit_05"] = "Second Seed",
+    ["hanafuda.card.suit_06"] = "Midyear",
+    ["hanafuda.card.suit_07"] = "Sun's Height",
+    ["hanafuda.card.suit_08"] = "Last Seed",
+    ["hanafuda.card.suit_09"] = "Hearthfire",
+    ["hanafuda.card.suit_10"] = "Frostfall",
+    ["hanafuda.card.suit_11"] = "Sun's Dusk",
+    ["hanafuda.card.suit_12"] = "Evening Star",
+}
+
+local japanese = {}
+
+-- todo config (require reboot)
+--table.copy(tamriel, this)
+
+return this

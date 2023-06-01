@@ -37,16 +37,23 @@ end
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player?
-function View.ShowResult(self, service, player)
+---@param points { KoiKoi.Player : integer }
+function View.ShowResult(self, service, player, points)
     -- show round histroy?
     -- todo more rich
-    local msg = i18n("koi.view.drawGame")
+    local header = i18n("koi.view.drawGame")
     if player then
-        local name = self.names[player]
-        msg = i18n("koi.view.winGame", {name})
+        local name = self.names[koi.player.you]
+        if player == koi.player.you then
+            header = i18n("koi.view.winGame", {name})
+        else
+            header = i18n("koi.view.loseGame", {name})
+        end
     end
+
     tes3ui.showMessageMenu({
-        message = msg,
+        header = header,
+        message = i18n("koi.view.gameResult", { self.names[koi.player.you], points[koi.player.you], self.names[koi.player.opponent], points[koi.player.opponent] }),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -72,7 +79,7 @@ function View.OnExit(self, e, service)
         function(btnCallbackData)
             if btnCallbackData.button == 0 then
                 logger:info("Yield the game")
-                service:Exit(koi.player.opponent)
+                service:Exit(true)
             end
         end,
     })
@@ -174,7 +181,7 @@ function View.ShowCallingDialog(self, player, service, combo)
                 -- todo condition, if deck 0 is disable
                 text = i18n("koi.koikoi"),
                 callback = function()
-                    sound.PlayVoice(sound.voice.continue, "", false)
+                    --sound.PlayVoice(sound.voice.continue, "", false)
                     if service then
                         service:NotifyKoiKoi()
                     end
@@ -187,7 +194,7 @@ function View.ShowCallingDialog(self, player, service, combo)
             {
                 text = i18n("koi.shobu"),
                 callback = function()
-                    sound.PlayVoice(sound.voice.finish, "", false)
+                    --sound.PlayVoice(sound.voice.finish, "", false)
                     if service then
                         service:NotifyShobu()
                     end
@@ -673,7 +680,7 @@ function View.RegisterHandEvent(self, element, service)
                     sound.Play(sound.se.putCard)
                 end
             else
-                -- must not be reached
+                tes3.messageBox(i18n("koi.view.infoPutback"))
             end
         end
     end)
@@ -1347,6 +1354,7 @@ function View.CreateInfo(self, parent, service)
     function(e)
         self:OnExit(e, service)
     end)
+    -- fixme disable when grabbing card, but it minor issue
     combo:register(tes3.uiEvent.mouseClick, ui.CreateCombinationList)
     rule:register(tes3.uiEvent.mouseClick, ui.CreateRule)
 
@@ -1456,7 +1464,7 @@ function View.OpenGameMenu(self, id, service)
     menu.childAlignX = 0.5
     menu.childAlignY = 0.5
     menu.flowDirection = tes3.flowDirection.leftToRight
-    menu:updateLayout()
+    --menu:updateLayout()
 
     -- local bg = menu:createImage({ path = "Textures/Tx_b_n_khajiit_f_h03.dds" })
     -- bg.widthProportional = 1

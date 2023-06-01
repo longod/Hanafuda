@@ -44,12 +44,12 @@ local phase = {
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
 ---@field lastCommand KoiKoi.ICommand?
----@field onExit fun(winner: KoiKoi.Player?)?
+---@field onExit fun(winner: KoiKoi.Player?, playerPoint : integer, opponentPoint : integer )?
 local Service = {}
 
 ---@param game KoiKoi
 ---@param view KoiKoi.View
----@param onExit fun(winner: KoiKoi.Player)?
+---@param onExit fun(winner: KoiKoi.Player, playerPoint : integer, opponentPoint : integer )?
 ---@return KoiKoi.Service
 function Service.new(game, view, onExit)
     --@type KoiKoi.Service
@@ -382,13 +382,13 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.gameFinished] = function ()
             self:RequestPhase(phase.resultWait)
-            self.view:ShowResult(self, self.game:GetGameWinner())
+            self.view:ShowResult(self, self.game:GetGameWinner(), self.game.points)
         end,
         [phase.resultWait] = function ()
             -- waiting
         end,
         [phase.terminate] = function ()
-            self:Exit(self.game:GetGameWinner())
+            self:Exit(false)
         end,
     }
     --logger:trace("phase ".. tostring(self.phase) )
@@ -468,19 +468,25 @@ function Service.Destory(self)
 end
 
 ---@param self KoiKoi.Service
----@param winner KoiKoi.Player?
+---@param giveup boolean
 ---@return boolean
-function Service.Exit(self, winner)
+function Service.Exit(self, giveup)
+    local winner = self.game:GetGameWinner()
     logger:debug("Exit Koi-Koi" .. tostring(winner))
-    if not winner then
-        -- no game
-    end
 
     -- callback or event trigger?
     if self.onExit then
-        self.onExit(winner)
+        local pp = self.game.points[koi.player.you]
+        local op = self.game.points[koi.player.opponent]
+        if giveup then
+            pp = 0
+            -- op = math.max(op, ) -- todo add penalty
+            winner = koi.player.opponent
+        end
+        self.onExit(winner, pp, op)
+        return true
     end
-    return true
+    return false
 end
 
 ---@param self KoiKoi.Service

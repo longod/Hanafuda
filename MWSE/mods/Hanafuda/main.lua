@@ -21,7 +21,7 @@ local function OnInitialized(_)
             service = require("Hanafuda.KoiKoi.service").new(
                 require("Hanafuda.KoiKoi.game").new(),
                 require("Hanafuda.KoiKoi.view").new(utils.GetPlayerName(), utils.GetNPCName()),
-                function(_)
+                function()
                     if service then
                         service:Destory()
                         service = nil
