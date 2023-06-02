@@ -134,7 +134,8 @@ this.cardAssets = {
 assert(table.size(this.cardAssets) == this.cardCount)
 
 ---@type CardAsset
-this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
+this.cardBackAsset = { path = "Textures/Hanafuda/back.dds" }
+--this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_01.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_03.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_06.dds" }
