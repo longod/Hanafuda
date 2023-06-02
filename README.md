@@ -6,8 +6,9 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
 ## How to play
 - This is where `Data Files` is located.
 - You can play against NPCs from the service menu by talking to them.
-- Or the game can be played instantly by pressing `K` key. Exit is also `K` key.
-   - This is a debugging function.
+- Or the game can be played instantly by pressing K key. Exit is also K key.
+   - You need to enable Debug Mode from mcm.
+   - This can also be called from the main menu.
 - The game rule is `Koi-Koi` only.
 - For information on `Hanafuda` and `Koi-Koi`, please refer to the following documents and others.
   - https://en.wikipedia.org/wiki/Hanafuda
