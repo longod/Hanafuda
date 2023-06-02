@@ -58,6 +58,13 @@ this.basePoint = {
 }
 assert(table.size(this.combination) == table.size(this.basePoint))
 
+---@enum KoiKoi.Multiplier
+this.multiplier = {
+    none = 1,
+    doublePointsOver7 = 2,
+    eachTimeKoiKoi = 3,
+}
+
 ---comment
 ---@param player KoiKoi.Player
 function this.GetOpponent(player)

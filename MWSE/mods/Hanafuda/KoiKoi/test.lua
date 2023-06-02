@@ -30,6 +30,10 @@ do
         return caps
     end
 
+    -- todo pattern
+    local settings = require("Hanafuda.settings")
+    local houseRule = settings.Default().koikoi.houseRule
+
     local unitwind = require("unitwind").new({
         enabled = true,
         highlight = false,
@@ -45,13 +49,13 @@ do
     unitwind:start("Koi-Koi Combination Test")
 
     unitwind:test("No Combo", function()
-        local actual = combo.Calculate(caps)
+        local actual = combo.Calculate(caps, houseRule)
         unitwind:expect(actual).toBe(nil)
         -- todo edge case
     end)
 
     unitwind:test("Goko", function()
-        local actual = combo.Calculate(AddCard({ type = card.type.bright, findAll = true }))
+        local actual = combo.Calculate(AddCard({ type = card.type.bright, findAll = true }), houseRule)
         unitwind:expect(actual).NOT.toBe(nil)
         if actual then
             unitwind:expect(actual[koi.combination.fiveBrights]).toBe(koi.basePoint[koi.combination.fiveBrights])
@@ -62,8 +66,8 @@ do
         local goko = AddCard({ type = card.type.bright, findAll = true })
         local shiko = table.deepcopy(goko)
         table.removevalue(shiko[card.type.bright], card.Find({ symbol = card.symbol.rainman }))
-        local current = combo.Calculate(goko)
-        local prev = combo.Calculate(shiko)
+        local current = combo.Calculate(goko, houseRule)
+        local prev = combo.Calculate(shiko, houseRule)
 
         do
             local diff = combo.Different(prev, prev)

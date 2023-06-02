@@ -30,9 +30,9 @@ assert(blueRibbon and table.size(blueRibbon) == 3)
 
 -- or {combotype = N, point = M} can be accessed ipairs
 ---@param captured { [CardType] : integer[] }
------@param excluding any? using already calling koi-koi
+---@param houseRule Config.KoiKoi.HouseRule
 ---@return { [KoiKoi.CombinationType] : integer }?
-function this.Calculate(captured)
+function this.Calculate(captured, houseRule)
     local combo = {}
     local hasCurtain = false
     local hasMoon = false
@@ -84,11 +84,11 @@ function this.Calculate(captured)
         end
 
         if card.Contain(sakeCup, animal) then
-            if hasCurtain then
+            if hasCurtain and houseRule.flowerViewingSake then
                 combo[koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake]
                 logger:debug("Hanami-Zake " .. tostring(combo[koi.combination.flowerViewingSake]))
             end
-            if hasMoon then
+            if hasMoon and houseRule.moonViewingSake then
                 combo[koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake]
                 logger:debug("Tsukimi-Zake " .. tostring(combo[koi.combination.moonViewingSake]))
             end
@@ -139,6 +139,7 @@ function this.Different(current, prev)
     assert(prev)
     assert(current)
 
+    -- FIXME including 1 additional point for each
     local diff = {}
     for key, value in pairs(current) do
         if not prev[key] then

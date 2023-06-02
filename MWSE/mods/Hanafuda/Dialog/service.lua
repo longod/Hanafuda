@@ -196,7 +196,8 @@ local function AddGamblingMenu(menu, actor)
                         service:Destory()
                         service = nil
                     end
-                    local unitPrice = 10
+
+                    local unitPrice = 0 -- in testing
                     if winner and unitPrice > 0 then
                         local expected, actual, insufficient = TradeGold(tes3.mobilePlayer, actor, playerPoint, opponentPoint, unitPrice, false)
                         -- TODO Use insufficient for dispositions, debt, etc.

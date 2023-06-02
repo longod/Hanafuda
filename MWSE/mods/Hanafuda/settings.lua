@@ -1,12 +1,16 @@
+local koi = require("Hanafuda.KoiKoi.koikoi")
 
 ---@class Config
 local defaultConfig = {
     enable = true,
     -- language?
     -- game speed x1.0 for wait time
+    ---@class Config.KoiKoi
     koikoi = {
+        round = 3, -- 3, 6, 12, 1 (debug)
+        ---@class Config.KoiKoi.HouseRule
         houseRule = {
-            -- multiplier variations
+            multiplier = koi.multiplier.doublePointsOver7,
             flowerViewingSake = true,
             moonViewingSake = true,
             -- nov cards rain off, dec cards fog

@@ -2,11 +2,13 @@ local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local combination = require("Hanafuda.KoiKoi.combination")
+local config = require("Hanafuda.config")
 
 ---@class KoiKoi.Settings
 ---@field round integer
 ---@field initialCards integer
 ---@field initialDealEach integer
+---@field houseRule Config.KoiKoi.HouseRule
 
 -- It is not necessary to keep captured piles separate, but it will make score calculation easier.
 ---@class KoiKoi.PlayerPool
@@ -36,9 +38,10 @@ local defaults = {
     current = koi.player.you,
     round = 1,
     settings = {
-        round = 3,           -- 6, 12
+        round = 3,
         initialCards = 8,
-        initialDealEach = 2, -- 4
+        initialDealEach = 2, -- or 4
+        houseRule = {},
     },
     deck = {},
     pools = {
@@ -82,6 +85,8 @@ ValidateSettings(defaults.settings)
 function KoiKoi.new()
     ---@type KoiKoi
     local instance = table.deepcopy(defaults)
+    instance.settings.houseRule = table.deepcopy(config.koikoi.houseRule) -- do not change in game
+    instance.settings.round = config.koikoi.round
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
     return instance
@@ -237,7 +242,7 @@ end
 ---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
-    local combo = combination.Calculate(pool)
+    local combo = combination.Calculate(pool, self.settings.houseRule)
     local latest = self.combinations[player]
     local diff = combination.Different(combo, latest)
     if diff then
