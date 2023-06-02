@@ -7,6 +7,8 @@ local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local i18n = mwse.loadTranslations("Hanafuda")
 
+local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
+
 local rainman = card.Find({ symbol = card.symbol.rainman }) ---@cast rainman integer
 local curtain = card.Find({ symbol = card.symbol.curtain }) ---@cast curtain integer
 local moon = card.Find({ symbol = card.symbol.moon }) ---@cast moon integer
@@ -328,7 +330,6 @@ function this.CreateRule(e)
 
     -- card table
     parent:createLabel({ text = i18n("koi.cardList")})
-    local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
     local scale = 1
     local padding = 4
     local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
@@ -474,6 +475,95 @@ function this.CreateDeckTooltip(deck)
     return tooltip
 end
 
---mwse.log(i18n("itemCountNotification", { point = 2}))
+---@param value boolean
+---@return string
+local function GetYesNo(value)
+    return (value and tes3.findGMST(tes3.gmst.sYes).value --[[@as string]] or tes3.findGMST(tes3.gmst.sNo).value --[[@as string]])
+end
+
+---comment
+---@param parent tes3uiElement
+---@param text string
+---@param bool boolean
+---@param callback fun(e: tes3uiEventData) : boolean
+---@return tes3uiElement
+---@return tes3uiElement
+---@return tes3uiElement
+local function CreateButton(parent, text, bool, callback)
+    local block = parent:createBlock()
+    block.widthProportional = 1
+    block.autoWidth = true
+    block.autoHeight = true
+    local button = block:createButton({ text = GetYesNo(bool) })
+    button.borderAllSides = 0
+    local label = block:createLabel({ text = "Enable Hanami-Zake" })
+    label.borderAllSides = 0
+    button:register(tes3.uiEvent.mouseClick,
+    ---@param e tes3uiEventData
+    function(e)
+        local result = callback(e)
+        e.source.text = GetYesNo(result)
+    end)
+    return block, button, label
+end
+
+---@return tes3uiElement
+function this.CreateSettingsMenu()
+    local menu = tes3ui.findMenu(uiid.settingsMenu )
+    menu = tes3ui.createMenu({ id = uiid.settingsMenu , fixedFrame = true })
+    menu.width = 300
+    menu.height = 300
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+    root:createLabel({ text = i18n("koi.service.label") }).color = headerColor
+    local frame = root:createThinBorder()
+    frame.widthProportional = 1
+    frame.heightProportional = 1
+    frame.flowDirection = tes3.flowDirection.topToBottom
+    local pane = frame:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+
+    -- settings depends barter skill, gambling skill, player and opponent money, dispotition
+
+    -- traditional koikoi gambling rating
+    local content = pane:getContentElement()
+    local l = content:createRect()
+    l.widthProportional = 1
+    l.autoHeight = true
+    l.color = {1,0,0}
+    l.alpha = 1
+    l:createTextSelect({text = "free"})
+    content:createTextSelect({text = "1 gold per point"})
+    content:createTextSelect({text = "5 golds per point"})
+    content:createTextSelect({text = "25 golds per point"})
+    content:createTextSelect({text = "100 golds per point"})
+
+    -- house rule
+    -- round
+    -- cycle
+    -- yes button
+
+    local rule = root:createThinBorder()
+    rule.widthProportional = 1
+    rule.widthProportional = 1
+    rule.autoWidth = true
+    rule.autoHeight = true
+    CreateButton(rule, "test", true, function(e) return true end)
+
+    local buttons = root:createBlock()
+    buttons.widthProportional = 1
+    buttons.autoHeight = true
+    buttons:createButton({ text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] })
+    buttons:createButton({ text = tes3.findGMST(tes3.gmst.sCancel).value --[[@as string]] })
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+    return menu
+end
 
 return this

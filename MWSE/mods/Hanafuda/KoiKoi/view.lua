@@ -4,6 +4,7 @@ local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local ui = require("Hanafuda.KoiKoi.ui")
+local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 -- with mergin
@@ -117,16 +118,6 @@ function View.ShowCalling(self, player, service, calling)
     service:NotifyCalling(calling)
 end
 
----@param combo { [KoiKoi.CombinationType] : integer }
----@return integer
-local function SumTotalPoint(combo)
-    local total = 0
-    for _, value in pairs(combo) do
-        total = total + value
-    end
-    return total
-end
-
 --- custom block has max width. and it excluding frame size...
 ---@param parent tes3uiElement?
 ---@return integer?
@@ -170,12 +161,15 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service?
 ---@param combo { [KoiKoi.CombinationType] : integer }
-function View.ShowCallingDialog(self, player, service, combo)
-    local total = SumTotalPoint(combo)
+---@param basePoint integer
+---@param multiplier integer
+function View.ShowCallingDialog(self, player, service, combo, basePoint, multiplier)
+    local total = basePoint * multiplier
 
+    -- todo show multipiled score
     tes3ui.showMessageMenu({
         header = i18n("koi.view.callingHeader", {self.names[player]}),
-        message = i18n("koi.view.callingMessage" , {total}),
+        message = i18n("koi.view.callingMessage" , {total, basePoint, multiplier}),
         buttons = {
             {
                 -- todo condition, if deck 0 is disable
@@ -230,14 +224,17 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service?
 ---@param combo { [KoiKoi.CombinationType] : integer }
-function View.ShowCombo(self, player, service, combo)
-    local total = SumTotalPoint(combo)
+---@param basePoint integer
+---@param multiplier integer
+function View.ShowCombo(self, player, service, combo, basePoint, multiplier)
+    local total = basePoint * multiplier
 
     local name = self.names[player]
 
+    -- todo show multipiled score
     tes3ui.showMessageMenu({
         header = i18n("koi.view.callingHeader", {name}),
-        message = i18n("koi.view.callingConfirmMessage", {name, total}),
+        message = i18n("koi.view.callingConfirmMessage", {name, total, basePoint, multiplier}),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -1533,24 +1530,24 @@ end
 ---@param service KoiKoi.Service
 function View.Initialize(self, service)
     -- driver for testing
-    ----[[
-    event.register(tes3.event.keyDown,
-    ---@param e keyDownEventData
-    function(e)
-        local combo ={
-            [koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights],
-            [koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly],
-            [koi.combination.animals] = koi.basePoint[koi.combination.animals] + (10 - 5),
-            [koi.combination.poetryAndBlueRibbons] = koi.basePoint[koi.combination.poetryAndBlueRibbons] + (10 - 6),
-            [koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake],
-            [koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake],
-            [koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (12 - 10),
-        }
+    if config.development.debug then
+        event.register(tes3.event.keyDown,
+        ---@param e keyDownEventData
+        function(e)
+            local combo ={
+                [koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights],
+                [koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly],
+                [koi.combination.animals] = koi.basePoint[koi.combination.animals] + (10 - 5),
+                [koi.combination.poetryAndBlueRibbons] = koi.basePoint[koi.combination.poetryAndBlueRibbons] + (10 - 6),
+                [koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake],
+                [koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake],
+                [koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (12 - 10),
+            }
 
-        --self:ShowCallingDialog(koi.player.you, nil, combo)
-        self:ShowCombo(koi.player.you, nil, combo)
-    end, {filter = tes3.scanCode.c} )
-    --]]
+            self:ShowCallingDialog(koi.player.you, nil, combo, 12, 2)
+            --self:ShowCombo(koi.player.you, nil, combo, 12, 2) -- fixme calculate actual points
+        end, {filter = tes3.scanCode.c} )
+    end
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(not gameMenu)

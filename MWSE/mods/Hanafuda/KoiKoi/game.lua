@@ -27,6 +27,7 @@ local config = require("Hanafuda.config")
 ---@field brains KoiKoi.IBrain[]
 ---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@field points { KoiKoi.Player : integer }
+---@field calls { KoiKoi.Player : integer }
 local KoiKoi = {}
 
 
@@ -66,6 +67,10 @@ local defaults = {
     brains = {},
     combinations = {},
     points = {
+        [koi.player.you] = 0,
+        [koi.player.opponent] = 0,
+    },
+    calls = {
         [koi.player.you] = 0,
         [koi.player.opponent] = 0,
     },
@@ -111,6 +116,7 @@ function KoiKoi.Initialize(self)
     self.deck = card.CreateDeck()
     self.deck = card.ShuffleDeck(self.deck)
     self.pools = table.deepcopy(defaults.pools)
+    self.calls = table.deepcopy(defaults.calls)
     self.groundPool = {}
     self.combinations = {}
 end
@@ -325,10 +331,20 @@ end
 function KoiKoi.EmptyHand(self, player)
     return table.size(self.pools[player].hand) == 0 -- use empty better
 end
+
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
-function KoiKoi.SetRoundWinner(self, player)
+---@return integer
+function KoiKoi.AddKoiKoiCount(self, player)
+    self.calls[player] = self.calls[player] + 1
+    return self.calls[player]
+end
 
+---@param self KoiKoi
+---@param player KoiKoi.Player
+---@return integer basePoint
+---@return integer multiplier
+function KoiKoi.CalculateRoundPoint(self, player)
     ---@param combo { [KoiKoi.CombinationType] : integer }
     ---@return integer
     local function SumTotalPoint(combo)
@@ -338,12 +354,27 @@ function KoiKoi.SetRoundWinner(self, player)
         end
         return total
     end
-    if self.combinations[player] then
-        local sum = SumTotalPoint(self.combinations[player])
-        self.points[player] = self.points[player] + sum
-        logger:info("player %d gain %u points, total %u points", player, sum, self.points[player])
-    end
 
+    local point = 0
+    local mult = 1
+    if self.combinations[player] then
+        point = SumTotalPoint(self.combinations[player])
+        if self.settings.houseRule.multiplier == koi.multiplier.doublePointsOver7 then
+            if point >= 7 then
+                mult = 2
+            end
+        elseif self.settings.houseRule.multiplier == koi.multiplier.eachTimeKoiKoi then
+            mult = 1 + self.calls[koi.player.you] + self.calls[koi.player.opponent]
+        end
+    end
+    return point, mult
+end
+
+---@param self KoiKoi
+---@param player KoiKoi.Player
+function KoiKoi.SetRoundWinner(self, player)
+    local point, mult = self:CalculateRoundPoint(player)
+    self.points[player] = self.points[player] + point * mult
     self.parent = player
 end
 

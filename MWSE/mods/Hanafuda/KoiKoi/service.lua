@@ -1,6 +1,7 @@
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
+local config = require("Hanafuda.config")
 
 ---@enum KoiKoi.Phase
 local phase = {
@@ -46,6 +47,9 @@ local phase = {
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(winner: KoiKoi.Player?, playerPoint : integer, opponentPoint : integer )?
 local Service = {}
+
+-- todo debug: hold key skip to deside parent
+-- fixed deciding and more debugging function
 
 ---@param game KoiKoi
 ---@param view KoiKoi.View
@@ -329,11 +333,12 @@ function Service.OnEnterFrame(self, e)
             local combo = self.game:CheckCombination(self.game.current)
             -- fixme if called koi-koi the combination is subtract before combination
             if combo then
+                local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)
                 if self.game.brains[self.game.current] then
                     -- message? or other notify
-                    self.view:ShowCombo(self.game.current, self, combo)
+                    self.view:ShowCombo(self.game.current, self, combo, basePoint, multiplier)
                 else
-                    self.view:ShowCallingDialog(self.game.current, self, combo) -- todo and combo
+                    self.view:ShowCallingDialog(self.game.current, self, combo, basePoint, multiplier) -- todo and combo
                 end
                 self:RequestPhase(phase.checkComboWait)
             else
@@ -360,7 +365,7 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.noMatch] = function()
             self.view:ShowNoMatch(self.game.parent, self)
-            -- draw or parent win (house rule)
+            -- TODO draw or parent win (house rule)
         end,
         [phase.win] = function()
             self.view:ShowWin(self.game.current, self)
@@ -404,8 +409,8 @@ end
 ---debugging
 ---@param self KoiKoi.Service
 function Service.DumpData(self)
-    logger:debug("phase      = " .. tostring(self.phase))
-    logger:debug("round      = " .. tostring(self.game.round))
+    logger:debug("phase       = " .. tostring(self.phase))
+    logger:debug("round       = " .. tostring(self.game.round))
     logger:debug("parent      = " .. tostring(self.game.parent))
     logger:debug("current     = " .. tostring(self.game.current))
     logger:debug("drawn       = " .. tostring(self.drawnCard))
@@ -421,6 +426,8 @@ function Service.DumpData(self)
     logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.chaff]), table.concat(self.game.pools[koi.player.opponent][card.type.chaff], ", "))
     logger:debug("ground      = %d:{%s}", table.size(self.game.groundPool), table.concat(self.game.groundPool, ", "))
     logger:debug("deck        = %d:{%s}", table.size(self.game.deck), table.concat(self.game.deck, ", "))
+    logger:debug("points      = {%s}", table.concat(self.game.points, ", "))
+    logger:debug("calls       = {%s}", table.concat(self.game.calls, ", "))
 end
 
 local enterFrameCallback = nil ---@type fun(e : enterFrameEventData)?
@@ -435,10 +442,12 @@ function Service.Initialize(self)
         self:OnEnterFrame(e)
     end
     event.register(tes3.event.enterFrame, enterFrameCallback)
-    debugDumpCallback = function (e)
-        self:DumpData()
+    if config.development.debug then
+        debugDumpCallback = function (e)
+            self:DumpData()
+        end
+        event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
     end
-    event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
     local brain = require("Hanafuda.KoiKoi.brain.simpleBrain").new()
     -- todo set brain anywhere
     self.game:SetBrains(brain)
@@ -542,6 +551,8 @@ end
 
 ---@param self KoiKoi.Service
 function Service.NotifyKoiKoi(self)
+    -- Including logic in notify is not a good idea.
+    self.game:AddKoiKoiCount(self.game.current)
     self:RequestPhase(phase.endTurn)
 end
 
