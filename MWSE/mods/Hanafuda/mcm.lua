@@ -51,6 +51,19 @@ local function OnModConfigReady(e)
             variable = mwse.mcm.createTableVariable({
                 id = "logToConsole",
                 table = config.development,
+            }),
+            callback = function(self)
+                local logger = require("Hanafuda.logger")
+                logger.logToConsole = config.development.logToConsole
+            end
+        })
+        sub:createOnOffButton({
+            label = i18n("mcm.development.debug.label"),
+            description = i18n("mcm.development.debug.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.development.debug),
+            variable = mwse.mcm.createTableVariable({
+                id = "debug",
+                table = config.development,
+                restartRequired = true,
             })
         })
         sub:createOnOffButton({
@@ -59,6 +72,7 @@ local function OnModConfigReady(e)
             variable = mwse.mcm.createTableVariable({
                 id = "unittest",
                 table = config.development,
+                restartRequired = true,
             })
         })
     end

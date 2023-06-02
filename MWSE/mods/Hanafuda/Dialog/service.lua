@@ -101,61 +101,73 @@ local function GetActorGold(actor)
     end
     return gold
 end
--- NPCs in morrowind have little or no money. It may be more obvious to deal with a unique currency.
----comment
+
+--- This is popular in hanafuda gambling, where money is transferred according to difference scores and unit price.
+--- NPCs in morrowind have little or no money. It may be more obvious to deal with a unique currency. or other gambling, debt system.
 ---@param player tes3mobilePlayer
 ---@param npc tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param playerPoint number
 ---@param opponentPoint number
 ---@param unitPrice number
+---@param allowDupe boolean not zero-sum. Missing money will be made up.
 ---@return number expected
 ---@return number actual
 ---@return number insufficient +npc -player
-local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice)
+local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice, allowDupe)
     local delta = playerPoint - opponentPoint
     local expected = delta * unitPrice
     local item = "Gold_001"
     local npcGold = GetActorGold(npc)
     local playerGold = GetActorGold(player)     -- tes3.getPlayerGold()
-    if expected > 0 then                        -- palyer gain money
+
+    if expected > 0 then -- palyer gain money
         -- collect barter gold first
-        local actual = math.min(npcGold, expected)
+        local actual = allowDupe and expected or math.min(npcGold, expected)
+        logger:debug("player cash from %d to %d", playerGold, playerGold + actual)
 
         local barterGold = npc.barterGold
         if barterGold > 0 then
             npc.barterGold = math.max(barterGold - actual, 0)
+            tes3.addItem({ reference = player.reference, item = item, count = actual })
             logger:debug("collect %d from npc barterGold %d, %d remaining", actual, barterGold, npc.barterGold)
         end
         local cash = math.max(actual - barterGold, 0)
         if cash > 0 then
-            tes3.removeItem({ reference = npc.reference, item = item, count = cash })
+            if allowDupe then
+                tes3.addItem({ reference = player.reference, item = item, count = cash })
+                tes3.removeItem({ reference = npc.reference, item = item, count = cash })
+            else
+                tes3.transferItem({ from = npc.reference, to = player.reference, item = item, count = cash })
+            end
             logger:debug("collect %d from npc cash %d, %d remaining", cash, npcGold - barterGold,
                 math.max(npcGold - barterGold - cash, 0))
         end
-
-        logger:debug("player cash from %d to %d", playerGold, playerGold + actual)
-        tes3.addItem({ reference = player.reference, item = item, count = actual })
-
         return expected, actual, (expected - actual)
+
     elseif expected < 0 then -- player lose money
+        -- No sound when there is no money
         expected = -expected
-        local actual = math.min(playerGold, expected)
+        local actual = allowDupe and expected or math.min(playerGold, expected)
         logger:debug("collect %d from player cash %d, %d remaining", actual, playerGold, math.max(playerGold - actual, 0))
-        tes3.removeItem({ reference = player.reference, item = item, count = actual })
         if CanBarter(npc) then
             -- barterGold resets periodically, so might better add it in npc's inventory at all times?
-            logger:debug("npc barterGold from %d to %d", npc.barterGold, npc.barterGold + actual)
             npc.barterGold = npc.barterGold + actual
+            tes3.removeItem({ reference = player.reference, item = item, count = actual })
+            logger:debug("npc barterGold from %d to %d", npc.barterGold + actual, npc.barterGold)
         else
+            if allowDupe then
+                tes3.addItem({ reference = npc.reference, item = item, count = actual })
+                tes3.removeItem({ reference = player.reference, item = item, count = actual })
+            else
+                tes3.transferItem({ from = player.reference, to = npc.reference, item = item, count = actual })
+            end
             logger:debug("npc cash from %d to %d", npcGold - npc.barterGold, npcGold - npc.barterGold + actual)
-            tes3.addItem({ reference = npc.reference, item = item, count = actual })
         end
         return -expected, -actual, -(expected - actual)
     end
+
     return 0, 0, 0
 end
-
-
 
 ---@param menu tes3uiElement
 ---@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -184,9 +196,9 @@ local function AddGamblingMenu(menu, actor)
                         service:Destory()
                         service = nil
                     end
-
-                    if winner then
-                        local expected, actual, insufficient = TradeGold(tes3.mobilePlayer, actor, playerPoint, opponentPoint, 10)
+                    local unitPrice = 10
+                    if winner and unitPrice > 0 then
+                        local expected, actual, insufficient = TradeGold(tes3.mobilePlayer, actor, playerPoint, opponentPoint, unitPrice, false)
                         -- TODO Use insufficient for dispositions, debt, etc.
                         logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
                         if expected > 0 then
@@ -232,7 +244,7 @@ local function OnMenuDialogActivated(e)
         return
     end
     logger:debug("Player money " .. tostring(GetActorGold(tes3.mobilePlayer)))
-    logger:debug("NPC money" .. tostring(GetActorGold(actor)))
+    logger:debug("NPC money " .. tostring(GetActorGold(actor)))
 
     AddGamblingMenu(e.element, actor)
 end

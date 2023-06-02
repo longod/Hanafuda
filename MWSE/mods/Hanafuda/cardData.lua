@@ -135,7 +135,7 @@ assert(table.size(this.cardAssets) == this.cardCount)
 
 ---@type CardAsset
 this.cardBackAsset = { path = "Textures/Hanafuda/back.dds" }
---this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
+-- this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_01.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_03.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_06.dds" }
@@ -148,10 +148,6 @@ this.cardBackAsset = { path = "Textures/Hanafuda/back.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_de_tapestry_02.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_fresco_newtribunal_01.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_saint_vivec_01.dds" }
-
--- todo tamriel version.
--- original japanese version.
--- switch i18n (user friendly) or lore friendly describe
 
 ---@class CardText
 ---@field name string

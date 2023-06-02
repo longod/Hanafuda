@@ -184,6 +184,8 @@ local this = {
     ["mcm.development.logLevel.description"] = "Set the log level.",
     ["mcm.development.logToConsole.label"] = "Log to Console",
     ["mcm.development.logToConsole.description"] = "Output the log to console.",
+    ["mcm.development.debug.label"] = "Debug Mode",
+    ["mcm.development.debug.description"] = "Enable debug features.",
     ["mcm.development.unittest.label"] = "Unit-Test",
     ["mcm.development.unittest.description"] = "Run unit-test.",
 }

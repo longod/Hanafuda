@@ -18,6 +18,7 @@ local defaultConfig = {
     development = {
         logLevel = "INFO",
         logToConsole = false,
+        debug = false,
         unittest = false,
     }
 }
