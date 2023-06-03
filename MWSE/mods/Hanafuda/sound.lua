@@ -16,6 +16,8 @@ this.se = {
 this.voice = {
     continue = 1,
     finish = 2,
+    -- lose responce
+    -- thinking etc
 }
 
 ---@enum MusicId
@@ -33,8 +35,6 @@ this.music = {
 
 ---@type {[SoundEffectId] : SoundData}
 local soundData = {
-    -- ["koikoi.continue"] = { soundPath = "", volume = 1 },
-    -- ["koikoi.end"] = { soundPath = "", volume = 1 },
     -- ["1"] = { sound ="",soundPath = "Fx/inter/menu1.wav" },
     -- ["2"] = { sound ="",soundPath = "Fx/inter/menu2.wav" },
     -- ["3"] = { sound ="",soundPath = "Fx/inter/menuNEWxbx.wav" },
@@ -51,10 +51,232 @@ local soundData = {
     [this.se.pickCard] = { sound = "book page" },
     [this.se.putCard] = { sound = "book page2" },
 }
+
+-- todo there are placeholder
+---@type {[string] : {[string]: {[VoiceId] : string[] } } } race, sex, VoiceId, file excluding directory
 local voiceData = {
-    [this.voice.continue] = { soundPath = "vo\\d\\m\\Hlo_DM035.mp3" }, -- Keep moving, scum.
-    [this.voice.finish] = { soundPath = "vo\\d\\m\\Atk_DM013.mp3" }, -- You're beaten.
+    ["argonian"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_AM001.mp3",
+                "Atk_AM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_AM003.mp3",
+                "Atk_AM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_AF001.mp3",
+                "Atk_AF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_AF003.mp3",
+                "Atk_AF004.mp3",
+            },
+        },
+    },
+    ["breton"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_BM001.mp3",
+                "Atk_BM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_BM003.mp3",
+                "Atk_BM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_BF001.mp3",
+                "Atk_BF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_BF003.mp3",
+                "Atk_BF004.mp3",
+            },
+        },
+    },
+    ["dark elf"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_DM001.mp3",
+                "Atk_DM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_DM003.mp3",
+                "Atk_DM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_DF001.mp3",
+                "Atk_DF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_DF003.mp3",
+                "Atk_DF004.mp3",
+            },
+        },
+    },
+    ["high elf"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_HM001.mp3",
+                "Atk_HM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_HM003.mp3",
+                "Atk_HM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_HF001.mp3",
+                "Atk_HF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_HF003.mp3",
+                "Atk_HF004.mp3",
+            },
+        },
+    },
+    ["imperial"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_IM001.mp3",
+                "Atk_IM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_IM003.mp3",
+                "Atk_IM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_IF001.mp3",
+                "Atk_IF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_IF003.mp3",
+                "Atk_IF004.mp3",
+            },
+        },
+    },
+    ["khajiit"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_KM001.mp3",
+                "Atk_KM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_KM003.mp3",
+                "Atk_KM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_KF001.mp3",
+                "Atk_KF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_KF003.mp3",
+                "Atk_KF004.mp3",
+            },
+        },
+    },
+    ["nord"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_NM001.mp3",
+                "Atk_NM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_NM003.mp3",
+                "Atk_NM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_NF001.mp3",
+                "Atk_NF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_NF003.mp3",
+                "Atk_NF004.mp3",
+            },
+        },
+    },
+    ["orc"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_OM001.mp3",
+                "Atk_OM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_OM003.mp3",
+                "Atk_OM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_OF001.mp3",
+                "Atk_OF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_OF003.mp3",
+                "Atk_OF004.mp3",
+            },
+        },
+    },
+    ["redguard"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_RM001.mp3",
+                "Atk_RM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_RM003.mp3",
+                "Atk_RM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_RF001.mp3",
+                "Atk_RF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_RF003.mp3",
+                "Atk_RF004.mp3",
+            },
+        },
+    },
+    ["wood elf"] = {
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_WM001.mp3",
+                "Atk_WM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_WM003.mp3",
+                "Atk_WM004.mp3",
+            },
+        },
+        ["f"] = {
+            [this.voice.continue] = {
+                "Atk_WF001.mp3",
+                "Atk_WF002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_WF003.mp3",
+                "Atk_WF004.mp3",
+            },
+        },
+    },
 }
+
 local soundGenData = {
     [this.voice.continue] = { gen = tes3.soundGenType.moan },
     [this.voice.finish] = { gen = tes3.soundGenType.roar },
@@ -66,22 +288,20 @@ local musicData = {
     [this.music.lose] = { path = "Special/MW_Death.mp3" },
 }
 
--- but the dialogue content and numbers don't seem to match.
 ---@param race string
 ---@param female boolean
-local function GenerateVoicePath(race, female, prefix, id)
-    local r = string.lower(string.sub(race, 1, 2))
+local function GenerateVoicePath(race, female)
+    local r = string.lower(string.sub(race, 1, 1))
     local s = female and "f" or "m"
-    local file = string.upper(r .. s)
-    local path = string.format( "vo\\%s\\%s\\%s_%s%s%03u.mp3", r, s, prefix, file, id )
+    local path = string.format( "vo\\%s\\%s\\", r, s )
     return path
 end
 
 ---@param id SoundEffectId
 function this.Play(id)
     local data = soundData[id]
-            -- todo mixxhannel feder
-            -- todo reference if 3D
+    -- todo mixxhannel feder
+    -- todo reference if 3D
     if data then
         -- tes3.playSound performs 3D audio with references, so it crashes when used in the main menu because of no references exist.
         -- but play using soundPath is only tes3.playSound, tes3sound only data loaded by esm, esp.
@@ -108,11 +328,19 @@ end
 ---@param female boolean -- todo
 local function PlayVoice(id, race, female)
     if not tes3.onMainMenu() then
-        local data = voiceData[id]
-        if data and data.soundPath then
-            tes3.playSound({ soundPath = data.soundPath, mixChannel = tes3.soundMix.voice, volume = data.volume or 1 })
-        else
-            logger:debug("invalid voice ID: ".. tostring(id))
+        local r = voiceData[string.lower(race)]
+        if not r then
+            return
+        end
+        local s = r[female and "f" or "m"]
+        if not s then
+            return
+        end
+        local data = s[id]
+        if data then
+            local file = table.choice(data)
+            local path = GenerateVoicePath(race, female) .. file
+            tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
         end
     end
 end
@@ -122,6 +350,11 @@ end
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
+        -- TODO unique character/creature
+        -- https://en.uesp.net/wiki/Morrowind:Special_Creatures
+        -- https://en.uesp.net/wiki/Tribunal:Special_Creatures
+        -- https://en.uesp.net/wiki/Bloodmoon:Creatures
+
         local types = {
             [tes3.actorType.creature] =
             ---@param m tes3mobileCreature

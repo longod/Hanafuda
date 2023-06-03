@@ -186,7 +186,7 @@ local function AddGamblingMenu(menu, actor)
             -- todo passing more parameters from actor
             service = require("Hanafuda.KoiKoi.service").new(
                 require("Hanafuda.KoiKoi.game").new(),
-                require("Hanafuda.KoiKoi.view").new(utils.GetPlayerName(), utils.GetNPCName(actor)),
+                require("Hanafuda.KoiKoi.view").new(tes3.mobilePlayer, actor),
                 ---@param winner KoiKoi.Player?
                 ---@param playerPoint integer
                 ---@param opponentPoint integer

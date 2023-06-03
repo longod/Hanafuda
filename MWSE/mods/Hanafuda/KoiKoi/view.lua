@@ -4,6 +4,7 @@ local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local ui = require("Hanafuda.KoiKoi.ui")
+local utils = require("Hanafuda.utils")
 local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
@@ -18,17 +19,22 @@ local cardProperty = "Hanafuda:CardId"
 
 ---@class KoiKoi.View
 ---@field names { KoiKoi.Player : string }
+---@field mobile { KoiKoi.Player : tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? }
 local View = {}
 
----@param playerName string?
----@param opponentName string?
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@return KoiKoi.View
-function View.new(playerName, opponentName)
+function View.new(player, opponent)
     --@type KoiKoi.UI
     local instance = {
         names = {
-            [koi.player.you] = playerName or i18n("playerDefaultName"),
-            [koi.player.opponent] = opponentName or i18n("opponentDefaultName"),
+            [koi.player.you] = utils.GetActorName(player, i18n("playerDefaultName")),
+            [koi.player.opponent] = utils.GetActorName(opponent, i18n("opponentDefaultName")),
+        },
+        mobile = {
+            [koi.player.you] = player,
+            [koi.player.opponent] = opponent,
         },
     }
     setmetatable(instance, { __index = View })
@@ -113,9 +119,9 @@ function View.ShowCalling(self, player, service, calling)
     local name = self.names[player]
     tes3.messageBox(calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name}) )
     if calling == koi.calling.koikoi then
-        --sound.PlayVoice(sound.voice.continue, "", false)
+        sound.PlayVoice(sound.voice.continue, self.mobile[player])
     elseif calling == koi.calling.shobu then
-        --sound.PlayVoice(sound.voice.finish, "", false)
+        sound.PlayVoice(sound.voice.finish, self.mobile[player])
     end
     service:NotifyCalling(calling)
 end
@@ -177,7 +183,7 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
                 -- todo condition, if deck 0 is disable
                 text = i18n("koi.koikoi"),
                 callback = function()
-                    --sound.PlayVoice(sound.voice.continue, "", false)
+                    sound.PlayVoice(sound.voice.continue, self.mobile[player])
                     if service then
                         service:NotifyKoiKoi()
                     end
@@ -190,7 +196,7 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
             {
                 text = i18n("koi.shobu"),
                 callback = function()
-                    --sound.PlayVoice(sound.voice.finish, "", false)
+                    sound.PlayVoice(sound.voice.finish, self.mobile[player])
                     if service then
                         service:NotifyShobu()
                     end
