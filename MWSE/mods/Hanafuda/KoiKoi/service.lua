@@ -11,7 +11,7 @@ local phase = {
     decidedParent = 4,
     setupRound = 5,
     dealingInitial = 6,
-    checkLuckyHand = 7,
+    checkLuckyHands = 7,
     beginTurn = 8,
     matchCard = 9, -- rename
     matchCardFlip = 10, -- rename
@@ -219,8 +219,11 @@ function Service.OnEnterFrame(self, e)
         [phase.dealingInitial] = function()
             -- wait for view
         end,
-        [phase.checkLuckyHand] = function()
+        [phase.checkLuckyHands] = function()
             -- todo
+            -- in testing
+            self.game:CheckLuckyHands(self.game.parent)
+            self.game:CheckLuckyHands(koi.GetOpponent(self.game.parent))
             self:RequestPhase(phase.beginTurn)
         end,
         [phase.beginTurn] = function()
@@ -513,7 +516,7 @@ end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDealedInitialCards(self)
-    self:RequestPhase(phase.checkLuckyHand)
+    self:RequestPhase(phase.checkLuckyHands)
 end
 
 ---@param self KoiKoi.Service

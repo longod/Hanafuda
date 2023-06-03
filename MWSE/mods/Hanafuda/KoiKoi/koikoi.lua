@@ -40,7 +40,7 @@ this.combination = {
 ---@type integer[]
 this.basePoint = {
     -- bright
-    15,
+    15, -- if multipiler enabled 15 is too high.
     8,
     7,
     6,
@@ -56,6 +56,19 @@ this.basePoint = {
     5,
     5,
     1,
+}
+assert(table.size(this.combination) == table.size(this.basePoint))
+
+---@enum KoiKoi.LuckyHands
+this.luckyHands = {
+    fourOfAKind = 1,
+    fourPairs = 2,
+}
+
+---@type integer[]
+this.luckyHandsPoint = {
+    6,
+    6,
 }
 assert(table.size(this.combination) == table.size(this.basePoint))
 

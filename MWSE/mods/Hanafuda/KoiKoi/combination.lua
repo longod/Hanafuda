@@ -152,9 +152,46 @@ end
 
 ---@param hand integer[]
 ---@param houseRule Config.KoiKoi.HouseRule
----@return { [KoiKoi.CombinationType] : integer }?
-function this.CalculateLuckyHand(hand, houseRule)
+---@return { [KoiKoi.LuckyHands] : integer }?
+function this.CalculateLuckyHands(hand, houseRule)
+    -- countup same suits
+    local suits = {}
+    for _, cardId in ipairs(hand) do
+        local data = card.GetCardData(cardId)
+        local v = table.getset(suits, data.suit, 0)
+        suits[data.suit] = v + 1
+    end
 
+    local pair4 = 0
+    local pair2 = 0
+    for _, value in pairs(suits) do
+        if value >= 4 then
+            pair4 = pair4 + 1
+        end
+        if value >= 2 then
+            pair2 = pair2 + 1
+        end
+    end
+    -- logger:trace(pair4)
+    -- logger:trace(pair2)
+    -- logger:trace(table.concat(hand, ", "))
+    -- for key, value in pairs(suits) do
+    --     logger:trace(tostring(key) .. " : " .. tostring(value))
+    -- end
+
+    -- It hasn't been decided if it will be cumulative or not, but would be happy if it was. or house rule
+    local lucky = {} -- its unlucky
+    if pair4 >= 1 then
+        -- If there were two, would they be cumulative?
+        lucky[koi.luckyHands.fourOfAKind] = koi.luckyHandsPoint[koi.luckyHands.fourOfAKind]
+        logger:debug("Teshi " .. tostring(lucky[koi.luckyHands.fourOfAKind]))
+    end
+    if pair2 >= 4 then
+        lucky[koi.luckyHands.fourPairs] = koi.luckyHandsPoint[koi.luckyHands.fourPairs]
+        logger:debug("Kuttsuki " .. tostring(lucky[koi.luckyHands.fourPairs]))
+    end
+
+    return table.size(lucky) > 0 and lucky or nil
 end
 
 return this

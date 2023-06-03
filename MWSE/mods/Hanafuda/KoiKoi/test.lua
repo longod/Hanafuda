@@ -91,6 +91,62 @@ do
 end
 
 do
+    local card = require("Hanafuda.card")
+    local koi = require("Hanafuda.KoiKoi.koikoi")
+    local combo = require("Hanafuda.KoiKoi.combination")
+    local hand ---@type {[CardType] : integer[]}
+
+    --- helper
+    ---@param params Card.Find.Params|integer
+    ---@return {[CardType] : integer[]}
+    local function AddCard(params)
+        ---@param cardId integer
+        local function add(cardId)
+            table.insert(hand, cardId)
+        end
+
+        if type(params) == "table" then
+            local ids = card.Find(params)
+            if type(ids) == "table" then
+                for _, id in ipairs(ids) do
+                    add(id)
+                end
+            elseif type(ids) == "number" then
+                add(ids)
+            end
+        elseif type(params) == "number" then
+            add(params)
+        end
+        return hand
+    end
+
+    -- todo pattern
+    local settings = require("Hanafuda.settings")
+    local houseRule = settings.Default().koikoi.houseRule
+
+    local unitwind = require("unitwind").new({
+        enabled = true,
+        highlight = false,
+        beforeEach = function()
+            hand = {}
+        end,
+    })
+    unitwind:start("Koi-Koi LuckyHands Test")
+
+    unitwind:test("No Hands", function()
+        local actual = combo.CalculateLuckyHands(hand, houseRule)
+        unitwind:expect(actual).toBe(nil)
+        -- todo edge case
+    end)
+    unitwind:test("Teshi", function()
+    end)
+    unitwind:test("Kuttsuki", function()
+    end)
+
+    unitwind:finish()
+end
+
+do
     local unitwind = require("unitwind").new({
         enabled = true,
         highlight = false,

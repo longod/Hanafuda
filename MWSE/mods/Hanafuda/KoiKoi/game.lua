@@ -113,6 +113,7 @@ function KoiKoi.SetBrains(self, brain, player)
     end
 end
 
+---@param self KoiKoi
 function KoiKoi.Initialize(self)
     self.deck = card.CreateDeck()
     self.deck = card.ShuffleDeck(self.deck)
@@ -133,6 +134,7 @@ function KoiKoi.DecideParent(self, leftRight)
 end
 
 ---@param self KoiKoi
+---@param player KoiKoi.Player
 function KoiKoi.SetCurrentPlayer(self, player)
     self.current = player
 end
@@ -158,6 +160,16 @@ function KoiKoi.DealInitialCards(self)
     assert(table.size(first) == initialCards)
     assert(table.size(self.groundPool) == initialCards)
     assert(table.size(second) == initialCards)
+end
+
+---@param self KoiKoi
+---@param player KoiKoi.Player
+function KoiKoi.CheckLuckyHands(self, player)
+    -- TODO in testing
+    local lh = combination.CalculateLuckyHands(self.pools[player].hand, self.settings.houseRule)
+    if not lh then
+        logger:debug("%d is no lucky hands", player)
+    end
 end
 
 ---@param self KoiKoi
