@@ -63,9 +63,8 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
 
         for index, cardId in ipairs(cardIds) do
             local asset = card.GetCardAsset(cardId)
-            local ref = card.GetCardData(cardId)
             local b = pattern:createBlock()
-            --b.borderAllSides = 0
+            b.borderAllSides = 0
             b.autoWidth = true
             b.autoHeight = true
             b.flowDirection = tes3.flowDirection.topToBottom
@@ -77,10 +76,10 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
             image.consumeMouseEvents = false
             image.borderAllSides = 2
             image.flowDirection = tes3.flowDirection.topToBottom
-            -- without card name for layout
-            -- b:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
-            -- local type = b:createLabel({ text = card.GetCardTypeText(ref.type).name })
-            -- type.color = card.GetCardTypeColor(ref.type)
+            b:register(tes3.uiEvent.help,
+            function(_)
+                this.CreateCardTooltip(cardId, false)
+            end)
         end
         return pattern
 
@@ -333,7 +332,7 @@ function this.CreateRule(e)
     local scale = 1
     local padding = 4
     local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
-    local suitWidth = math.max(card.GetCardWidth() * scale + padding, 96)
+    local suitWidth = math.max(card.GetCardWidth() * scale + padding, 128)
     local frame = parent:createThinBorder()
     frame.widthProportional = 1
     frame.autoWidth = true
@@ -379,7 +378,7 @@ function this.CreateRule(e)
             -- col.childAlignX = 1
             -- col.childAlignY = 0.5
             local text = card.GetCardSuitText(i)
-            col:createLabel({text = tostring(i) })
+            --col:createLabel({text = tostring(i) })
             col:createLabel({text = text.name }).color = headerColor
             if text.alt then
                 col:createLabel({text = text.alt })
@@ -405,6 +404,10 @@ function this.CreateRule(e)
                     image.width = card.GetCardWidth() * scale
                     image.height = card.GetCardHeight() * scale
                     image.scaleMode = true
+                    b:register(tes3.uiEvent.help,
+                    function(_)
+                        this.CreateCardTooltip(cardId, false)
+                    end)
                 end
             end
         end

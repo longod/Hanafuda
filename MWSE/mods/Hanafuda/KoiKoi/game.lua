@@ -3,6 +3,7 @@ local card = require("Hanafuda.card")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local combination = require("Hanafuda.KoiKoi.combination")
 local config = require("Hanafuda.config")
+local houseRule = require("Hanafuda.KoiKoi.houseRule")
 
 ---@class KoiKoi.Settings
 ---@field round integer
@@ -359,11 +360,11 @@ function KoiKoi.CalculateRoundPoint(self, player)
     local mult = 1
     if self.combinations[player] then
         point = SumTotalPoint(self.combinations[player])
-        if self.settings.houseRule.multiplier == koi.multiplier.doublePointsOver7 then
+        if self.settings.houseRule.multiplier == houseRule.multiplier.doublePointsOver7 then
             if point >= 7 then
                 mult = 2
             end
-        elseif self.settings.houseRule.multiplier == koi.multiplier.eachTimeKoiKoi then
+        elseif self.settings.houseRule.multiplier == houseRule.multiplier.eachTimeKoiKoi then
             mult = 1 + self.calls[koi.player.you] + self.calls[koi.player.opponent]
         end
     end

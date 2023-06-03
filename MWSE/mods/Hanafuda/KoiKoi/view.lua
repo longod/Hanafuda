@@ -1369,8 +1369,6 @@ function View.CreateInfo(self, parent, service)
     opponent.borderAllSides = 6
     opponent.paddingAllSides = 6
 
-    -- todo display number and names
-
     local on = opponent:createBlock()
     on.autoWidth = true
     on.autoHeight = true
@@ -1383,7 +1381,7 @@ function View.CreateInfo(self, parent, service)
     os:createLabel({text = i18n("koi.view.totalScore")})
     os:createLabel({id = uiid.opponentScore, text = ""})
     opponent:createLabel({text = i18n("koi.view.roundCombo")})
-    -- todo drivre for test
+    -- todo driver for test
     local opponentCombo = opponent:createBlock({id = uiid.opponentCombination })
     opponentCombo.widthProportional = 1
     opponentCombo.autoWidth = true
@@ -1422,7 +1420,7 @@ function View.CreateInfo(self, parent, service)
     ys:createLabel({id = uiid.playerScore, text = ""})
 
     you:createLabel({text = i18n("koi.view.roundCombo")})
-    -- todo drivre for test
+    -- todo driver for test
     local yourCombo = you:createBlock({id = uiid.playerCombination })
     yourCombo.widthProportional = 1
     yourCombo.autoWidth = true

@@ -36,6 +36,7 @@ this.combination = {
     chaff = 13,
 }
 
+-- todo tweak point including multiplier
 ---@type integer[]
 this.basePoint = {
     -- bright
@@ -57,13 +58,6 @@ this.basePoint = {
     1,
 }
 assert(table.size(this.combination) == table.size(this.basePoint))
-
----@enum KoiKoi.Multiplier
-this.multiplier = {
-    none = 1,
-    doublePointsOver7 = 2,
-    eachTimeKoiKoi = 3,
-}
 
 ---comment
 ---@param player KoiKoi.Player

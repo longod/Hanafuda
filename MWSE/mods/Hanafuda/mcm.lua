@@ -1,4 +1,3 @@
-local koi = require("Hanafuda.KoiKoi.koikoi")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 --- @param e modConfigReadyEventData
@@ -27,6 +26,21 @@ local function OnModConfigReady(e)
         description = i18n("mcm.page.description")
     })
 
+    local languageTable = {
+        { label = i18n("mcm.page.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
+        { label = i18n("mcm.page.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },
+    }
+    page:createDropdown({
+        label = i18n("mcm.page.cardLanguage.label"),
+        description = i18n("mcm.page.cardLanguage.description") .. "\n\n" .. i18n("mcm.default") .. languageTable[defaults.cardLanguage].label, -- Strictly it is not correct to treat it as an index
+        options = languageTable,
+        variable = mwse.mcm.createTableVariable({
+            id = "cardLanguage",
+            table = config,
+            restartRequired = true,
+        }),
+    })
+
     do
         local koikoi = page:createCategory(i18n("mcm.koi.category"))
         local roundTable = {
@@ -45,11 +59,12 @@ local function OnModConfigReady(e)
         })
 
         do
+            local houseRule = require("Hanafuda.KoiKoi.houseRule")
             local house = koikoi:createCategory(i18n("mcm.koi.houseRule.category"))
             local multiplierTable = {
-                { label = i18n("mcm.koi.houseRule.multiplier.none"), value = koi.multiplier.none },
-                { label = i18n("mcm.koi.houseRule.multiplier.doublePointsOver7"), value = koi.multiplier.doublePointsOver7 },
-                { label = i18n("mcm.koi.houseRule.multiplier.eachTimeKoiKoi"), value = koi.multiplier.eachTimeKoiKoi },
+                { label = i18n("mcm.koi.houseRule.multiplier.none"), value = houseRule.multiplier.none },
+                { label = i18n("mcm.koi.houseRule.multiplier.doublePointsOver7"), value = houseRule.multiplier.doublePointsOver7 },
+                { label = i18n("mcm.koi.houseRule.multiplier.eachTimeKoiKoi"), value = houseRule.multiplier.eachTimeKoiKoi },
             }
             house:createDropdown({
                 label = i18n("mcm.koi.houseRule.multiplier.label"),
@@ -59,13 +74,13 @@ local function OnModConfigReady(e)
             })
 
             house:createYesNoButton({
-                label = i18n("mcm.koi.houseRule.flowerViewingSake.label"),
-                description = i18n("mcm.koi.houseRule.flowerViewingSake.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.flowerViewingSake),
+                label = i18n("mcm.koi.houseRule.flowerViewingSake.label", {i18n("koi.combo.flowerViewingSake.name")}),
+                description = i18n("mcm.koi.houseRule.flowerViewingSake.description", {i18n("koi.combo.flowerViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.flowerViewingSake),
                 variable = mwse.mcm.createTableVariable({ id = "flowerViewingSake", table = config.koikoi.houseRule })
             })
             house:createYesNoButton({
-                label = i18n("mcm.koi.houseRule.moonViewingSake.label"),
-                description = i18n("mcm.koi.houseRule.moonViewingSake.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.moonViewingSake),
+                label = i18n("mcm.koi.houseRule.moonViewingSake.label", {i18n("koi.combo.moonViewingSake.name")}),
+                description = i18n("mcm.koi.houseRule.moonViewingSake.description", {i18n("koi.combo.moonViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.moonViewingSake),
                 variable = mwse.mcm.createTableVariable({ id = "moonViewingSake", table = config.koikoi.houseRule })
             })
         end

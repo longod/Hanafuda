@@ -43,7 +43,7 @@ assert(table.size(this.cardSuit) == table.size(this.cardFlower))
 ---@enum CardType
 this.cardType = {
     bright = 1, -- hikari
-    animal = 2, -- tane -- todo rename... animal is strange
+    animal = 2, -- tane
     ribbon = 3, -- tanzaku
     chaff = 4, -- kasu
 }

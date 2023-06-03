@@ -150,5 +150,11 @@ function this.Different(current, prev)
     return table.size(diff) > 0 and diff or nil
 end
 
+---@param hand integer[]
+---@param houseRule Config.KoiKoi.HouseRule
+---@return { [KoiKoi.CombinationType] : integer }?
+function this.CalculateLuckyHand(hand, houseRule)
+
+end
 
 return this

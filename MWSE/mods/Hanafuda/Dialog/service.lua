@@ -226,6 +226,7 @@ local function AddGamblingMenu(menu, actor)
         function(_)
             local tooltip = tes3ui.createTooltipMenu()
             tooltip:createLabel({ text = i18n("koi.service.tooltip") })
+            -- todo reason if it disabled
         end)
 
     menu:registerAfter(tes3.uiEvent.update, UpdateVisibility)

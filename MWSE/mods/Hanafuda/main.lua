@@ -3,7 +3,16 @@ local utils = require("Hanafuda.utils")
 
 ---@param _ initializedEventData
 local function OnInitialized(_)
-
+local settings = require("Hanafuda.settings")
+    if config.cardLanguage == settings.cardLanguage.tamrielic then
+        -- local i18n = mwse.loadTranslations("Hanafuda")
+        -- local loc = require("i18n")
+        -- local lang = require("Hanafuda.i18n.tamrielic")
+        -- mwse.log(i18n.mod)
+        --loc.load({ ["eng"] = { ["Hanafuda"] = lang } })
+        --local i18n = mwse.loadTranslations("Hanafuda")
+        --table.copy(i18n.mod.Hanafuda.tamrielic, i18n.mod.Hanafuda)
+    end
     if config.development.debug then
         local service = nil ---@type KoiKoi.Service?
         event.register(tes3.event.keyDown,

@@ -1,19 +1,31 @@
-local koi = require("Hanafuda.KoiKoi.koikoi")
+
+---@class Settings
+local this = {}
+
+local hr = require("Hanafuda.KoiKoi.houseRule")
+
+---@enum CardLanguage
+this.cardLanguage = {
+    japanese = 1,
+    tamrielic = 2,
+}
 
 ---@class Config
 local defaultConfig = {
     enable = true,
     -- language?
+    cardLanguage = this.cardLanguage.tamrielic,
     -- game speed x1.0 for wait time
     ---@class Config.KoiKoi
     koikoi = {
         round = 3, -- 3, 6, 12, 1 (debug)
         ---@class Config.KoiKoi.HouseRule
         houseRule = {
-            multiplier = koi.multiplier.doublePointsOver7,
+            multiplier = hr.multiplier.doublePointsOver7,
             flowerViewingSake = true,
             moonViewingSake = true,
             -- nov cards rain off, dec cards fog
+            -- wild card
         },
     },
     audio = {
@@ -27,12 +39,9 @@ local defaultConfig = {
     }
 }
 
-local config = nil ---@type Config
-
----@class Settings
-local this = {}
 this.configPath = "Hanafuda"
 this.modName = "Hanafuda: Akaviri Playing Cards"
+local config = nil ---@type Config
 
 ---@return Config
 function this.Load()

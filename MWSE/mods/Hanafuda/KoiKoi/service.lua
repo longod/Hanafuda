@@ -357,6 +357,7 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.endTurn] = function()
             if self.game:CheckEnd() then
+                -- TODO test
                 self:RequestPhase(phase.noMatch)
             else
                 self.game:SwapPlayer()

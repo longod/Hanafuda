@@ -93,11 +93,11 @@ local this = {
     ["koi.shobu"] = "Shobu",
     ["koi.combinations"] = "Yaku",
     ["koi.opponentCard"] = "Opponent's card",
-    ["koi.deck.name"] = "Deck", -- todo hanafuda -- todo plural
-    ["koi.deck.remain"] = "%u cards remaining",  -- todo hanafuda
-    ["koi.point"] = "%u points", -- todo plural
+    ["koi.deck.name"] = "Deck",                 -- todo hanafuda -- todo plural
+    ["koi.deck.remain"] = "%u cards remaining", -- todo hanafuda
+    ["koi.point"] = "%u points",                -- todo plural
     ["koi.rule"] = "rule here",
-    ["koi.cardList"] = "Card List", -- todo hanafuda
+    ["koi.cardList"] = "Card List",             -- todo hanafuda
     ["koi.view.drawGame"] = "Draw Game",
     ["koi.view.winGame"] = "%s Win!",
     ["koi.view.loseGame"] = "%s Lose!",
@@ -134,7 +134,7 @@ local this = {
     ["koi.view.quickRule"] = "Quick Rule",
     ["koi.view.totalScore"] = "Total Score: ", -- merge with number
     ["koi.view.roundCombo"] = "Combination in this round:",
-    ["koi.view.roundLabel"] = "Round: ", -- merge with number
+    ["koi.view.roundLabel"] = "Round: ",       -- merge with number
     -- koikoi combo
     ["koi.combo.fiveBrights.name"] = "Goko",
     ["koi.combo.fiveBrights.point"] = "%u points.",
@@ -156,7 +156,7 @@ local this = {
     ["koi.combo.animals.condition"] = "Any five %s cards.",
     ["koi.combo.poetryAndBlueRibbons.name"] = "Akatan-Aotan",
     ["koi.combo.poetryAndBlueRibbons.point"] = "%u points and 1 additional point for each additional %s card.",
-    ["koi.combo.poetryAndBlueRibbons.condition"] = "All 3 Red Poetry %s cards and all 3 Blue %s cards.",
+    ["koi.combo.poetryAndBlueRibbons.condition"] = "All 3 Poetry %s cards and all 3 Blue %s cards.",
     ["koi.combo.poetryRibbons.name"] = "Akatan",
     ["koi.combo.poetryRibbons.point"] = "%u points and 1 additional point for each additional %s card.",
     ["koi.combo.poetryRibbons.condition"] = "%s, %s and %s.",
@@ -179,6 +179,10 @@ local this = {
     ["mcm.default"] = "Default: ",
     ["mcm.page.label"] = "Settings",
     ["mcm.page.description"] = "Let's play Koi-Koi using Hanafuda playing cards.",
+    ["mcm.page.cardLanguage.label"] = "Card Language",
+    ["mcm.page.cardLanguage.description"] = "Original: Original Japanese\nTamrielic: Translate to Tamrielic",
+    ["mcm.page.cardLanguage.japanese"] = "Original",
+    ["mcm.page.cardLanguage.tamrielic"] = "Tamrielic",
     ["mcm.koi.category"] = "Koi-Koi",
     ["mcm.koi.round.label"] = "Number of Rounds",
     ["mcm.koi.round.description"] = "Number of rounds played during one game.",
@@ -188,10 +192,10 @@ local this = {
     ["mcm.koi.houseRule.multiplier.none"] = "None",
     ["mcm.koi.houseRule.multiplier.doublePointsOver7"] = "Double at least 7",
     ["mcm.koi.houseRule.multiplier.eachTimeKoiKoi"] = "Each time Koi-Koi was called",
-    ["mcm.koi.houseRule.flowerViewingSake.label"] = "Enable Hanami-Zake",
-    ["mcm.koi.houseRule.flowerViewingSake.description"] = "Because Hanami-Zake combo is too strong.",
-    ["mcm.koi.houseRule.moonViewingSake.label"] = "Enable Tsukimi-Zake",
-    ["mcm.koi.houseRule.moonViewingSake.description"] = "Because Tsukimi-Zake combo is too strong.",
+    ["mcm.koi.houseRule.flowerViewingSake.label"] = "Enable %s",
+    ["mcm.koi.houseRule.flowerViewingSake.description"] = "Because %s combo is too strong.",
+    ["mcm.koi.houseRule.moonViewingSake.label"] = "Enable %s",
+    ["mcm.koi.houseRule.moonViewingSake.description"] = "Because %s combo is too strong.",
     ["mcm.development.category"] = "Development",
     ["mcm.development.logLevel.label"] = "Logging Level",
     ["mcm.development.logLevel.description"] = "Set the log level.",
@@ -203,26 +207,13 @@ local this = {
     ["mcm.development.unittest.description"] = "Run unit-test.",
 }
 
--- partial localization
-local tamriel = {
-    -- hanafuda card suit tamriel (month)
-    ["hanafuda.card.suit_01"] = "Morning Star",
-    ["hanafuda.card.suit_02"] = "Sun's Dawn",
-    ["hanafuda.card.suit_03"] = "First Seed",
-    ["hanafuda.card.suit_04"] = "Rain's Hand",
-    ["hanafuda.card.suit_05"] = "Second Seed",
-    ["hanafuda.card.suit_06"] = "Midyear",
-    ["hanafuda.card.suit_07"] = "Sun's Height",
-    ["hanafuda.card.suit_08"] = "Last Seed",
-    ["hanafuda.card.suit_09"] = "Hearthfire",
-    ["hanafuda.card.suit_10"] = "Frostfall",
-    ["hanafuda.card.suit_11"] = "Sun's Dusk",
-    ["hanafuda.card.suit_12"] = "Evening Star",
-}
+local settings = require("Hanafuda.settings")
+local config = require("Hanafuda.config")
+if config.cardLanguage == settings.cardLanguage.tamrielic then
+    -- overwrite
+    local lang = require("Hanafuda.i18n.tamrielic")
+    table.copy(lang, this)
+end
 
-local japanese = {}
-
--- todo config (require reboot)
---table.copy(tamriel, this)
 
 return this
