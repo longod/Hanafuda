@@ -55,12 +55,27 @@ local voiceData = {
     [this.voice.continue] = { soundPath = "vo\\d\\m\\Hlo_DM035.mp3" }, -- Keep moving, scum.
     [this.voice.finish] = { soundPath = "vo\\d\\m\\Atk_DM013.mp3" }, -- You're beaten.
 }
+local soundGenData = {
+    [this.voice.continue] = { gen = tes3.soundGenType.moan },
+    [this.voice.finish] = { gen = tes3.soundGenType.roar },
+}
 
 -- I'd like to treat it as an SE, but so far I can't.
 local musicData = {
     [this.music.win] = { path = "Special/MW_Triumph.mp3" },
     [this.music.lose] = { path = "Special/MW_Death.mp3" },
 }
+
+-- but the dialogue content and numbers don't seem to match.
+---@param race string
+---@param female boolean
+local function GenerateVoicePath(race, female, prefix, id)
+    local r = string.lower(string.sub(race, 1, 2))
+    local s = female and "f" or "m"
+    local file = string.upper(r .. s)
+    local path = string.format( "vo\\%s\\%s\\%s_%s%s%03u.mp3", r, s, prefix, file, id )
+    return path
+end
 
 ---@param id SoundEffectId
 function this.Play(id)
@@ -91,13 +106,48 @@ end
 ---@param id VoiceId
 ---@param race string -- todo
 ---@param female boolean -- todo
-function this.PlayVoice(id, race, female)
+local function PlayVoice(id, race, female)
     if not tes3.onMainMenu() then
         local data = voiceData[id]
         if data and data.soundPath then
             tes3.playSound({ soundPath = data.soundPath, mixChannel = tes3.soundMix.voice, volume = data.volume or 1 })
         else
             logger:debug("invalid voice ID: ".. tostring(id))
+        end
+    end
+end
+
+---comment
+---@param id VoiceId
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+function this.PlayVoice(id, mobile)
+    if not tes3.onMainMenu() and mobile then
+        local types = {
+            [tes3.actorType.creature] =
+            ---@param m tes3mobileCreature
+            function(m)
+                local soundCreature = m.object.baseObject
+                local data = soundGenData[id]
+                if soundCreature and data then
+                    local gen = tes3.getSoundGenerator(soundCreature.id, data.gen)
+                    if gen and gen.sound then
+                        gen.sound:play(nil, 1)
+                    end
+                end
+            end,
+            [tes3.actorType.npc] =
+            ---@param m tes3mobileNPC
+            function(m)
+                PlayVoice(id, m.object.race.id, m.object.female)
+            end,
+            [tes3.actorType.player] =
+            ---@param m tes3mobilePlayer
+            function(m)
+                PlayVoice(id, m.object.race.id, m.object.female)
+            end,
+        }
+        if types[mobile.actorType] then
+            types[mobile.actorType](mobile)
         end
     end
 end
