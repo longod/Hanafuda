@@ -11,12 +11,17 @@ this.se = {
     putDeck = 2,
     pickCard = 3,
     putCard = 4,
-    turnBegin = 5,
 }
 ---@enum VoiceId
 this.voice = {
     continue = 1,
     finish = 2,
+}
+
+---@enum MusicId
+this.music = {
+    win = 1,
+    lose = 2,
 }
 
 --randomness array? {}
@@ -45,12 +50,18 @@ local soundData = {
     [this.se.putDeck] = { sound = "book close" },
     [this.se.pickCard] = { sound = "book page" },
     [this.se.putCard] = { sound = "book page2" },
-    [this.se.turnBegin] = { sound = "Silt_2" },
 }
 local voiceData = {
     [this.voice.continue] = { soundPath = "vo\\d\\m\\Hlo_DM035.mp3" }, -- Keep moving, scum.
     [this.voice.finish] = { soundPath = "vo\\d\\m\\Atk_DM013.mp3" }, -- You're beaten.
 }
+
+-- I'd like to treat it as an SE, but so far I can't.
+local musicData = {
+    [this.music.win] = { path = "Special/MW_Triumph.mp3" },
+    [this.music.lose] = { path = "Special/MW_Death.mp3" },
+}
+
 ---@param id SoundEffectId
 function this.Play(id)
     local data = soundData[id]
@@ -88,6 +99,14 @@ function this.PlayVoice(id, race, female)
         else
             logger:debug("invalid voice ID: ".. tostring(id))
         end
+    end
+end
+
+---@param id MusicId
+function this.PlayMusic(id)
+    local data = musicData[id]
+    if data and data.path then
+        tes3.streamMusic({ path = musicData[id].path })
     end
 end
 

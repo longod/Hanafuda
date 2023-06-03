@@ -47,8 +47,10 @@ function View.ShowResult(self, service, player, points)
         local name = self.names[koi.player.you]
         if player == koi.player.you then
             header = i18n("koi.view.winGame", {name})
+            sound.PlayMusic(sound.music.win)
         else
             header = i18n("koi.view.loseGame", {name})
+            sound.PlayMusic(sound.music.lose)
         end
     end
 
@@ -1121,7 +1123,6 @@ function View.BeginTurn(self, player, parent, service)
 
     tes3.messageBox(text)
 
-    -- todo jingle
     service:NotifyBeganTurn()
 end
 

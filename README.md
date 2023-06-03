@@ -20,7 +20,6 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
 
 ## Contributing
 I hope you can do it together.  
-Especially since I lack skill sets to create assets, I find creating them very time consuming and the quality is not good.
 
 ## Future Work
 - Skill Module (optional)
