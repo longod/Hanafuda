@@ -77,100 +77,114 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
             image.borderAllSides = 2
             image.flowDirection = tes3.flowDirection.topToBottom
             b:register(tes3.uiEvent.help,
-            function(_)
-                this.CreateCardTooltip(cardId, false)
-            end)
+                function(_)
+                    this.CreateCardTooltip(cardId, false)
+                end)
         end
         return pattern
-
     end
     local desc = {
         [koi.combination.fiveBrights] = {
             name = i18n("koi.combo.fiveBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.fiveBrights.point", {koi.basePoint[koi.combination.fiveBrights]}),
-            condition = i18n("koi.combo.fiveBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
+            point = i18n("koi.combo.fiveBrights.point", { koi.basePoint[koi.combination.fiveBrights] }),
+            condition = i18n("koi.combo.fiveBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.fourBrights] = {
             name = i18n("koi.combo.fourBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.fourBrights.point", {koi.basePoint[koi.combination.fourBrights]}),
-            condition = i18n("koi.combo.fourBrights.condition", {card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name}),
+            point = i18n("koi.combo.fourBrights.point", { koi.basePoint[koi.combination.fourBrights] }),
+            condition = i18n("koi.combo.fourBrights.condition",
+                { card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name }),
         },
         [koi.combination.rainyFourBrights] = {
             name = i18n("koi.combo.rainyFourBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.rainyFourBrights.point", {koi.basePoint[koi.combination.rainyFourBrights]}),
-            condition = i18n("koi.combo.rainyFourBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
+            point = i18n("koi.combo.rainyFourBrights.point", { koi.basePoint[koi.combination.rainyFourBrights] }),
+            condition = i18n("koi.combo.rainyFourBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.threeBrights] = {
             name = i18n("koi.combo.threeBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.threeBrights.point", {koi.basePoint[koi.combination.threeBrights]}),
-            condition = i18n("koi.combo.threeBrights.condition", {card.GetCardTypeText(card.type.bright).name}),
+            point = i18n("koi.combo.threeBrights.point", { koi.basePoint[koi.combination.threeBrights] }),
+            condition = i18n("koi.combo.threeBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.boarDeerButterfly] = {
             name = i18n("koi.combo.boarDeerButterfly.name"),
             type = card.type.animal,
-            point = i18n("koi.combo.boarDeerButterfly.point", {koi.basePoint[koi.combination.boarDeerButterfly]}),
-            condition = i18n("koi.combo.boarDeerButterfly.condition", {card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name}),
+            point = i18n("koi.combo.boarDeerButterfly.point", { koi.basePoint[koi.combination.boarDeerButterfly] }),
+            condition = i18n("koi.combo.boarDeerButterfly.condition",
+                { card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name }),
         },
         [koi.combination.animals] = {
             name = i18n("koi.combo.animals.name"),
             type = card.type.animal,
-            point = i18n("koi.combo.animals.point", {koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name}),
-            condition = i18n("koi.combo.animals.condition", {card.GetCardTypeText(card.type.animal).name}),
+            point = i18n("koi.combo.animals.point",
+                { koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name }),
+            condition = i18n("koi.combo.animals.condition", { card.GetCardTypeText(card.type.animal).name }),
         },
         [koi.combination.poetryAndBlueRibbons] = {
             name = i18n("koi.combo.poetryAndBlueRibbons.name"),
             type = card.type.ribbon,
-            point = i18n("koi.combo.poetryAndBlueRibbons.point", {koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name}),
-            condition = i18n("koi.combo.poetryAndBlueRibbons.condition", {card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name}),
+            point = i18n("koi.combo.poetryAndBlueRibbons.point",
+                { koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.poetryAndBlueRibbons.condition",
+                { card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name }),
         },
         [koi.combination.poetryRibbons] = {
             name = i18n("koi.combo.poetryRibbons.name"),
             type = card.type.ribbon,
-            point = i18n("koi.combo.poetryRibbons.point", {koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name}),
-            condition = i18n("koi.combo.poetryRibbons.condition", {card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name, card.GetCardText(redPoetry[3]).name}),
+            point = i18n("koi.combo.poetryRibbons.point",
+                { koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.poetryRibbons.condition",
+                { card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name,
+                    card.GetCardText(redPoetry[3]).name }),
         },
         [koi.combination.blueRibbons] = {
             name = i18n("koi.combo.blueRibbons.name"),
             type = card.type.ribbon,
-            point = i18n("koi.combo.blueRibbons.point", {koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name}),
-            condition = i18n("koi.combo.blueRibbons.condition", {card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name, card.GetCardText(blueRibbon[3]).name}),
+            point = i18n("koi.combo.blueRibbons.point",
+                { koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.blueRibbons.condition",
+                { card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name,
+                    card.GetCardText(blueRibbon[3]).name }),
         },
         [koi.combination.ribbons] = {
             name = i18n("koi.combo.ribbons.name"),
             type = card.type.ribbon,
-            point = i18n("koi.combo.ribbons.point", {koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name}),
-            condition = i18n("koi.combo.ribbons.condition", {card.GetCardTypeText(card.type.ribbon).name}),
+            point = i18n("koi.combo.ribbons.point",
+                { koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.ribbons.condition", { card.GetCardTypeText(card.type.ribbon).name }),
         },
         [koi.combination.flowerViewingSake] = {
             name = i18n("koi.combo.flowerViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = i18n("koi.combo.flowerViewingSake.point", {koi.basePoint[koi.combination.flowerViewingSake]}),
-            condition = i18n("koi.combo.flowerViewingSake.condition", {card.GetCardText(curtain).name, card.GetCardText(sakeCup).name}),
+            point = i18n("koi.combo.flowerViewingSake.point", { koi.basePoint[koi.combination.flowerViewingSake] }),
+            condition = i18n("koi.combo.flowerViewingSake.condition",
+                { card.GetCardText(curtain).name, card.GetCardText(sakeCup).name }),
         },
         [koi.combination.moonViewingSake] = {
             name = i18n("koi.combo.moonViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = i18n("koi.combo.moonViewingSake.point", {koi.basePoint[koi.combination.moonViewingSake]}),
-            condition = i18n("koi.combo.moonViewingSake.condition", {card.GetCardText(moon).name, card.GetCardText(sakeCup).name}),
+            point = i18n("koi.combo.moonViewingSake.point", { koi.basePoint[koi.combination.moonViewingSake] }),
+            condition = i18n("koi.combo.moonViewingSake.condition",
+                { card.GetCardText(moon).name, card.GetCardText(sakeCup).name }),
         },
         [koi.combination.chaff] = {
             name = i18n("koi.combo.chaff.name"),
             type = card.type.chaff,
-            point = i18n("koi.combo.chaff.point", {koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name}),
-            condition = i18n("koi.combo.chaff.condition", {card.GetCardTypeText(card.type.chaff).name}),
+            point = i18n("koi.combo.chaff.point",
+                { koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name }),
+            condition = i18n("koi.combo.chaff.condition", { card.GetCardTypeText(card.type.chaff).name }),
         },
     }
     local combo = {
         [koi.combination.fiveBrights] = function()
-            local list = card.Find({type = card.type.bright, findAll = true}) ---@cast list integer[]
+            local list = card.Find({ type = card.type.bright, findAll = true }) ---@cast list integer[]
             listup(list)
         end,
         [koi.combination.fourBrights] = function()
-            local list = card.Find({type = card.type.bright, findAll = true}) ---@cast list integer[]
+            local list = card.Find({ type = card.type.bright, findAll = true }) ---@cast list integer[]
             table.removevalue(list, rainman)
             listup(list)
         end,
@@ -179,14 +193,14 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         [koi.combination.threeBrights] = function()
         end,
         [koi.combination.boarDeerButterfly] = function()
-            local list = {boar, deer, butterfly}
+            local list = { boar, deer, butterfly }
             listup(list)
         end,
         [koi.combination.animals] = function()
         end,
         [koi.combination.poetryAndBlueRibbons] = function()
             local list = {}
-            list = {redPoetry[1], redPoetry[2], redPoetry[3], blueRibbon[1], blueRibbon[2], blueRibbon[3] }
+            list = { redPoetry[1], redPoetry[2], redPoetry[3], blueRibbon[1], blueRibbon[2], blueRibbon[3] }
             listup(list)
         end,
         [koi.combination.poetryRibbons] = function()
@@ -198,11 +212,11 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         [koi.combination.ribbons] = function()
         end,
         [koi.combination.flowerViewingSake] = function()
-            local list = {curtain, sakeCup}
+            local list = { curtain, sakeCup }
             listup(list)
         end,
         [koi.combination.moonViewingSake] = function()
-            local list = {moon, sakeCup}
+            local list = { moon, sakeCup }
             listup(list)
         end,
         [koi.combination.chaff] = function()
@@ -215,7 +229,7 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         local head = block:createBlock()
         head.widthProportional = 1
         head.autoHeight = true
-        local name = head:createLabel({ text = d.name})
+        local name = head:createLabel({ text = d.name })
         name.color = card.GetCardTypeColor(d.type)
         --name.borderLeft = indent
         local right = head:createBlock()
@@ -224,7 +238,7 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         right.childAlignX = 1
 
         if actualPoint then
-            local point = right:createLabel({ text = i18n("koi.point", {actualPoint}) })
+            local point = right:createLabel({ text = i18n("koi.point", { actualPoint }) })
             --point.borderRight = indent * 2
             --point.wrapText = true
         else
@@ -306,7 +320,7 @@ function this.CreateCardList(e)
             col.flowDirection = tes3.flowDirection.leftToRight
             col.minWidth = minWidth
             col.width = minWidth
-            col:createLabel({text = card.GetCardTypeText(j).name}).color = card.GetCardTypeColor(j)
+            col:createLabel({ text = card.GetCardTypeText(j).name }).color = card.GetCardTypeColor(j)
         end
     end
     frame:createDivider().widthProportional = 1
@@ -328,11 +342,11 @@ function this.CreateCardList(e)
             -- col.childAlignY = 0.5
             local text = card.GetCardSuitText(i)
             --col:createLabel({text = tostring(i) })
-            local suit = col:createLabel({text = text.name })
+            local suit = col:createLabel({ text = text.name })
             suit.wrapText = true
             suit.color = headerColor
             if text.alt then
-                local alt = col:createLabel({text = text.alt })
+                local alt = col:createLabel({ text = text.alt })
                 alt.wrapText = true
             end
         end
@@ -357,14 +371,13 @@ function this.CreateCardList(e)
                     image.height = card.GetCardHeight() * scale
                     image.scaleMode = true
                     b:register(tes3.uiEvent.help,
-                    function(_)
-                        this.CreateCardTooltip(cardId, false)
-                    end)
+                        function(_)
+                            this.CreateCardTooltip(cardId, false)
+                        end)
                 end
             end
         end
         frame:createDivider().widthProportional = 1
-
     end
 
     local bottom = root:createBlock()
@@ -382,7 +395,6 @@ function this.CreateCardList(e)
     menu:updateLayout()
     pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
 end
-
 
 ---@param e uiEventEventData
 function this.CreateCombinationList(e)
@@ -470,7 +482,7 @@ function this.CreateRule(e)
     ---@param indent integer?
     local function createHeader(p, text, indent)
         indent = indent or 0
-        local l =p:createLabel({text = text})
+        local l = p:createLabel({ text = text })
         l.color = headerColor
         l.wrapText = true
         l.borderAllSides = 4
@@ -482,7 +494,7 @@ function this.CreateRule(e)
     ---@param indent integer?
     local function createText(p, text, indent)
         indent = indent or 1
-        local l = p:createLabel({text = text})
+        local l = p:createLabel({ text = text })
         l.wrapText = true
         l.borderAllSides = 4
         l.borderLeft = indent * 12
@@ -492,7 +504,7 @@ function this.CreateRule(e)
     ---@param indent integer?
     local function createLink(p, text, url, indent)
         indent = indent or 1
-        local l = p:createHyperlink({text = text, url = url})
+        local l = p:createHyperlink({ text = text, url = url })
         l.wrapText = true
         l.borderAllSides = 4
         l.borderLeft = indent * 12
@@ -565,7 +577,6 @@ function this.CreateRule(e)
 
     menu:updateLayout()
     pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
-
 end
 
 ---@param cardId integer
@@ -608,8 +619,8 @@ end
 ---@return tes3uiElement tooltip
 function this.CreateDeckTooltip(deck)
     local tooltip = tes3ui.createTooltipMenu()
-    tooltip:createLabel({text = "Deck"})
-    local label = tooltip:createLabel({ text = i18n("koi.deck.remain", {table.size(deck)}) })
+    tooltip:createLabel({ text = "Deck" })
+    local label = tooltip:createLabel({ text = i18n("koi.deck.remain", { table.size(deck) }) })
     label.color = tes3ui.getPalette(tes3.palette.headerColor)
     return tooltip
 end
@@ -638,70 +649,210 @@ local function CreateButton(parent, text, bool, callback)
     local label = block:createLabel({ text = "Enable Hanami-Zake" })
     label.borderAllSides = 0
     button:register(tes3.uiEvent.mouseClick,
-    ---@param e tes3uiEventData
-    function(e)
-        local result = callback(e)
-        e.source.text = GetYesNo(result)
-    end)
+        ---@param e tes3uiEventData
+        function(e)
+            local result = callback(e)
+            e.source.text = GetYesNo(result)
+        end)
     return block, button, label
 end
 
+---@param parent tes3uiElement
+---@param texts string[]
+---@param enables boolean[]?
+---@param initialIndex integer?
+---@param selectedIndexChanged fun(selectedIndex:integer)?
+local function createListBox(parent, texts, enables, selectedIndexChanged, initialIndex)
+    local frame = parent:createThinBorder()
+    frame.widthProportional = 1
+    frame.autoWidth = true
+    frame.autoHeight = true
+    frame.flowDirection = tes3.flowDirection.topToBottom
+    --frame.borderAllSides = 4
+    frame.paddingAllSides = 2
+
+    local selectedIndex = initialIndex or -1
+    if enables and not enables[selectedIndex] then
+        selectedIndex = -1
+    end
+    local items = {} ---@type tes3uiElement[]
+    local alpha = 0.5
+    local selectedColor = tes3ui.getPalette(tes3.palette.answerColor)
+    local disabledColor = tes3ui.getPalette(tes3.palette.disabledColor)
+
+    ---@param p tes3uiElement
+    local function createItem(p, text)
+        local bg = p:createRect()
+        bg.widthProportional = 1
+        bg.autoWidth = true
+        bg.autoHeight = true
+        bg.color = selectedColor
+        bg.alpha = 0
+        bg.paddingAllSides = 2
+        local label = bg:createTextSelect({ text = text })
+        table.insert(items, label)
+        local index = table.size(items)
+        if index == selectedIndex then
+            bg.alpha = alpha
+        end
+        if not enables or enables[index] then
+            bg:register(tes3.uiEvent.mouseClick,
+            ---@param e uiEventEventData
+            function(e)
+                for i, item in ipairs(items) do
+                    if not item.disabled then
+                        item.parent.alpha = 0
+                    end
+                end
+                e.source.alpha = alpha
+                selectedIndex = index
+                e.source:getTopLevelMenu():updateLayout()
+                if selectedIndexChanged then
+                    selectedIndexChanged(selectedIndex)
+                end
+                tes3.worldController.menuClickSound:play() -- self handling, but not clicked, clickgin is correctly.
+            end)
+            label:register(tes3.uiEvent.mouseClick,
+            ---@param e uiEventEventData
+            function(e)
+                for i, item in ipairs(items) do
+                    if not item.disabled then
+                        item.parent.alpha = 0
+                    end
+                end
+                e.source.parent.alpha = alpha
+                selectedIndex = index
+                e.source:getTopLevelMenu():updateLayout()
+                if selectedIndexChanged then
+                    selectedIndexChanged(selectedIndex)
+                end
+            end)
+        else
+            bg.disabled = true
+            label.disabled = true
+            label.color = disabledColor
+        end
+    end
+
+    for _, value in ipairs(texts) do
+        createItem(frame, value)
+    end
+
+    return selectedIndex, items
+end
+
+---@param gold integer
+---@param oddsList integer[]
+---@param enables boolean[]?
+---@param round integer
+---@param penalty integer
+---@param callback fun(odds:integer)?
 ---@return tes3uiElement
-function this.CreateSettingsMenu()
-    local menu = tes3ui.findMenu(uiid.settingsMenu )
-    menu = tes3ui.createMenu({ id = uiid.settingsMenu , fixedFrame = true })
-    menu.width = 300
-    menu.height = 300
-    menu.autoWidth = false
-    menu.autoHeight = false
+function this.CreateBettingMenu(gold, oddsList, enables, round, penalty, callback)
+    local menu = tes3ui.findMenu(uiid.gamblingMenu)
+    if menu then
+        menu:destroy()
+    end
+    menu = tes3ui.createMenu({ id = uiid.gamblingMenu, fixedFrame = true })
+    menu.autoWidth = true
+    menu.autoHeight = true
+    menu.minWidth = 300
     menu.flowDirection = tes3.flowDirection.topToBottom
     local root = menu:createBlock()
     root.widthProportional = 1
     root.heightProportional = 1
+    root.autoWidth = true
+    root.autoHeight = true
     root.flowDirection = tes3.flowDirection.topToBottom
-    root:createLabel({ text = i18n("koi.service.label") }).color = headerColor
-    local frame = root:createThinBorder()
-    frame.widthProportional = 1
-    frame.heightProportional = 1
-    frame.flowDirection = tes3.flowDirection.topToBottom
-    local pane = frame:createVerticalScrollPane()
-    pane.widthProportional = 1
-    pane.heightProportional = 1
+    local head = root:createBlock()
+    head.widthProportional = 1
+    head.autoWidth = true
+    head.autoHeight = true
+    head.childAlignX = 0.5
+    head.borderAllSides = 4
+    head:createLabel({ text = i18n("koi.service.label") }).color = headerColor
 
-    -- settings depends barter skill, gambling skill, player and opponent money, dispotition
+    local o = root:createBlock()
+    o.widthProportional = 1
+    o.autoWidth = true
+    o.autoHeight = true
+    o.borderAllSides = 4
+    o.flowDirection = tes3.flowDirection.topToBottom
+    local l = o:createLabel({ text = i18n("koi.service.odds.label")})
+    l.borderBottom = 4
+    local selectedIndex = 1
+    local items = nil ---@type tes3uiElement[]
+    local payout = nil ---@type tes3uiElement
 
-    -- traditional koikoi gambling rating
-    local content = pane:getContentElement()
-    local l = content:createRect()
-    l.widthProportional = 1
-    l.autoHeight = true
-    l.color = {1,0,0}
-    l.alpha = 1
-    l:createTextSelect({text = "free"})
-    content:createTextSelect({text = "1 gold per point"})
-    content:createTextSelect({text = "5 golds per point"})
-    content:createTextSelect({text = "25 golds per point"})
-    content:createTextSelect({text = "100 golds per point"})
+    local function estimatePayout()
+        if selectedIndex > 0 then
+            return oddsList[selectedIndex] * round * penalty
+        end
+        return 0
+    end
+
+    local texts = {}
+    for index, value in ipairs(oddsList) do
+        local t = value > 0 and i18n("koi.service.odds.rate", {value}) or i18n("koi.service.odds.free")
+        table.insert(texts, t)
+    end
+
+    selectedIndex, items = createListBox(o, texts, enables,
+    function(index)
+        selectedIndex = index
+        payout.text = i18n("koi.service.payout", { estimatePayout() })
+    end,
+    selectedIndex)
+    for index, item in ipairs(items) do
+        item:register(tes3.uiEvent.help,
+        ---@param e uiEventEventData
+        function(e)
+            if e.source.disabled then
+                local tooltip = tes3ui.createTooltipMenu()
+                -- wrap doesnt work
+                tooltip:createLabel({ text = i18n("koi.service.odds.disabled") }).wrapText = true
+            end
+        end)
+    end
+    local info = root:createBlock()
+    info.widthProportional = 1
+    info.autoWidth = true
+    info.autoHeight = true
+    info.borderAllSides = 4
+    info.flowDirection = tes3.flowDirection.topToBottom
+    info:createLabel({ text = tes3.findGMST(tes3.gmst.sGold).value --[[@as string]] .. string.format(": %u", gold) })
+    payout = info:createLabel({ text = i18n("koi.service.payout", { estimatePayout() })})
+    --payout.wrapText = true
 
     -- house rule
     -- round
-    -- cycle
-    -- yes button
-
-    local rule = root:createThinBorder()
-    rule.widthProportional = 1
-    rule.widthProportional = 1
-    rule.autoWidth = true
-    rule.autoHeight = true
-    CreateButton(rule, "test", true, function(e) return true end)
 
     local buttons = root:createBlock()
     buttons.widthProportional = 1
+    buttons.autoWidth = true
     buttons.autoHeight = true
-    buttons:createButton({ text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] })
-    buttons:createButton({ text = tes3.findGMST(tes3.gmst.sCancel).value --[[@as string]] })
+    buttons.borderAllSides = 4
+    local ok = buttons:createButton({ text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] })
+    local right = buttons:createBlock()
+    right.widthProportional = 1
+    right.autoWidth = true
+    right.autoHeight = true
+    right.childAlignX = 1
+    local cancel = right:createButton({ text = tes3.findGMST(tes3.gmst.sCancel).value --[[@as string]] })
+
+    ok:register(tes3.uiEvent.mouseClick, function(e)
+        e.source:getTopLevelMenu():destroy()
+        if callback and selectedIndex > 0 then
+            callback(oddsList[selectedIndex])
+        end
+    end)
+
+    cancel:register(tes3.uiEvent.mouseClick, function(e)
+        e.source:getTopLevelMenu():destroy()
+    end)
+
     menu:updateLayout()
-    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+    --pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
     return menu
 end
 

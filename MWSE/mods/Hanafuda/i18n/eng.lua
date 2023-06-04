@@ -94,7 +94,12 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     -- koikoi
     -- todo Use %{} for different types, since swapping the order is not allowed
     ["koi.service.label"] = "Koi-Koi",
-    ["koi.service.tooltip"] = "Koi-Koi",
+    ["koi.service.tooltip"] = "Let's play Koi-Koi",
+    ["koi.service.odds.label"] = "Betting Odds",
+    ["koi.service.odds.free"] = "Free",
+    ["koi.service.odds.rate"] = "%u golds per point",
+    ["koi.service.odds.disabled"] = "You or the opponent does not have sufficient ability to pay.",
+    ["koi.service.payout"] = "Minimum payout for conceding: %u",
     ["koi.koikoi"] = "Koi-Koi",
     ["koi.shobu"] = "Shobu",
     ["koi.combinations"] = "Yaku",
@@ -192,7 +197,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.beginTurn"] = "%s's Turn",
     ["koi.view.capturedTooltip"] = "Here captured %s cards are lined up.",
     ["koi.view.capturedLabel"] = "%s's Captured Cards",
-    ["koi.view.exit"] = "Yield",
+    ["koi.view.exit"] = "Concede",
     ["koi.view.cardList"] = "Cards",             -- todo hanafuda
     ["koi.view.comboList"] = "Combos",
     ["koi.view.quickRule"] = "Rule",

@@ -12,45 +12,12 @@ local function UpdateVisibility(e)
     timer.delayOneFrame(function()
             local b = e.source:findChild(uiid.menuDialogServiceKoiKoi)
             if b and not b.visible then
-                b.disabled = false
                 b.visible = true
                 e.source:updateLayout() -- endless calling?
                 logger:trace("UpdateVisibility")
             end
         end,
         timer.real)
-end
-
----comment
----@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@return boolean
-local function EnableGambling(actor)
-    local types = {
-        [tes3.actorType.creature] =
-        ---@param a tes3mobileCreature
-        ---@return boolean
-            function(a)
-                -- creeper, mudcrub, some talkable creatures, pets, companions?
-                return true
-            end,
-        [tes3.actorType.npc] =
-        ---@param a tes3mobileNPC
-        ---@return boolean
-            function(a)
-                return true
-            end,
-        [tes3.actorType.player] =
-        ---@param a tes3mobilePlayer
-        ---@return boolean
-            function(a)
-                -- possible?
-                return false
-            end,
-    }
-    if types[actor.actorType] then
-        return types[actor.actorType](actor)
-    end
-    return false
 end
 
 ---@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -104,7 +71,7 @@ end
 
 --- This is popular in hanafuda gambling, where money is transferred according to difference scores and unit price.
 --- NPCs in morrowind have little or no money. It may be more obvious to deal with a unique currency. or other gambling, debt system.
----@param player tes3mobilePlayer
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param npc tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param playerPoint number
 ---@param opponentPoint number
@@ -169,9 +136,146 @@ local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice, all
     return 0, 0, 0
 end
 
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return boolean
+local function CanDisplayServiceMenu(player, opponent)
+    local types = {
+        [tes3.actorType.creature] =
+        ---@param a tes3mobileCreature
+        ---@return boolean
+            function(a)
+                -- creeper, mudcrub, some talkable creatures, pets, companions?
+                return true
+            end,
+        [tes3.actorType.npc] =
+        ---@param a tes3mobileNPC
+        ---@return boolean
+            function(a)
+                return true
+            end,
+        [tes3.actorType.player] =
+        ---@param a tes3mobilePlayer
+        ---@return boolean
+            function(a)
+                -- possible?
+                return false
+            end,
+    }
+    if types[opponent.actorType] then
+        return types[opponent.actorType](opponent)
+    end
+    return false
+end
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return boolean
+local function CanPerformService(player, opponent)
+    local types = {
+        [tes3.actorType.creature] =
+        ---@param a tes3mobileCreature
+        ---@return boolean
+            function(a)
+                -- creeper, mudcrub, some talkable creatures, pets, companions?
+                return true
+            end,
+        [tes3.actorType.npc] =
+        ---@param a tes3mobileNPC
+        ---@return boolean
+            function(a)
+                return true
+            end,
+        [tes3.actorType.player] =
+        ---@param a tes3mobilePlayer
+        ---@return boolean
+            function(a)
+                -- possible?
+                return false
+            end,
+    }
+    if types[opponent.actorType] then
+        return types[opponent.actorType](opponent)
+    end
+    return false
+end
+
+local oddsList = {
+    0,
+    1,
+    5,
+    25,
+    100,
+}
+local penaltyPoint = 3 -- per round
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param conf Config.KoiKoi
+local function CalculateBettingSettings(player, opponent, conf)
+    local playerGold = GetActorGold(player)
+    local opponentGold = GetActorGold(opponent)
+    -- Allow odds if there is some amount of payment on both sides.
+    local gold = math.min(playerGold, opponentGold)
+    -- todo tweak
+    local metric = math.max(gold / penaltyPoint, gold > 0 and 1 or 0) -- average points per round... no evidence!
+    local enables = {}
+    for index, value in ipairs(oddsList) do
+        local enable = value * conf.round <= metric
+        table.insert(enables, enable)
+    end
+    return playerGold, enables
+end
+
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param odds integer
+---@param penalty integer
+local function LaunchKoiKoi(player, opponent, odds, penalty)
+    -- todo passing more parameters from actor
+    service = require("Hanafuda.KoiKoi.service").new(
+        require("Hanafuda.KoiKoi.game").new(),
+        require("Hanafuda.KoiKoi.view").new(player, opponent),
+        ---@param winner KoiKoi.Player?
+        ---@param playerPoint integer
+        ---@param opponentPoint integer
+        function(winner, playerPoint, opponentPoint)
+            -- and maybe need to get points for gambling
+            if service then
+                service:Destory()
+                service = nil
+            end
+
+            local unitPrice = odds
+            if winner and unitPrice > 0 then
+                local expected, actual, insufficient = TradeGold(player, opponent, playerPoint, opponentPoint, unitPrice, false)
+                -- TODO Use insufficient for dispositions, debt, etc.
+                logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
+                if expected > 0 then
+                    if insufficient == 0 then
+                        tes3.messageBox(i18n("gamble.collected", {actual = actual}))
+                    else
+                        tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
+                    end
+                elseif expected < 0 then
+                    if insufficient == 0 then
+                        tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
+                    else
+                        tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
+                    end
+                end
+            end
+        end
+    )
+    service:Initialize()
+
+end
+
 ---@param menu tes3uiElement
----@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
-local function AddGamblingMenu(menu, actor)
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+local function AddGamblingMenu(menu, player, opponent)
     local divider = menu:findChild(uiid.menuDialogDivider)
     local parent = divider.parent
     assert(divider)
@@ -180,46 +284,23 @@ local function AddGamblingMenu(menu, actor)
     local serviceButton = parent:createTextSelect({ id = uiid.menuDialogServiceKoiKoi, text = i18n("koi.service.label") })
     parent:reorderChildren(divider, serviceButton, 1) -- above divider
 
+    -- reflesh by update event?
+    if not CanPerformService(player, opponent) then
+        serviceButton.disabled = true
+        serviceButton.color = tes3ui.getPalette(tes3.palette.disabledColor)
+    else
     serviceButton:register(tes3.uiEvent.mouseClick,
         ---@param _ uiEventEventData
         function(_)
-            -- todo passing more parameters from actor
-            service = require("Hanafuda.KoiKoi.service").new(
-                require("Hanafuda.KoiKoi.game").new(),
-                require("Hanafuda.KoiKoi.view").new(tes3.mobilePlayer, actor),
-                ---@param winner KoiKoi.Player?
-                ---@param playerPoint integer
-                ---@param opponentPoint integer
-                function(winner, playerPoint, opponentPoint)
-                    -- and maybe need to get points for gambling
-                    if service then
-                        service:Destory()
-                        service = nil
-                    end
-
-                    local unitPrice = 0 -- in testing
-                    if winner and unitPrice > 0 then
-                        local expected, actual, insufficient = TradeGold(tes3.mobilePlayer, actor, playerPoint, opponentPoint, unitPrice, false)
-                        -- TODO Use insufficient for dispositions, debt, etc.
-                        logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
-                        if expected > 0 then
-                            if insufficient == 0 then
-                                tes3.messageBox(i18n("gamble.collected", {actual = actual}))
-                            else
-                                tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
-                            end
-                        elseif expected < 0 then
-                            if insufficient == 0 then
-                                tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
-                            else
-                                tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
-                            end
-                        end
-                    end
-                end
-            )
-            service:Initialize()
+            local config = require("Hanafuda.config")
+            local gold, enables = CalculateBettingSettings(player, opponent, config.koikoi)
+            require("Hanafuda.KoiKoi.ui").CreateBettingMenu(gold, oddsList, enables, config.koikoi.round, penaltyPoint,
+            ---@param odds integer
+            function(odds)
+                LaunchKoiKoi(player, opponent, odds, penaltyPoint)
+            end)
         end)
+    end
 
     serviceButton:register(tes3.uiEvent.help,
         ---@param _ uiEventEventData
@@ -242,13 +323,13 @@ local function OnMenuDialogActivated(e)
         return
     end
 
-    if not EnableGambling(actor) then
+    if not CanDisplayServiceMenu(tes3.mobilePlayer, actor) then
         return
     end
-    logger:debug("Player money " .. tostring(GetActorGold(tes3.mobilePlayer)))
-    logger:debug("NPC money " .. tostring(GetActorGold(actor)))
+    logger:trace("Player money " .. tostring(GetActorGold(tes3.mobilePlayer)))
+    logger:trace("NPC money " .. tostring(GetActorGold(actor)))
 
-    AddGamblingMenu(e.element, actor)
+    AddGamblingMenu(e.element, tes3.mobilePlayer, actor)
 end
 event.register(tes3.event.uiActivated, OnMenuDialogActivated, { filter = "MenuDialog", priority = 0 })
 
