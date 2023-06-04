@@ -85,6 +85,8 @@ local this = {
     ["hanafuda.card.name_12_2"] = "Kiri no Kasu",
     ["hanafuda.card.name_12_3"] = "Kiri no Kasu",
     ["hanafuda.card.name_12_4"] = "Kiri no Kasu",
+    -- help
+    ["hanafuda.help.summary"] = "Hanafuda is a traditional Akaviri playing cards known as 'flower cards'. It features a deck of 48 unique cards divided into 12 suits representing the months of the year.",
     -- koikoi
     -- todo Use %{} for different types, since swapping the order is not allowed
     ["koi.service.label"] = "Koi-Koi",
@@ -97,7 +99,6 @@ local this = {
     ["koi.deck.remain"] = "%u cards remaining", -- todo hanafuda
     ["koi.point"] = "%u points",                -- todo plural
     ["koi.rule"] = "rule here",
-    ["koi.cardList"] = "Card List",             -- todo hanafuda
     ["koi.view.drawGame"] = "Draw Game",
     ["koi.view.winGame"] = "%s Win!",
     ["koi.view.loseGame"] = "%s Lose!",
@@ -130,8 +131,9 @@ local this = {
     ["koi.view.capturedTooltip"] = "Here captured %s cards are lined up.",
     ["koi.view.capturedLabel"] = "%s's Captured Cards",
     ["koi.view.exit"] = "Yield",
-    ["koi.view.comboList"] = "Combo List",
-    ["koi.view.quickRule"] = "Quick Rule",
+    ["koi.view.cardList"] = "Cards",             -- todo hanafuda
+    ["koi.view.comboList"] = "Combos",
+    ["koi.view.quickRule"] = "Rule",
     ["koi.view.totalScore"] = "Total Score: ", -- merge with number
     ["koi.view.roundCombo"] = "Combination in this round:",
     ["koi.view.roundLabel"] = "Round: ",       -- merge with number
@@ -175,13 +177,19 @@ local this = {
     ["koi.combo.chaff.name"] = "Kasu",
     ["koi.combo.chaff.point"] = "%u point and 1 additional point for each additional %s card.", -- todo plural
     ["koi.combo.chaff.condition"] = "Any 10 %s cards.",
+    ["koi.luckyHands.fourOfAKind.name"] = "Teshi",
+    ["koi.luckyHands.fourOfAKind.point"] = "%u points.",
+    ["koi.luckyHands.fourOfAKind.condition"] = "All 4 cards of any given suits.",
+    ["koi.luckyHands.fourPairs.name"] = "Kuttsuki",
+    ["koi.luckyHands.fourPairs.point"] = "%u points.",
+    ["koi.luckyHands.fourPairs.condition"] = "Four pairs, a pair being 2 cards of the same suit.",
     -- mcm
     ["mcm.default"] = "Default: ",
     ["mcm.page.label"] = "Settings",
     ["mcm.page.description"] = "Let's play Koi-Koi using Hanafuda playing cards.",
     ["mcm.page.cardLanguage.label"] = "Card Language",
-    ["mcm.page.cardLanguage.description"] = "Original: Original Japanese\nTamrielic: Translate to Tamrielic",
-    ["mcm.page.cardLanguage.japanese"] = "Original",
+    ["mcm.page.cardLanguage.description"] = "Akaviri: Original language (Japanese)\nTamrielic: Tamrielic translation (English)",
+    ["mcm.page.cardLanguage.japanese"] = "Akaviri",
     ["mcm.page.cardLanguage.tamrielic"] = "Tamrielic",
     ["mcm.koi.category"] = "Koi-Koi",
     ["mcm.koi.round.label"] = "Number of Rounds",
@@ -207,6 +215,7 @@ local this = {
     ["mcm.development.unittest.description"] = "Run unit-test.",
 }
 
+-- i18n must not be included by require nesting
 local settings = require("Hanafuda.settings")
 local config = require("Hanafuda.config")
 if config.cardLanguage == settings.cardLanguage.tamrielic then

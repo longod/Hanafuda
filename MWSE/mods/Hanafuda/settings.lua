@@ -28,9 +28,9 @@ local defaultConfig = {
             -- wild card
         },
     },
-    audio = {
-        volume = 100,
-    },
+    -- audio = {
+    --     volume = 100,
+    -- },
     development = {
         logLevel = "INFO",
         logToConsole = false,

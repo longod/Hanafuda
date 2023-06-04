@@ -70,7 +70,7 @@ this.luckyHandsPoint = {
     6,
     6,
 }
-assert(table.size(this.combination) == table.size(this.basePoint))
+assert(table.size(this.luckyHands) == table.size(this.luckyHandsPoint))
 
 ---comment
 ---@param player KoiKoi.Player

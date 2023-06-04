@@ -14,8 +14,8 @@ this.se = {
 }
 ---@enum VoiceId
 this.voice = {
-    continue = 1,
-    finish = 2,
+    continue = 1, -- koi-koi
+    finish = 2, -- shobu
     -- lose responce
     -- thinking etc
 }

@@ -248,8 +248,142 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
 end
 
 ---@param e uiEventEventData
+function this.CreateCardList(e)
+    local menu = tes3ui.findMenu(uiid.helpCardListMenu)
+    if menu then
+        -- can be forecround focusing?
+        return
+    end
+
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    local size = math.min(viewportWidth, viewportHeight)
+
+    logger:debug("card help")
+    menu = tes3ui.createMenu({ id = uiid.helpCardListMenu, fixedFrame = true })
+    menu.width = size * 0.75
+    menu.height = size * 0.75
+    menu.autoWidth = false
+    menu.autoHeight = false
+    menu.flowDirection = tes3.flowDirection.topToBottom
+
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local pane = root:createVerticalScrollPane()
+    pane.widthProportional = 1
+    pane.heightProportional = 1
+    local parent = pane:getContentElement()
+
+    -- card table
+    local scale = 1
+    local padding = 4
+    local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
+    local suitWidth = math.max(card.GetCardWidth() * scale + padding, 128)
+    local frame = parent
+    -- local frame = parent:createThinBorder()
+    -- frame.widthProportional = 1
+    -- frame.autoWidth = true
+    -- frame.autoHeight = true
+    -- frame.flowDirection = tes3.flowDirection.topToBottom
+    do
+        local row = frame:createBlock()
+        row.widthProportional = 1
+        row.autoWidth = true
+        row.autoHeight = true
+        row.flowDirection = tes3.flowDirection.leftToRight
+        row.paddingAllSides = 2
+        do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.minWidth = suitWidth
+            col.width = suitWidth
+        end
+        for _, j in ipairs(table.values(card.type, true)) do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.flowDirection = tes3.flowDirection.leftToRight
+            col.minWidth = minWidth
+            col.width = minWidth
+            col:createLabel({text = card.GetCardTypeText(j).name}).color = card.GetCardTypeColor(j)
+        end
+    end
+    frame:createDivider().widthProportional = 1
+    for _, i in ipairs(table.values(card.suit, true)) do
+        local row = frame:createBlock()
+        row.widthProportional = 1
+        row.autoWidth = true
+        row.autoHeight = true
+        row.flowDirection = tes3.flowDirection.leftToRight
+        row.paddingAllSides = 2
+        do
+            local col = row:createBlock()
+            col.autoHeight = true
+            col.minWidth = suitWidth
+            col.width = suitWidth
+            col.flowDirection = tes3.flowDirection.topToBottom
+            -- not working...
+            -- col.childAlignX = 1
+            -- col.childAlignY = 0.5
+            local text = card.GetCardSuitText(i)
+            --col:createLabel({text = tostring(i) })
+            col:createLabel({text = text.name }).color = headerColor
+            if text.alt then
+                col:createLabel({text = text.alt })
+            end
+        end
+
+        for _, j in ipairs(table.values(card.type, true)) do
+            local col = row:createBlock()
+            col.autoWidth = true
+            col.autoHeight = true
+            col.minWidth = minWidth
+            col.flowDirection = tes3.flowDirection.leftToRight
+            local cards = card.Find({ suit = i, type = j, findAll = true }) --[[@as integer[]?]]
+            if cards then
+                for _, cardId in ipairs(cards) do
+                    local asset = card.GetCardAsset(cardId)
+                    local b = col:createBlock()
+                    b.autoWidth = true
+                    b.autoHeight = true
+                    b.paddingAllSides = 0
+                    b.paddingRight = padding
+                    local image = b:createImage({ path = asset.path })
+                    image.width = card.GetCardWidth() * scale
+                    image.height = card.GetCardHeight() * scale
+                    image.scaleMode = true
+                    b:register(tes3.uiEvent.help,
+                    function(_)
+                        this.CreateCardTooltip(cardId, false)
+                    end)
+                end
+            end
+        end
+        frame:createDivider().widthProportional = 1
+
+    end
+
+    local bottom = root:createBlock()
+    bottom.widthProportional = 1
+    bottom.autoHeight = true
+    bottom.flowDirection = tes3.flowDirection.leftToRight
+    bottom.childAlignX = 1
+    local close = bottom:createButton({ text = tes3.findGMST(tes3.gmst.sClose).value --[[@as string]] })
+    close:register(tes3.uiEvent.mouseClick,
+        ---@param ev uiEventEventData
+        function(ev)
+            ev.source:getTopLevelMenu():destroy()
+        end)
+
+    menu:updateLayout()
+    pane.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+end
+
+
+---@param e uiEventEventData
 function this.CreateCombinationList(e)
-    local menu = tes3ui.findMenu(uiid.helpComboMenu)
+    local menu = tes3ui.findMenu(uiid.helpComboListMenu)
     if menu then
         -- can be forecround focusing?
         return
@@ -259,7 +393,7 @@ function this.CreateCombinationList(e)
     local size = math.min(viewportWidth, viewportHeight)
 
     logger:debug("combo help")
-    menu = tes3ui.createMenu({ id = uiid.helpComboMenu, fixedFrame = true })
+    menu = tes3ui.createMenu({ id = uiid.helpComboListMenu, fixedFrame = true })
     menu.width = size * 0.75
     menu.height = size * 0.75
     menu.autoWidth = false
@@ -325,95 +459,29 @@ function this.CreateRule(e)
     local parent = pane:getContentElement()
 
     parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
+
+    -- abstruct
+    -- tldr;
+    -- deciding parent, parent is
+    -- dealing cards
+    -- check lucky hands
+    -- turn start parent at first
+    -- matching hands or discard
+    -- draw card
+    -- matching drawn card or discard
+    -- check combination, yaku
+    -- caling koikoi or shobu
+    -- next turn
+    -- round end when empty deck
+    -- game end, winner
+    -- gambling (explain before game beginning)
+
+    -- card list (other button menu)
+    -- combinations
+    -- house rules
+    -- hint, tips
+
     parent:createLabel({ text = i18n("koi.rule")})
-
-    -- card table
-    parent:createLabel({ text = i18n("koi.cardList")})
-    local scale = 1
-    local padding = 4
-    local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
-    local suitWidth = math.max(card.GetCardWidth() * scale + padding, 128)
-    local frame = parent:createThinBorder()
-    frame.widthProportional = 1
-    frame.autoWidth = true
-    frame.autoHeight = true
-    frame.flowDirection = tes3.flowDirection.topToBottom
-    do
-        local row = frame:createBlock()
-        row.widthProportional = 1
-        row.autoWidth = true
-        row.autoHeight = true
-        row.flowDirection = tes3.flowDirection.leftToRight
-        row.paddingAllSides = 2
-        do
-            local col = row:createBlock()
-            col.autoHeight = true
-            col.minWidth = suitWidth
-            col.width = suitWidth
-        end
-        for _, j in ipairs(table.values(card.type, true)) do
-            local col = row:createBlock()
-            col.autoHeight = true
-            col.flowDirection = tes3.flowDirection.leftToRight
-            col.minWidth = minWidth
-            col.width = minWidth
-            col:createLabel({text = card.GetCardTypeText(j ).name}).color = card.GetCardTypeColor(j)
-        end
-    end
-    frame:createDivider().widthProportional = 1
-    for _, i in ipairs(table.values(card.suit, true)) do
-        local row = frame:createBlock()
-        row.widthProportional = 1
-        row.autoWidth = true
-        row.autoHeight = true
-        row.flowDirection = tes3.flowDirection.leftToRight
-        row.paddingAllSides = 2
-        do
-            local col = row:createBlock()
-            col.autoHeight = true
-            col.minWidth = suitWidth
-            col.width = suitWidth
-            col.flowDirection = tes3.flowDirection.topToBottom
-            -- not working...
-            -- col.childAlignX = 1
-            -- col.childAlignY = 0.5
-            local text = card.GetCardSuitText(i)
-            --col:createLabel({text = tostring(i) })
-            col:createLabel({text = text.name }).color = headerColor
-            if text.alt then
-                col:createLabel({text = text.alt })
-            end
-        end
-
-        for _, j in ipairs(table.values(card.type, true)) do
-            local col = row:createBlock()
-            col.autoWidth = true
-            col.autoHeight = true
-            col.minWidth = minWidth
-            col.flowDirection = tes3.flowDirection.leftToRight
-            local cards = card.Find({ suit = i, type = j, findAll = true }) --[[@as integer[]?]]
-            if cards then
-                for _, cardId in ipairs(cards) do
-                    local asset = card.GetCardAsset(cardId)
-                    local b = col:createBlock()
-                    b.autoWidth = true
-                    b.autoHeight = true
-                    b.paddingAllSides = 0
-                    b.paddingRight = padding
-                    local image = b:createImage({ path = asset.path })
-                    image.width = card.GetCardWidth() * scale
-                    image.height = card.GetCardHeight() * scale
-                    image.scaleMode = true
-                    b:register(tes3.uiEvent.help,
-                    function(_)
-                        this.CreateCardTooltip(cardId, false)
-                    end)
-                end
-            end
-        end
-        frame:createDivider().widthProportional = 1
-
-    end
 
     local bottom = root:createBlock()
     bottom.widthProportional = 1

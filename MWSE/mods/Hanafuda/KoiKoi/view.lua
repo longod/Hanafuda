@@ -1350,6 +1350,7 @@ function View.CreateInfo(self, parent, service)
 
     local exit = upper:createButton({text = i18n("koi.view.exit")})
     upper:createBlock().widthProportional = 1
+    local cards = upper:createButton({text = i18n("koi.view.cardList")})
     local combo = upper:createButton({text = i18n("koi.view.comboList")})
     local rule = upper:createButton({text = i18n("koi.view.quickRule")})
     -- todo exit enabled condition
@@ -1359,6 +1360,7 @@ function View.CreateInfo(self, parent, service)
         self:OnExit(e, service)
     end)
     -- fixme disable when grabbing card, but it minor issue
+    cards:register(tes3.uiEvent.mouseClick, ui.CreateCardList)
     combo:register(tes3.uiEvent.mouseClick, ui.CreateCombinationList)
     rule:register(tes3.uiEvent.mouseClick, ui.CreateRule)
 

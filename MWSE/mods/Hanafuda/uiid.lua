@@ -2,7 +2,8 @@
 local this = {
     gameMenu = tes3ui.registerID("KoiKoi"),
     grabMenu = tes3ui.registerID("KoiKoi.Grab"),
-    helpComboMenu = tes3ui.registerID("KoiKoi.Combo"),
+    helpCardListMenu = tes3ui.registerID("KoiKoi.CardList"),
+    helpComboListMenu = tes3ui.registerID("KoiKoi.ComboList"),
     helpRuleMenu = tes3ui.registerID("KoiKoi.Rule"),
     splashMenu = tes3ui.registerID("KoiKoi.Splash"),
     playerHand = tes3ui.registerID("Player.Hand"),

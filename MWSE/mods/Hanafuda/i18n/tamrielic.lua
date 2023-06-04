@@ -95,5 +95,7 @@ local this = {
     ["koi.combo.flowerViewingSake.name"] = "Flower Viewing Sake",
     ["koi.combo.moonViewingSake.name"] = "Moon Viewing Sake",
     ["koi.combo.chaff.name"] = "Chaff",
+    ["koi.luckyHands.fourOfAKind.name"] = "Four of a Kind",
+    ["koi.luckyHands.fourPairs.name"] = "Four Pairs",
 }
 return this

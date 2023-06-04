@@ -221,7 +221,6 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.checkLuckyHands] = function()
             -- todo
-            -- in testing
             self.game:CheckLuckyHands(self.game.parent)
             self.game:CheckLuckyHands(koi.GetOpponent(self.game.parent))
             self:RequestPhase(phase.beginTurn)
