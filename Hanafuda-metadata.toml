@@ -1,7 +1,7 @@
 [package]
 name = "Hanafuda: Akaviri Playing Cards"
-description = "Play game (Koi-Koi) using Hanafuda with MWSE in Morrowind."
-homepage = "https://www.nexusmods.com/morrowind/mods/"
+description = "Play Koi-Koi with Hanafuda in Morrowind."
+homepage = "https://github.com/longod/Hanafuda"
 repository = "https://github.com/longod/Hanafuda"
 authors = ["longod"]
 version = "0.0.0"
@@ -17,7 +17,7 @@ assets = [
 ]
 
 [dependencies.mwse]
-buildnumber = 3219
+buildnumber = 3243
 
 [dependencies.mge-xe]
 version = ">=0.15.0"
