@@ -86,7 +86,11 @@ local this = {
     ["hanafuda.card.name_12_3"] = "Kiri no Kasu",
     ["hanafuda.card.name_12_4"] = "Kiri no Kasu",
     -- help
-    ["hanafuda.help.summary"] = "Hanafuda is a traditional Akaviri playing cards known as 'flower cards'. It features a deck of 48 unique cards divided into 12 suits representing the months of the year.",
+    ["hanafuda.help.summary.header"] = "Hanafuda",
+    ["hanafuda.help.summary.description"] =
+[[Hanafuda is a traditional Akaviri playing cards known as 'flower cards'.
+It features a deck of 48 unique cards divided into 12 suits representing the months of the year.
+Hanafuda can be played in various ways with different rulesets and variations.]],
     -- koikoi
     -- todo Use %{} for different types, since swapping the order is not allowed
     ["koi.service.label"] = "Koi-Koi",
@@ -98,7 +102,65 @@ local this = {
     ["koi.deck.name"] = "Deck",                 -- todo hanafuda -- todo plural
     ["koi.deck.remain"] = "%u cards remaining", -- todo hanafuda
     ["koi.point"] = "%u points",                -- todo plural
-    ["koi.rule"] = "rule here",
+    ["koi.help.more"] = "More Informations",
+    ["koi.help.tldr.header"] = "Quick Rules of Koi-Koi",
+    ["koi.help.tldr.description"] =
+[[1. A card is captured that matches the same suit in one hand and a card in the ground. If it does not match, a card is discarded from the hand.
+2. Draw a card from the deck and do the same.
+3. This is repeated alternately, with the player's turns swapped.
+4. When a combo is created with the captured cards, the player decides whether to continue (Koi-Koi) to create better combos or win the round (Shobu).
+5. The player with the highest total points wins At the end of the game.]],
+    ["koi.help.summary.header"] = "Koi-Koi",
+    ["koi.help.summary.description"] =
+[[Koi-koi is a popular game played with Hanafuda cards in Akavir.
+The objective of Koi-koi is to accumulate points by collecting specific card combinations during the game. The game is typically played over several rounds, and the player with the highest score at the end wins.
+Koi-koi is a strategic game that combines luck and skill in forming combinations and deciding when to continue or stop a round. It is a popular and enjoyable way to play with Hanafuda cards.]],
+    ["koi.help.rule.header"] = "How to play Koi-Koi",
+    ["koi.help.rule.setup.header"] = "Setup",
+    ["koi.help.rule.setup.description"] =
+[[Players who takes the face-down Hanafuda card and is the earliest in the month becomes Parent (Oya). The person who does not is Child (Ko).
+Parent is the dealer, shuffles the deck and after dealing 8 cards each to the players and the ground, the turn begins with Parent.]],
+    ["koi.help.rule.luckyHands.header"] = "Lucky Hands",
+    ["koi.help.rule.luckyHands.description"] =
+[[After the cards are dealt, if the hand contains some combination of cards, the player reveals his or her cards to end the round.
+This is a compensation for a hand that is difficult to win even if the game continues.]],
+    ["koi.help.rule.turn.header"] = "Turns",
+    ["koi.help.rule.turn.match.header"] = "Matching from the Hand",
+    ["koi.help.rule.turn.match.description"] =
+[[Select a card from the hand, choose a card in the ground with a matching suit, and capture them.
+Or discard the unmatched card from the hand to the ground.
+If there is even one matching card on the ground, it cannot be discarded and must be matched to be captured.
+If the palyer have a matching card in the hand, the player can still choose another unmatched card to discard, but without much benefit.]],
+    ["koi.help.rule.turn.draw.header"] = "Matching with Drawn Card",
+    ["koi.help.rule.turn.draw.description"] =
+[[A card is drawn from the deck, turned face up.
+As with the hand, it matched with a card on the ground to capture them, or discarded on the ground if not possible.]],
+    ["koi.help.rule.turn.check.header"] = "Checking for Combinations",
+    ["koi.help.rule.turn.check.description"] =
+[[Check to see if combinations are formed with the capturesd cards, the player declare one of the following.]],
+    ["koi.help.rule.turn.check.continue.header"] = "Calling 'Koi-Koi'",
+    ["koi.help.rule.turn.check.continue.description"] =
+[[If 'Koi-Koi' is selected, the game continues. This is to aim for better combinations. The next time the palyer can declare them when combinations is updated.
+The phrase 'koi-Koi' roughly means 'Come on'.]],
+    ["koi.help.rule.turn.check.end.header"] = "Calling 'Shobu'",
+    ["koi.help.rule.turn.check.end.description"] =
+[[If 'Shobu' is selected, that player wins the round with current combinations.
+The phrase 'Shobu' roughly means 'The game is won'.]],
+    ["koi.help.rule.round.header"] = "End of Round",
+    ["koi.help.rule.round.description"] =
+[[There are two conditions for the end of a round.]],
+    ["koi.help.rule.round.scoring.header"] = "The Player Wins",
+    ["koi.help.rule.round.scoring.description"] =
+[[The player who declares 'Shobu' and wins is awarded points according to combinations. The winning player becomes Parent and goes to the next round.
+Depending on the house rules, the multiplier are determined by the number of times 'Koi-Koi' is declared or base points, which is then multiplied.]],
+    ["koi.help.rule.round.emptyDeck.header"] = "Deck is Empty",
+    ["koi.help.rule.round.emptyDeck.description"] =
+[[If the deck is empty at the end of the turn, the round ends in a tie.
+Depending on the house rules, either Parent or Child scores points, or Parent and Child are swapped to go to the next round.]],
+    ["koi.help.rule.end.header"] = "End of Game",
+    ["koi.help.rule.end.description"] =
+[[The player with the highest total score after repeating the specified number of rounds is the winner of the game.
+The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.]],
     ["koi.view.drawGame"] = "Draw Game",
     ["koi.view.winGame"] = "%s Win!",
     ["koi.view.loseGame"] = "%s Lose!",
@@ -186,11 +248,12 @@ local this = {
     -- mcm
     ["mcm.default"] = "Default: ",
     ["mcm.page.label"] = "Settings",
-    ["mcm.page.description"] = "Let's play Koi-Koi using Hanafuda playing cards.",
-    ["mcm.page.cardLanguage.label"] = "Card Language",
-    ["mcm.page.cardLanguage.description"] = "Akaviri: Original language (Japanese)\nTamrielic: Tamrielic translation (English)",
-    ["mcm.page.cardLanguage.japanese"] = "Akaviri",
-    ["mcm.page.cardLanguage.tamrielic"] = "Tamrielic",
+    ["mcm.page.description"] = "Let's play Koi-Koi with Hanafuda.",
+    ["mcm.hanafuda.category"] = "Hanafuda",
+    ["mcm.hanafuda.cardLanguage.label"] = "Card Language",
+    ["mcm.hanafuda.cardLanguage.description"] = "Akaviri: Original language (Japanese)\nTamrielic: Tamrielic translation (English)",
+    ["mcm.hanafuda.cardLanguage.japanese"] = "Akaviri",
+    ["mcm.hanafuda.cardLanguage.tamrielic"] = "Tamrielic",
     ["mcm.koi.category"] = "Koi-Koi",
     ["mcm.koi.round.label"] = "Number of Rounds",
     ["mcm.koi.round.description"] = "Number of rounds played during one game.",

@@ -260,8 +260,8 @@ function this.CreateCardList(e)
 
     logger:debug("card help")
     menu = tes3ui.createMenu({ id = uiid.helpCardListMenu, fixedFrame = true })
-    menu.width = size * 0.75
-    menu.height = size * 0.75
+    menu.width = size * 0.9
+    menu.height = size * 0.9
     menu.autoWidth = false
     menu.autoHeight = false
     menu.flowDirection = tes3.flowDirection.topToBottom
@@ -328,9 +328,12 @@ function this.CreateCardList(e)
             -- col.childAlignY = 0.5
             local text = card.GetCardSuitText(i)
             --col:createLabel({text = tostring(i) })
-            col:createLabel({text = text.name }).color = headerColor
+            local suit = col:createLabel({text = text.name })
+            suit.wrapText = true
+            suit.color = headerColor
             if text.alt then
-                col:createLabel({text = text.alt })
+                local alt = col:createLabel({text = text.alt })
+                alt.wrapText = true
             end
         end
 
@@ -394,8 +397,8 @@ function this.CreateCombinationList(e)
 
     logger:debug("combo help")
     menu = tes3ui.createMenu({ id = uiid.helpComboListMenu, fixedFrame = true })
-    menu.width = size * 0.75
-    menu.height = size * 0.75
+    menu.width = size * 0.9
+    menu.height = size * 0.9
     menu.autoWidth = false
     menu.autoHeight = false
     menu.flowDirection = tes3.flowDirection.topToBottom
@@ -408,11 +411,15 @@ function this.CreateCombinationList(e)
     local pane = root:createVerticalScrollPane()
     pane.widthProportional = 1
     pane.heightProportional = 1
+
     local parent = pane:getContentElement()
     for _, value in ipairs(table.values(koi.combination, true)) do
         this.CreateCombinationView(parent, value)
         parent:createDivider().widthProportional = 1.0
     end
+
+    -- TODO lucky hands list
+
     local bottom = root:createBlock()
     bottom.widthProportional = 1
     bottom.autoHeight = true
@@ -442,8 +449,8 @@ function this.CreateRule(e)
 
     logger:debug("rule help")
     local menu = tes3ui.createMenu({ id = uiid.helpRuleMenu, fixedFrame = true })
-    menu.width = size * 0.75
-    menu.height = size * 0.75
+    menu.width = size * 0.9
+    menu.height = size * 0.9
     menu.autoWidth = false
     menu.autoHeight = false
     menu.flowDirection = tes3.flowDirection.topToBottom
@@ -458,30 +465,91 @@ function this.CreateRule(e)
     pane.heightProportional = 1
     local parent = pane:getContentElement()
 
-    parent:createHyperlink({ text = "Fuda Wiki", url = "https://fudawiki.org/en/hanafuda/games/koi-koi"})
+    ---@param p tes3uiElement
+    ---@param text string
+    ---@param indent integer?
+    local function createHeader(p, text, indent)
+        indent = indent or 0
+        local l =p:createLabel({text = text})
+        l.color = headerColor
+        l.wrapText = true
+        l.borderAllSides = 4
+        l.borderTop = 12
+        l.borderLeft = indent * 12
+    end
+    ---@param p tes3uiElement
+    ---@param text string
+    ---@param indent integer?
+    local function createText(p, text, indent)
+        indent = indent or 1
+        local l = p:createLabel({text = text})
+        l.wrapText = true
+        l.borderAllSides = 4
+        l.borderLeft = indent * 12
+    end
+    ---@param p tes3uiElement
+    ---@param text string
+    ---@param indent integer?
+    local function createLink(p, text, url, indent)
+        indent = indent or 1
+        local l = p:createHyperlink({text = text, url = url})
+        l.wrapText = true
+        l.borderAllSides = 4
+        l.borderLeft = indent * 12
+    end
+    -- tl;dr
+    createHeader(parent, i18n("koi.help.tldr.header"))
+    createText(parent, i18n("koi.help.tldr.description"))
+    parent:createDivider().widthProportional = 1.0
 
-    -- abstruct
-    -- tldr;
-    -- deciding parent, parent is
-    -- dealing cards
-    -- check lucky hands
-    -- turn start parent at first
-    -- matching hands or discard
-    -- draw card
-    -- matching drawn card or discard
-    -- check combination, yaku
-    -- caling koikoi or shobu
-    -- next turn
-    -- round end when empty deck
-    -- game end, winner
-    -- gambling (explain before game beginning)
+    -- hanafuda abstruct
+    createHeader(parent, i18n("hanafuda.help.summary.header"))
+    createText(parent, i18n("hanafuda.help.summary.description"))
+    parent:createDivider().widthProportional = 1.0
 
-    -- card list (other button menu)
-    -- combinations
-    -- house rules
+    -- koikoi abstruct
+    createHeader(parent, i18n("koi.help.summary.header"))
+    createText(parent, i18n("koi.help.summary.description"))
+
+    createHeader(parent, i18n("koi.help.rule.header"), 1)
+    createHeader(parent, i18n("koi.help.rule.setup.header"), 2)
+    createText(parent, i18n("koi.help.rule.setup.description"), 2)
+
+    createHeader(parent, i18n("koi.help.rule.luckyHands.header"), 3)
+    createText(parent, i18n("koi.help.rule.luckyHands.description"), 3)
+
+    createHeader(parent, i18n("koi.help.rule.turn.header"), 2)
+    createHeader(parent, i18n("koi.help.rule.turn.match.header"), 3)
+    createText(parent, i18n("koi.help.rule.turn.match.description"), 3)
+    createHeader(parent, i18n("koi.help.rule.turn.draw.header"), 3)
+    createText(parent, i18n("koi.help.rule.turn.draw.description"), 3)
+    createHeader(parent, i18n("koi.help.rule.turn.check.header"), 3)
+    createText(parent, i18n("koi.help.rule.turn.check.description"), 3)
+    createHeader(parent, i18n("koi.help.rule.turn.check.continue.header"), 4)
+    createText(parent, i18n("koi.help.rule.turn.check.continue.description"), 4)
+    createHeader(parent, i18n("koi.help.rule.turn.check.end.header"), 4)
+    createText(parent, i18n("koi.help.rule.turn.check.end.description"), 4)
+
+    createHeader(parent, i18n("koi.help.rule.round.header"), 3)
+    createText(parent, i18n("koi.help.rule.round.description"), 3)
+    createHeader(parent, i18n("koi.help.rule.round.scoring.header"), 4)
+    createText(parent, i18n("koi.help.rule.round.scoring.description"), 4)
+    createHeader(parent, i18n("koi.help.rule.round.emptyDeck.header"), 4)
+    createText(parent, i18n("koi.help.rule.round.emptyDeck.description"), 4)
+
+    createHeader(parent, i18n("koi.help.rule.end.header"), 2)
+    createText(parent, i18n("koi.help.rule.end.description"), 2)
+
+    -- todo gambling (explain before game beginning)
+    -- todo house rules
     -- hint, tips
 
-    parent:createLabel({ text = i18n("koi.rule")})
+    -- more info
+    parent:createDivider().widthProportional = 1.0
+    createHeader(parent, i18n("koi.help.more"))
+    createLink(parent, "Wikipedia", "https://en.wikipedia.org/wiki/Koi-Koi")
+    createLink(parent, "Fuda Wiki", "https://fudawiki.org/en/hanafuda/games/koi-koi")
+    createLink(parent, "The History & Art of Hanafuda", "https://games.porg.es/articles/cards/japan/hanafuda/art/")
 
     local bottom = root:createBlock()
     bottom.widthProportional = 1

@@ -25,14 +25,15 @@ local function OnModConfigReady(e)
         label = i18n("mcm.page.label"), -- does not show
         description = i18n("mcm.page.description")
     })
+    local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
 
     local languageTable = {
-        { label = i18n("mcm.page.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
-        { label = i18n("mcm.page.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },
+        { label = i18n("mcm.hanafuda.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
+        { label = i18n("mcm.hanafuda.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },
     }
-    page:createDropdown({
-        label = i18n("mcm.page.cardLanguage.label"),
-        description = i18n("mcm.page.cardLanguage.description") .. "\n\n" .. i18n("mcm.default") .. languageTable[defaults.cardLanguage].label, -- Strictly it is not correct to treat it as an index
+    hanafuda:createDropdown({
+        label = i18n("mcm.hanafuda.cardLanguage.label"),
+        description = i18n("mcm.hanafuda.cardLanguage.description") .. "\n\n" .. i18n("mcm.default") .. languageTable[defaults.cardLanguage].label, -- Strictly it is not correct to treat it as an index
         options = languageTable,
         variable = mwse.mcm.createTableVariable({
             id = "cardLanguage",
@@ -42,7 +43,7 @@ local function OnModConfigReady(e)
     })
 
     do
-        local koikoi = page:createCategory(i18n("mcm.koi.category"))
+        local koikoi = hanafuda:createCategory(i18n("mcm.koi.category"))
         local roundTable = {
             { label = "3", value = 3 },
             { label = "6", value = 6 },
