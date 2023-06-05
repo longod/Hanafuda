@@ -35,7 +35,7 @@ local this = {
     menuDialogDivider = tes3ui.registerID("MenuDialog_divider"),
     menuDialogServiceKoiKoi = tes3ui.registerID("MenuDialog_service_Hanafuda_KoiKoi"),
     -- gambling
-    gamblingMenu = tes3ui.registerID("KoiKoi.Gamble"),
+    gambleMenu = tes3ui.registerID("KoiKoi.Gamble"),
 
 }
 return this

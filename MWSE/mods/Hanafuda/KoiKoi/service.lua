@@ -35,6 +35,12 @@ local phase = {
     wait = 100,
 }
 
+---@class KoiKoi.ExitStatus
+---@field winner KoiKoi.Player? tie is nil
+---@field playerPoint integer
+---@field opponentPoint integer
+---@field conceding KoiKoi.Player?
+
 --- aka controller
 ---@class KoiKoi.Service
 ---@field phase KoiKoi.Phase
@@ -45,7 +51,7 @@ local phase = {
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
 ---@field lastCommand KoiKoi.ICommand?
----@field onExit fun(winner: KoiKoi.Player?, playerPoint : integer, opponentPoint : integer )?
+---@field onExit fun(params : KoiKoi.ExitStatus)?
 local Service = {}
 
 -- todo debug: hold key skip to deside parent
@@ -53,7 +59,7 @@ local Service = {}
 
 ---@param game KoiKoi
 ---@param view KoiKoi.View
----@param onExit fun(winner: KoiKoi.Player, playerPoint : integer, opponentPoint : integer )?
+---@param onExit fun(params : KoiKoi.ExitStatus)?
 ---@return KoiKoi.Service
 function Service.new(game, view, onExit)
     --@type KoiKoi.Service
@@ -490,12 +496,8 @@ function Service.Exit(self, giveup)
     if self.onExit then
         local pp = self.game.points[koi.player.you]
         local op = self.game.points[koi.player.opponent]
-        if giveup then
-            pp = 0
-            -- op = math.max(op, ) -- todo add penalty
-            winner = koi.player.opponent
-        end
-        self.onExit(winner, pp, op)
+        local conceding = giveup and (koi.player.you) or nil
+        self.onExit({ winner = winner, playerPoint = pp, opponentPoint = op, conceding = conceding })
         return true
     end
     return false

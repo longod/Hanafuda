@@ -56,16 +56,6 @@ local soundData = {
 ---@type {[string] : {[string]: {[VoiceId] : string[] } } } race, sex, VoiceId, file excluding directory
 local voiceData = {
     ["argonian"] = {
-        ["m"] = {
-            [this.voice.continue] = {
-                "Atk_AM001.mp3",
-                "Atk_AM002.mp3",
-            },
-            [this.voice.finish] = {
-                "Atk_AM003.mp3",
-                "Atk_AM004.mp3",
-            },
-        },
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_AF001.mp3",
@@ -76,18 +66,18 @@ local voiceData = {
                 "Atk_AF004.mp3",
             },
         },
-    },
-    ["breton"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_BM001.mp3",
-                "Atk_BM002.mp3",
+                "Atk_AM001.mp3",
+                "Atk_AM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_BM003.mp3",
-                "Atk_BM004.mp3",
+                "Atk_AM003.mp3",
+                "Atk_AM004.mp3",
             },
         },
+    },
+    ["breton"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_BF001.mp3",
@@ -98,18 +88,18 @@ local voiceData = {
                 "Atk_BF004.mp3",
             },
         },
-    },
-    ["dark elf"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_DM001.mp3",
-                "Atk_DM002.mp3",
+                "Atk_BM001.mp3",
+                "Atk_BM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_DM003.mp3",
-                "Atk_DM004.mp3",
+                "Atk_BM003.mp3",
+                "Atk_BM004.mp3",
             },
         },
+    },
+    ["dark elf"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_DF001.mp3",
@@ -120,18 +110,18 @@ local voiceData = {
                 "Atk_DF004.mp3",
             },
         },
-    },
-    ["high elf"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_HM001.mp3",
-                "Atk_HM002.mp3",
+                "Atk_DM001.mp3",
+                "Atk_DM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_HM003.mp3",
-                "Atk_HM004.mp3",
+                "Atk_DM003.mp3",
+                "Atk_DM004.mp3",
             },
         },
+    },
+    ["high elf"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_HF001.mp3",
@@ -142,18 +132,18 @@ local voiceData = {
                 "Atk_HF004.mp3",
             },
         },
-    },
-    ["imperial"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_IM001.mp3",
-                "Atk_IM002.mp3",
+                "Atk_HM001.mp3",
+                "Atk_HM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_IM003.mp3",
-                "Atk_IM004.mp3",
+                "Atk_HM003.mp3",
+                "Atk_HM004.mp3",
             },
         },
+    },
+    ["imperial"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_IF001.mp3",
@@ -164,18 +154,18 @@ local voiceData = {
                 "Atk_IF004.mp3",
             },
         },
-    },
-    ["khajiit"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_KM001.mp3",
-                "Atk_KM002.mp3",
+                "Atk_IM001.mp3",
+                "Atk_IM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_KM003.mp3",
-                "Atk_KM004.mp3",
+                "Atk_IM003.mp3",
+                "Atk_IM004.mp3",
             },
         },
+    },
+    ["khajiit"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_KF001.mp3",
@@ -186,18 +176,18 @@ local voiceData = {
                 "Atk_KF004.mp3",
             },
         },
-    },
-    ["nord"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_NM001.mp3",
-                "Atk_NM002.mp3",
+                "Atk_KM001.mp3",
+                "Atk_KM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_NM003.mp3",
-                "Atk_NM004.mp3",
+                "Atk_KM003.mp3",
+                "Atk_KM004.mp3",
             },
         },
+    },
+    ["nord"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_NF001.mp3",
@@ -208,18 +198,18 @@ local voiceData = {
                 "Atk_NF004.mp3",
             },
         },
-    },
-    ["orc"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_OM001.mp3",
-                "Atk_OM002.mp3",
+                "Atk_NM001.mp3",
+                "Atk_NM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_OM003.mp3",
-                "Atk_OM004.mp3",
+                "Atk_NM003.mp3",
+                "Atk_NM004.mp3",
             },
         },
+    },
+    ["orc"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_OF001.mp3",
@@ -230,18 +220,18 @@ local voiceData = {
                 "Atk_OF004.mp3",
             },
         },
-    },
-    ["redguard"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_RM001.mp3",
-                "Atk_RM002.mp3",
+                "Atk_OM001.mp3",
+                "Atk_OM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_RM003.mp3",
-                "Atk_RM004.mp3",
+                "Atk_OM003.mp3",
+                "Atk_OM004.mp3",
             },
         },
+    },
+    ["redguard"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_RF001.mp3",
@@ -252,18 +242,18 @@ local voiceData = {
                 "Atk_RF004.mp3",
             },
         },
-    },
-    ["wood elf"] = {
         ["m"] = {
             [this.voice.continue] = {
-                "Atk_WM001.mp3",
-                "Atk_WM002.mp3",
+                "Atk_RM001.mp3",
+                "Atk_RM002.mp3",
             },
             [this.voice.finish] = {
-                "Atk_WM003.mp3",
-                "Atk_WM004.mp3",
+                "Atk_RM003.mp3",
+                "Atk_RM004.mp3",
             },
         },
+    },
+    ["wood elf"] = {
         ["f"] = {
             [this.voice.continue] = {
                 "Atk_WF001.mp3",
@@ -272,6 +262,16 @@ local voiceData = {
             [this.voice.finish] = {
                 "Atk_WF003.mp3",
                 "Atk_WF004.mp3",
+            },
+        },
+        ["m"] = {
+            [this.voice.continue] = {
+                "Atk_WM001.mp3",
+                "Atk_WM002.mp3",
+            },
+            [this.voice.finish] = {
+                "Atk_WM003.mp3",
+                "Atk_WM004.mp3",
             },
         },
     },

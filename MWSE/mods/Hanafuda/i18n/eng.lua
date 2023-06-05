@@ -170,7 +170,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.winGame"] = "%s Win!",
     ["koi.view.loseGame"] = "%s Lose!",
     ["koi.view.gameResult"] = "%s: %u point\n%s: %u point\n",
-    ["koi.view.exitMessage"] = "Eixt and you lose.",
+    ["koi.view.exitMessage"] = "Exit and you lose.",
     ["koi.view.drawRound"] = "Draw in this round.",
     ["koi.view.winRound"] = "%s wins in this round.",
     ["koi.view.callKoi"] = "%s calls Koi-Koi",

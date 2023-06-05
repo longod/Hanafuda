@@ -3,7 +3,7 @@ local this = {}
 
 local logger = require("Hanafuda.logger")
 local uiid = require("Hanafuda.uiid")
-local utils = require("Hanafuda.utils")
+local koi = require("Hanafuda.KoiKoi.koikoi")
 local service ---@type KoiKoi.Service?
 local i18n = mwse.loadTranslations("Hanafuda")
 
@@ -172,6 +172,7 @@ end
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
 local function CanPerformService(player, opponent)
+    --todo not in-combat
     local types = {
         [tes3.actorType.creature] =
         ---@param a tes3mobileCreature
@@ -207,7 +208,7 @@ local oddsList = {
     25,
     100,
 }
-local penaltyPoint = 3 -- per round
+local penaltyPointPerRound = 3 -- per round
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -218,7 +219,7 @@ local function CalculateBettingSettings(player, opponent, conf)
     -- Allow odds if there is some amount of payment on both sides.
     local gold = math.min(playerGold, opponentGold)
     -- todo tweak
-    local metric = math.max(gold / penaltyPoint, gold > 0 and 1 or 0) -- average points per round... no evidence!
+    local metric = math.max(gold / penaltyPointPerRound, gold > 0 and 1 or 0) -- average points per round... no evidence!
     local enables = {}
     for index, value in ipairs(oddsList) do
         local enable = value * conf.round <= metric
@@ -231,25 +232,38 @@ end
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param odds integer
----@param penalty integer
-local function LaunchKoiKoi(player, opponent, odds, penalty)
+---@param penaltyPoint integer
+local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
     -- todo passing more parameters from actor
     service = require("Hanafuda.KoiKoi.service").new(
         require("Hanafuda.KoiKoi.game").new(),
         require("Hanafuda.KoiKoi.view").new(player, opponent),
-        ---@param winner KoiKoi.Player?
-        ---@param playerPoint integer
-        ---@param opponentPoint integer
-        function(winner, playerPoint, opponentPoint)
+
+        ---@param params KoiKoi.ExitStatus
+        function(params)
             -- and maybe need to get points for gambling
             if service then
                 service:Destory()
                 service = nil
             end
-
-            local unitPrice = odds
-            if winner and unitPrice > 0 then
-                local expected, actual, insufficient = TradeGold(player, opponent, playerPoint, opponentPoint, unitPrice, false)
+            local winner = params.winner
+            local pp = params.playerPoint
+            local op = params.opponentPoint
+            -- todo penaltyPoint
+            if params.conceding ~= nil then
+                if params.conceding == koi.player.you then
+                    -- It's not actually winning, so it might not want to start referring to it for other things.
+                    winner = koi.player.opponent
+                    pp = 0
+                    op = math.max(op, penaltyPoint)
+                else
+                    winner = koi.player.you
+                    pp = math.max(pp, penaltyPoint)
+                    op = 0
+                end
+            end
+            if winner ~= nil and odds > 0 then
+                local expected, actual, insufficient = TradeGold(player, opponent, pp, op, odds, false)
                 -- TODO Use insufficient for dispositions, debt, etc.
                 logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
                 if expected > 0 then
@@ -294,10 +308,11 @@ local function AddGamblingMenu(menu, player, opponent)
         function(_)
             local config = require("Hanafuda.config")
             local gold, enables = CalculateBettingSettings(player, opponent, config.koikoi)
-            require("Hanafuda.KoiKoi.ui").CreateBettingMenu(gold, oddsList, enables, config.koikoi.round, penaltyPoint,
+            local penaltyPayout = penaltyPointPerRound * config.koikoi.round
+            require("Hanafuda.Gamble.ui").CreateBettingMenu(gold, oddsList, enables, penaltyPayout,
             ---@param odds integer
             function(odds)
-                LaunchKoiKoi(player, opponent, odds, penaltyPoint)
+                LaunchKoiKoi(player, opponent, odds, penaltyPayout)
             end)
         end)
     end

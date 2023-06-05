@@ -38,11 +38,11 @@ local function OnInitialized(_)
             if mod then
                 return
             end
-            require("Hanafuda.KoiKoi.ui").CreateBettingMenu(123456, {0, 1, 2}, {true, true, false}, config.koikoi.round, 3)
+            require("Hanafuda.Gamble.ui").CreateBettingMenu(123456, {0, 1, 2}, {true, true, false}, 3 * config.koikoi.round)
         end, {filter = tes3.scanCode.x} )
     end
 
-    require("Hanafuda.Dialog.service")
+    require("Hanafuda.Gamble.service")
 
 end
 event.register(tes3.event.initialized, OnInitialized)
