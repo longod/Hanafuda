@@ -123,7 +123,7 @@ Koi-koi is a strategic game that combines luck and skill in forming combinations
     ["koi.help.rule.header"] = "How to play Koi-Koi",
     ["koi.help.rule.setup.header"] = "Setup",
     ["koi.help.rule.setup.description"] =
-[[Players who takes the face-down Hanafuda card and is the earliest in the month becomes Parent (Oya). The person who does not is Child (Ko).
+[[Players who takes the face-down Hanafuda card and Whoever chooses the card of the early month becomes Parent (Oya). If it is the same month, it is decided by the higher type of card. The person who does not is Child (Ko).
 Parent is the dealer, shuffles the deck and after dealing 8 cards each to the players and the ground, the turn begins with Parent.]],
     ["koi.help.rule.luckyHands.header"] = "Lucky Hands",
     ["koi.help.rule.luckyHands.description"] =
@@ -185,7 +185,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.parent"] = " Parent",
     ["koi.view.child"] = " Child",
     ["koi.view.decideParentHeader"] = "Decide Parent",
-    ["koi.view.decideParentMessage"] = "Choose one of two cards. Whoever picks earlier month's card will be Parent.",
+    ["koi.view.decideParentMessage"] = "Choose a card.\nWhoever chooses the card of the early month becomes Parent.",
     ["koi.view.leftCard"] = "Left card",
     ["koi.view.rightCard"] = "Right card",
     ["koi.view.informParent"] = "Parent is %s.\nChild is %s.",

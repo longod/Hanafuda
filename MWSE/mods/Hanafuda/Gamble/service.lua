@@ -246,7 +246,7 @@ local function CanPerformService(player, opponent)
 end
 
 local oddsList = {
-    0,
+    0, -- free
     1,
     5,
     25,

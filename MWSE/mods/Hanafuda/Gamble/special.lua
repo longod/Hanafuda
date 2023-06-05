@@ -1,4 +1,3 @@
-
 ---@class Gamble.Special
 local this = {}
 

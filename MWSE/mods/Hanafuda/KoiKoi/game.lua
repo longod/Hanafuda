@@ -29,6 +29,7 @@ local houseRule = require("Hanafuda.KoiKoi.houseRule")
 ---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@field points { KoiKoi.Player : integer }
 ---@field calls { KoiKoi.Player : integer }
+---@field decidingParent integer[] card deck
 local KoiKoi = {}
 
 
@@ -75,6 +76,7 @@ local defaults = {
         [koi.player.you] = 0,
         [koi.player.opponent] = 0,
     },
+    decidingParent = {},
 }
 
 ---@param settings KoiKoi.Settings
@@ -123,11 +125,48 @@ function KoiKoi.Initialize(self)
     self.combinations = {}
 end
 
+-- The choice of the parents of the Hanafuda is flawed.
+-- In the case of the same month, it is determined by card point, but there are cases where both players pick chaff. You must keep drawing cards until it is resolved.
+-- That is boring in a video game, so limit the cards to avoid such a situation.
+---@param self KoiKoi
+---@param num integer
+---@return integer[]
+function KoiKoi.ChoiceDecidingParentCards(self, num)
+    local deck = card.CreateDeck()
+    local banned = {
+        4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 47, 48,
+    }
+    -- Since it is a sequential number before shuffling, it can be established by removing it from the back as an index, but this is not strictly correct. Delete it as a normal value.
+    for index, value in ipairs(banned) do
+        table.removevalue(deck, value)
+    end
+    assert(num <= table.size(deck))
+    deck = card.ShuffleDeck(deck)
+
+    self.decidingParent = {}
+    for i = 1, num do
+        table.insert(self.decidingParent, deck[i])
+    end
+    return self.decidingParent
+end
+
+
 -- Better to be able to choose between two cut cards to decide.
 ---@param self KoiKoi
----@param leftRight boolean
-function KoiKoi.DecideParent(self, leftRight)
-    self.parent = math.random(koi.player.you, koi.player.opponent)
+---@param selectedCardId integer
+function KoiKoi.DecideParent(self, selectedCardId)
+
+    local most = selectedCardId
+    local rhs = card.GetCardData(most)
+    for index, value in ipairs(self.decidingParent) do
+        local lhs = card.GetCardData(value)
+        if (lhs.suit < rhs.suit) or (lhs.suit == rhs.suit and lhs.type < rhs.type) then
+            most = value
+            rhs = lhs
+        end
+    end
+
+    self.parent = selectedCardId == most and koi.player.you or koi.player.opponent
     --self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent
     logger:debug("Parent is ".. tostring(self.parent))

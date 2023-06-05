@@ -9,28 +9,29 @@ local phase = {
     initialized = 2,
     decidingParent = 3,
     decidedParent = 4,
-    setupRound = 5,
-    dealingInitial = 6,
-    checkLuckyHands = 7,
-    beginTurn = 8,
-    matchCard = 9, -- rename
-    matchCardFlip = 10, -- rename
-    matchCardFlipWait = 11, -- rename
-    matchCardWait = 12, -- rename
-    drawCard = 13, -- rename
-    drawCardWait = 14, -- rename
-    matchDrawCard = 15, -- rename
-    matchDrawCardWait = 16, -- rename
-    checkCombo = 17,
-    checkComboWait = 18,
-    calling = 19,
-    endTurn = 20,
-    noMatch = 21,
-    win = 22,
-    roundFinished = 23,
-    gameFinished = 24,
-    resultWait = 25,
-    terminate = 26,
+    decidedParentWait = 5,
+    setupRound = 6,
+    dealingInitial = 7,
+    checkLuckyHands = 8,
+    beginTurn = 9,
+    matchCard = 10, -- rename
+    matchCardFlip = 11, -- rename
+    matchCardFlipWait = 12, -- rename
+    matchCardWait = 13, -- rename
+    drawCard = 14, -- rename
+    drawCardWait = 15, -- rename
+    matchDrawCard = 16, -- rename
+    matchDrawCardWait = 17, -- rename
+    checkCombo = 18,
+    checkComboWait = 19,
+    calling = 20,
+    endTurn = 21,
+    noMatch = 22,
+    win = 23,
+    roundFinished = 24,
+    gameFinished = 25,
+    resultWait = 26,
+    terminate = 27,
 
     wait = 100,
 }
@@ -208,18 +209,25 @@ function Service.OnEnterFrame(self, e)
         [phase.initialized] = function()
             logger:info("initialized")
             self:RequestPhase(phase.decidingParent)
-            self.view:CreateDecidingParent(self)
+            local cards = self.game:ChoiceDecidingParentCards(2)
+            self.view:CreateDecidingParent(self, cards[1], cards[2])
         end,
         [phase.decidingParent] = function()
+            -- wait for input
         end,
         [phase.decidedParent] = function()
             logger:info("inform parent %d", self.game.parent)
-            self.view:InformParent(self.game.parent, self) -- todo send opened card or dice
+            self:RequestPhase(phase.decidedParentWait)
+            self.view:InformParent(self.game.parent, self)
+        end,
+        [phase.decidedParentWait] = function()
+            -- wait for view
         end,
         [phase.setupRound] = function()
             self:RequestPhase(phase.dealingInitial)
             self.game:SetCurrentPlayer(self.game.parent)
             self.game:DealInitialCards()
+            -- todo show round info somewhere if need
             self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
         end,
         [phase.dealingInitial] = function()
@@ -389,7 +397,7 @@ function Service.OnEnterFrame(self, e)
                 self.view:CleanUpCards()
                 self.view:UpdateRound(self.game.round, self.game.settings.round)
                 self.view:UpdateParent(self.game.parent)
-                self:RequestPhase(phase.decidedParent)
+                self:RequestPhase(phase.setupRound)
             else
                 self:RequestPhase(phase.gameFinished)
             end
@@ -503,10 +511,11 @@ function Service.Exit(self, giveup)
     return false
 end
 
+
 ---@param self KoiKoi.Service
----@param leftRight boolean
-function Service.NotifyDecideParent(self, leftRight)
-    self.game:DecideParent(leftRight)
+---@param selectedCardId integer
+function Service.NotifyDecideParent(self, selectedCardId)
+    self.game:DecideParent(selectedCardId)
     self:RequestPhase(phase.decidedParent)
 end
 

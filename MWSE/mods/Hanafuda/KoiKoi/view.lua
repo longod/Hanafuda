@@ -41,6 +41,270 @@ function View.new(player, opponent)
     return instance
 end
 
+---@param element tes3uiElement
+---@return integer?
+local function GetCardId(element)
+    local cardId = element:getPropertyInt(cardProperty)
+    if cardId == 0 then
+        logger:error("Tried to get a card ID from a non-card element.")
+        return nil
+    end
+    return cardId
+end
+
+---@param element tes3uiElement
+---@param cardId integer
+---@return tes3uiElement?
+local function FindCardIdInChildren(element, cardId)
+    -- linear search
+    for _, child in ipairs(element.children) do
+        if GetCardId(child) == cardId  then
+            return child
+        end
+    end
+    return nil
+end
+
+---@param parent tes3uiElement
+---@param cardId integer
+---@param backface boolean
+---@param notooltip boolean?
+---@return tes3uiElement
+local function PutCard(parent, cardId, backface, notooltip)
+    local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
+
+    local element = parent:createBlock() -- drop shadow better
+    element.autoWidth = true
+    element.autoHeight = true
+    element.paddingAllSides = 2
+    element:setPropertyInt(cardProperty, cardId)
+
+    local image = element:createImage({ path = asset.path })
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = false
+
+    if notooltip then
+    else
+        element:register(tes3.uiEvent.help,
+        ---@param e uiEventEventData
+        function(e)
+            ui.CreateCardTooltip(cardId, backface)
+        end)
+    end
+
+    return element
+end
+
+---@param element tes3uiElement
+---@return tes3uiElement
+local function FlipCard(element)
+    -- or query id to service
+    local cardId = GetCardId(element)
+    assert(cardId)
+    local asset = card.GetCardAsset(cardId) -- only reveal
+
+    element:destroyChildren()
+
+    local image = element:createImage({ path = asset.path })
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = false
+
+    -- todo register/unregister event
+
+    return element
+end
+
+---@param parent tes3uiElement
+---@param deck integer[]
+---@return tes3uiElement
+local function PutDeck(parent, deck)
+    local asset = card.GetCardBackAsset()
+    local element = parent:createBlock()
+    element.autoWidth = true
+    element.autoHeight = true
+    element.paddingAllSides = 2
+    local image = element:createImage({ path = asset.path })
+    image.width = card.GetCardWidth()
+    image.height = card.GetCardHeight()
+    image.scaleMode = true
+    image.consumeMouseEvents = true
+    image.borderAllSides = 2
+
+    image:register(tes3.uiEvent.help,
+    ---@param e uiEventEventData
+    function(e)
+        ui.CreateDeckTooltip(deck)
+    end)
+
+    -- todo if empty it is invisible
+
+    return image
+end
+
+
+---@param element tes3uiElement
+---@param highlight boolean
+local function SetCardColor(element, highlight)
+    -- skip toplevel, it's just block
+    -- if use rect or background image then it is changed too.
+    for key, value in pairs(element.children) do
+        value.color = highlight and enabledCardColor or disabledCardColor
+    end
+end
+
+---@param parent tes3uiElement
+---@param cardId integer
+local function HighlightCards(parent, cardId)
+    for _, value in pairs(parent.children) do
+        local id = GetCardId(value)
+        if id then
+            SetCardColor(value, koi.CanMatchSuit(cardId, id))
+        end
+    end
+end
+
+---@param parent tes3uiElement
+local function ResetHighlightCards(parent)
+    for _, value in pairs(parent.children) do
+        SetCardColor(value, true)
+    end
+end
+
+---@param element tes3uiElement
+---@return boolean
+local function GrabCard(element)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if table.size(grab.children) > 0 then
+        logger:error("GrabCard but has children")
+        return false
+    end
+    grab.disabled = false
+    grab.visible = true
+    -- need to set initial position?
+    local root = element:getTopLevelMenu()
+
+    -- calculate absolute position
+    -- not use cursor position for AI playing
+    local x = element.positionX
+    local y = element.positionY
+    local p = element.parent
+    while p do
+        x = x + p.positionX
+        y = y + p.positionY
+        p = p.parent
+    end
+    -- transform to screen space
+    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
+    x = x + viewportWidth * 0.5
+    y = y - viewportHeight * 0.5
+
+    local to = element:move({ to = grab})
+    -- unregister events?
+
+    -- initial position
+    grab.positionX = x
+    grab.positionY = y
+
+    grab:updateLayout()
+    root:updateLayout()
+    return true
+end
+
+---@param to tes3uiElement
+---@return tes3uiElement?
+local function ReleaseGrabedCard(to)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if table.size(grab.children) == 0 then
+        logger:error("ReleaseCard but no child")
+        return nil
+    end
+    grab.disabled = true
+    grab.visible = false
+    local root = to:getTopLevelMenu()
+    local moved = grab.children[1]:move({ to = to}) -- currently just one child.
+    -- unregister events?
+    grab:updateLayout()
+    root:updateLayout()
+    return moved
+end
+
+---@return tes3uiElement?
+local function GetGrabCard()
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    if not grab.visible or grab.disabled then
+        return nil
+    end
+    if table.size(grab.children) == 0 then
+        return nil
+    end
+    return grab.children[1]
+end
+
+---@return integer?
+local function GetGrabCardId()
+    local grab = GetGrabCard()
+    if grab then
+        return GetCardId(grab)
+    end
+    return nil
+end
+
+---@param element tes3uiElement
+---@param player KoiKoi.Player
+---@return tes3uiElement
+local function CaptureCard(element, player)
+    local cardId = GetCardId(element)
+    assert(cardId)
+    local you = player == koi.player.you
+    local destid = {
+        [card.type.bright] = you and uiid.playerBright or uiid.opponentBright,
+        [card.type.animal] = you and uiid.playerAnimal or uiid.opponentAnimal,
+        [card.type.ribbon] = you and uiid.playerRibbon or uiid.opponentRibbon,
+        [card.type.chaff] = you and uiid.playerChaff or uiid.opponentChaff,
+    }
+
+    local type = card.GetCardData(cardId).type
+    local dest = destid[type]
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local to = gameMenu:findChild(dest)
+
+    local moved = element:move({ to = to })
+    -- todo scale or overlap
+    SetCardColor(moved, true)
+    return moved
+end
+
+---@param player KoiKoi.Player
+---@return tes3uiElement
+local function CaptureGrabCard(player)
+    local element = GetGrabCard()
+    assert(element)
+    local moved = CaptureCard(element, player)
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    grab.disabled = true
+    grab.visible = false
+    grab:updateLayout()
+    return moved
+end
+
+-- fixme Only notification without direct transition is desirable.
+
+---comment
+---@param element tes3uiElement?
+local function UnregisterEvents(element)
+    if not element then
+        return
+    end
+    element:unregister(tes3.uiEvent.mouseOver)
+    element:unregister(tes3.uiEvent.mouseLeave)
+    element:unregister(tes3.uiEvent.mouseClick)
+end
+
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player?
@@ -322,301 +586,56 @@ end
 
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
-function View.CreateDecidingParent(self, service)
-    -- I want to wait for a selection using coroutine,
-    -- but for some reason the coroutine suspended by yield is runnning in selection callbacks.
-    -- Therefore, cannot resume it in callbacks.
+function View.CreateDecidingParent(self, service, cardId0, cardId1)
 
-    -- use messagebox? showMessageMenu buttons top and bottom...
-    tes3ui.showMessageMenu({
-        header = i18n("koi.view.decideParentHeader"),
-        message = i18n("koi.view.decideParentMessage"),
-        buttons = {
-            {
-                text = i18n("koi.view.leftCard"),
-                callback = function()
-                    logger:debug("choose left")
-                    service:NotifyDecideParent(false)
-                end,
-            },
-            {
-                text = i18n("koi.view.rightCard"),
-                callback = function()
-                    logger:debug("choose right")
-                    service:NotifyDecideParent(true)
-                end,
-            },
-        }
-    })
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    assert(gameMenu)
+    local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+    local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+    local c0 = PutCard(g0, cardId0, true, true)
+    local c1 = PutCard(g1, cardId1, true, true)
+    c0:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- Good with weights and animations, but hard without coroutine
+        FlipCard(c0)
+        FlipCard(c1)
+        sound.Play(sound.se.pickCard)
+        gameMenu:updateLayout()
+        local selectedCardId = cardId0
+        service:NotifyDecideParent(selectedCardId)
+    end)
+    c1:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        -- Good with weights and animations, but hard without coroutine
+        FlipCard(c0)
+        FlipCard(c1)
+        sound.Play(sound.se.pickCard)
+        gameMenu:updateLayout()
+        local selectedCardId = cardId1
+        service:NotifyDecideParent(selectedCardId)
+    end)
+    gameMenu:updateLayout()
+    tes3.messageBox(i18n("koi.view.decideParentMessage"))
+
 end
 
 ---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.InformParent(self, parent, service)
-    tes3.messageBox(i18n("koi.view.informParent", {self.names[parent], self.names[koi.GetOpponent(parent)]}))
+    tes3.messageBox({
+        message = i18n("koi.view.informParent", { self.names[parent], self.names[koi.GetOpponent(parent)] }),
+        buttons = { tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] },
+        callback =
+            function(btnCallbackData)
+                if btnCallbackData.button == 0 then
+                    service:NotifyInformParent()
+                end
+            end,
+    })
     self:UpdateParent(parent)
-    service:NotifyInformParent()
-end
-
----@param element tes3uiElement
----@return integer?
-local function GetCardId(element)
-    local cardId = element:getPropertyInt(cardProperty)
-    if cardId == 0 then
-        logger:error("Tried to get a card ID from a non-card element.")
-        return nil
-    end
-    return cardId
-end
-
----@param element tes3uiElement
----@param cardId integer
----@return tes3uiElement?
-local function FindCardIdInChildren(element, cardId)
-    -- linear search
-    for _, child in ipairs(element.children) do
-        if GetCardId(child) == cardId  then
-            return child
-        end
-    end
-    return nil
-end
-
----@param parent tes3uiElement
----@param cardId integer
----@param backface boolean
----@return tes3uiElement
-local function PutCard(parent, cardId, backface)
-    local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
-
-    local element = parent:createBlock() -- drop shadow better
-    element.autoWidth = true
-    element.autoHeight = true
-    element.paddingAllSides = 2
-    element:setPropertyInt(cardProperty, cardId)
-
-    local image = element:createImage({ path = asset.path })
-    image.width = card.GetCardWidth()
-    image.height = card.GetCardHeight()
-    image.scaleMode = true
-    image.consumeMouseEvents = false
-
-    element:register(tes3.uiEvent.help,
-    ---@param e uiEventEventData
-    function(e)
-        ui.CreateCardTooltip(cardId, backface)
-    end)
-
-    return element
-end
-
----@param element tes3uiElement
----@return tes3uiElement
-local function FlipCard(element)
-    -- or query id to service
-    local cardId = GetCardId(element)
-    assert(cardId)
-    local asset = card.GetCardAsset(cardId) -- only reveal
-
-    element:destroyChildren()
-
-    local image = element:createImage({ path = asset.path })
-    image.width = card.GetCardWidth()
-    image.height = card.GetCardHeight()
-    image.scaleMode = true
-    image.consumeMouseEvents = false
-
-    -- todo register/unregister event
-
-    return element
-end
-
----@param parent tes3uiElement
----@param deck integer[]
----@return tes3uiElement
-local function PutDeck(parent, deck)
-    local asset = card.GetCardBackAsset()
-    local element = parent:createBlock()
-    element.autoWidth = true
-    element.autoHeight = true
-    element.paddingAllSides = 2
-    local image = element:createImage({ path = asset.path })
-    image.width = card.GetCardWidth()
-    image.height = card.GetCardHeight()
-    image.scaleMode = true
-    image.consumeMouseEvents = true
-    image.borderAllSides = 2
-
-    image:register(tes3.uiEvent.help,
-    ---@param e uiEventEventData
-    function(e)
-        ui.CreateDeckTooltip(deck)
-    end)
-
-    -- todo if empty it is invisible
-
-    return image
-end
-
-
----@param element tes3uiElement
----@param highlight boolean
-local function SetCardColor(element, highlight)
-    -- skip toplevel, it's just block
-    -- if use rect or background image then it is changed too.
-    for key, value in pairs(element.children) do
-        value.color = highlight and enabledCardColor or disabledCardColor
-    end
-end
-
----@param parent tes3uiElement
----@param cardId integer
-local function HighlightCards(parent, cardId)
-    for _, value in pairs(parent.children) do
-        local id = GetCardId(value)
-        if id then
-            SetCardColor(value, koi.CanMatchSuit(cardId, id))
-        end
-    end
-end
-
----@param parent tes3uiElement
-local function ResetHighlightCards(parent)
-    for _, value in pairs(parent.children) do
-        SetCardColor(value, true)
-    end
-end
-
----@param element tes3uiElement
----@return boolean
-local function GrabCard(element)
-    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
-    if table.size(grab.children) > 0 then
-        logger:error("GrabCard but has children")
-        return false
-    end
-    grab.disabled = false
-    grab.visible = true
-    -- need to set initial position?
-    local root = element:getTopLevelMenu()
-
-    -- calculate absolute position
-    -- not use cursor position for AI playing
-    local x = element.positionX
-    local y = element.positionY
-    local p = element.parent
-    while p do
-        x = x + p.positionX
-        y = y + p.positionY
-        p = p.parent
-    end
-    -- transform to screen space
-    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
-    x = x + viewportWidth * 0.5
-    y = y - viewportHeight * 0.5
-
-    local to = element:move({ to = grab})
-    -- unregister events?
-
-    -- initial position
-    grab.positionX = x
-    grab.positionY = y
-
-    grab:updateLayout()
-    root:updateLayout()
-    return true
-end
-
----@param to tes3uiElement
----@return tes3uiElement?
-local function ReleaseGrabedCard(to)
-    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
-    if table.size(grab.children) == 0 then
-        logger:error("ReleaseCard but no child")
-        return nil
-    end
-    grab.disabled = true
-    grab.visible = false
-    local root = to:getTopLevelMenu()
-    local moved = grab.children[1]:move({ to = to}) -- currently just one child.
-    -- unregister events?
-    grab:updateLayout()
-    root:updateLayout()
-    return moved
-end
-
----@return tes3uiElement?
-local function GetGrabCard()
-    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
-    if not grab.visible or grab.disabled then
-        return nil
-    end
-    if table.size(grab.children) == 0 then
-        return nil
-    end
-    return grab.children[1]
-end
-
----@return integer?
-local function GetGrabCardId()
-    local grab = GetGrabCard()
-    if grab then
-        return GetCardId(grab)
-    end
-    return nil
-end
-
----@param element tes3uiElement
----@param player KoiKoi.Player
----@return tes3uiElement
-local function CaptureCard(element, player)
-    local cardId = GetCardId(element)
-    assert(cardId)
-    local you = player == koi.player.you
-    local destid = {
-        [card.type.bright] = you and uiid.playerBright or uiid.opponentBright,
-        [card.type.animal] = you and uiid.playerAnimal or uiid.opponentAnimal,
-        [card.type.ribbon] = you and uiid.playerRibbon or uiid.opponentRibbon,
-        [card.type.chaff] = you and uiid.playerChaff or uiid.opponentChaff,
-    }
-
-    local type = card.GetCardData(cardId).type
-    local dest = destid[type]
-    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-    assert(gameMenu)
-    local to = gameMenu:findChild(dest)
-
-    local moved = element:move({ to = to })
-    -- todo scale or overlap
-    SetCardColor(moved, true)
-    return moved
-end
-
----@param player KoiKoi.Player
----@return tes3uiElement
-local function CaptureGrabCard(player)
-    local element = GetGrabCard()
-    assert(element)
-    local moved = CaptureCard(element, player)
-    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
-    grab.disabled = true
-    grab.visible = false
-    grab:updateLayout()
-    return moved
-end
-
--- fixme Only notification without direct transition is desirable.
-
----comment
----@param element tes3uiElement?
-local function UnregisterEvents(element)
-    if not element then
-        return
-    end
-    element:unregister(tes3.uiEvent.mouseOver)
-    element:unregister(tes3.uiEvent.mouseLeave)
-    element:unregister(tes3.uiEvent.mouseClick)
 end
 
 ---@param self KoiKoi.View
@@ -853,6 +872,8 @@ end
 ---@param service KoiKoi.Service
 ---@param skipAnimation boolean
 function View.DealInitialCards(self, parent, pools, groundPools, deck, service, skipAnimation)
+    self:CleanUpCards() -- clean deciding parnet cards
+
     ---@return any
     local function putCards()
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
