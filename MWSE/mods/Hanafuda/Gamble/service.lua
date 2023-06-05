@@ -4,21 +4,10 @@ local this = {}
 local logger = require("Hanafuda.logger")
 local uiid = require("Hanafuda.uiid")
 local koi = require("Hanafuda.KoiKoi.koikoi")
-local service ---@type KoiKoi.Service?
+local special = require("Hanafuda.Gamble.special")
 local i18n = mwse.loadTranslations("Hanafuda")
 
----@param e uiEventEventData
-local function UpdateVisibility(e)
-    timer.delayOneFrame(function()
-            local b = e.source:findChild(uiid.menuDialogServiceKoiKoi)
-            if b and not b.visible then
-                b.visible = true
-                e.source:updateLayout() -- endless calling?
-                logger:trace("UpdateVisibility")
-            end
-        end,
-        timer.real)
-end
+local service ---@type KoiKoi.Service?
 
 ---@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
@@ -136,22 +125,40 @@ local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice, all
     return 0, 0, 0
 end
 
+---@param mobile tes3mobileActor
+---@return boolean
+local function ActorHasServiceMenu(mobile)
+    if mobile.isDead then
+        return false
+    end
+    return true
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
-local function CanDisplayServiceMenu(player, opponent)
+local function HasServiceMenu(player, opponent)
+    if not ActorHasServiceMenu(opponent) then
+        return false
+    end
+
     local types = {
         [tes3.actorType.creature] =
         ---@param a tes3mobileCreature
         ---@return boolean
             function(a)
-                -- creeper, mudcrub, some talkable creatures, pets, companions?
+                if not special.IsAllowdCreature(a) then
+                    return false
+                end
                 return true
             end,
         [tes3.actorType.npc] =
         ---@param a tes3mobileNPC
         ---@return boolean
             function(a)
+                if not special.IsAllowdNPC(a) then
+                    return false
+                end
                 return true
             end,
         [tes3.actorType.player] =
@@ -168,23 +175,60 @@ local function CanDisplayServiceMenu(player, opponent)
     return false
 end
 
+---@param mobile tes3mobileActor
+---@return boolean
+local function ActorCanPerformService(mobile)
+    local condition = {
+        "attacked",
+        "inCombat",
+        "isAttackingOrCasting",
+        "isDead",
+        "isDiseased",
+        "isFlying",
+        "isJumping",
+        "isKnockedDown",
+        "isKnockedOut",
+        "isParalyzed",
+        "isPlayerHidden",
+        "isReadyingWeapon",
+        "isSneaking",
+        "isSwimming",
+    }
+    for index, value in ipairs(condition) do
+        if mobile[value] then
+            return false
+        end
+    end
+    return true
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
 local function CanPerformService(player, opponent)
+    if not ActorCanPerformService(player)then
+        return false
+    end
+    if not ActorCanPerformService(opponent)then
+        return false
+    end
+
     --todo not in-combat
     local types = {
         [tes3.actorType.creature] =
         ---@param a tes3mobileCreature
         ---@return boolean
             function(a)
-                -- creeper, mudcrub, some talkable creatures, pets, companions?
                 return true
             end,
         [tes3.actorType.npc] =
         ---@param a tes3mobileNPC
         ---@return boolean
             function(a)
+                -- todo
+                if a.object.disposition < 0 then
+                    return false
+                end
                 return true
             end,
         [tes3.actorType.player] =
@@ -249,7 +293,6 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
             local winner = params.winner
             local pp = params.playerPoint
             local op = params.opponentPoint
-            -- todo penaltyPoint
             if params.conceding ~= nil then
                 if params.conceding == koi.player.you then
                     -- It's not actually winning, so it might not want to start referring to it for other things.
@@ -286,6 +329,28 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
 
 end
 
+---@param e uiEventEventData
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+local function UpdateVisibility(e, player, opponent)
+    timer.delayOneFrame(function()
+            local b = e.source:findChild(uiid.menuDialogServiceKoiKoi)
+            if b and not b.visible then
+                b.visible = true
+                if CanPerformService(player, opponent)then
+                    b.disabled = false
+                    b.color = tes3ui.getPalette(tes3.palette.normalColor)
+                else
+                    b.disabled = true
+                    b.color = tes3ui.getPalette(tes3.palette.disabledColor)
+                end
+                e.source:updateLayout() -- endless calling?
+                logger:trace("UpdateVisibility")
+            end
+        end,
+        timer.real)
+end
+
 ---@param menu tes3uiElement
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -318,14 +383,21 @@ local function AddGamblingMenu(menu, player, opponent)
     end
 
     serviceButton:register(tes3.uiEvent.help,
-        ---@param _ uiEventEventData
-        function(_)
-            local tooltip = tes3ui.createTooltipMenu()
-            tooltip:createLabel({ text = i18n("koi.service.tooltip") })
-            -- todo reason if it disabled
+        ---@param e uiEventEventData
+        function(e)
+            if e.source.disabled then
+                -- todo reason if it disabled
+            else
+                local tooltip = tes3ui.createTooltipMenu()
+                tooltip:createLabel({ text = i18n("koi.service.tooltip") })
+            end
         end)
 
-    menu:registerAfter(tes3.uiEvent.update, UpdateVisibility)
+    menu:registerAfter(tes3.uiEvent.update,
+    ---@param e uiEventEventData
+    function(e)
+        UpdateVisibility(e, player, opponent)
+    end)
 end
 
 --- @param e uiActivatedEventData
@@ -338,7 +410,7 @@ local function OnMenuDialogActivated(e)
         return
     end
 
-    if not CanDisplayServiceMenu(tes3.mobilePlayer, actor) then
+    if not HasServiceMenu(tes3.mobilePlayer, actor) then
         return
     end
     logger:trace("Player money " .. tostring(GetActorGold(tes3.mobilePlayer)))
