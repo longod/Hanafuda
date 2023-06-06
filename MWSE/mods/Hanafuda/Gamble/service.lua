@@ -5,6 +5,7 @@ local logger = require("Hanafuda.logger")
 local uiid = require("Hanafuda.uiid")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local special = require("Hanafuda.Gamble.special")
+local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 local service ---@type KoiKoi.Service?
@@ -189,7 +190,7 @@ local function HasServiceMenuByClass(mobile)
         ["pauper"] = false,
         ["pawnbroker"] = true,
         ["priest"] = false,
-        ["publican"] = false,
+        ["publican"] = true,
         ["savant"] = false,
         ["sharpshooter"] = false,
         ["shipmaster"] = false,
@@ -409,8 +410,12 @@ end
 ---@param penaltyPoint integer
 local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
     -- todo passing more parameters from actor
+
+    -- todo choice brain depends on actor stats
+    local brain = require("Hanafuda.KoiKoi.brain.simpleBrain").new()
+
     service = require("Hanafuda.KoiKoi.service").new(
-        require("Hanafuda.KoiKoi.game").new(),
+        require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil),
         require("Hanafuda.KoiKoi.view").new(player, opponent),
 
         ---@param params KoiKoi.ExitStatus

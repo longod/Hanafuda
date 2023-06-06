@@ -9,20 +9,22 @@ local logger = require("Hanafuda.logger")
 ---@field drawnCard integer?
 local this = {}
 
----@param yourBrain KoiKoi.IBrain
----@param opponentBrain KoiKoi.IBrain
+---@param opponentBrain KoiKoi.IBrain?
+---@param playerBrain KoiKoi.IBrain?
 ---@return KoiKoi.Runner
-function this.new(yourBrain, opponentBrain)
+function this.new(opponentBrain, playerBrain)
     --@type KoiKoi.Runner
     local instance = {
-        game = require("Hanafuda.KoiKoi.game").new(),
+        game = require("Hanafuda.KoiKoi.game").new(
+            require("Hanafuda.config").koikoi,
+            opponentBrain,
+            playerBrain
+        ),
         state = 0,
         round = 1,
         drawnCard = nil,
     }
     setmetatable(instance, { __index = this })
-    instance.game:SetBrains(opponentBrain)
-    instance.game:SetBrains(yourBrain, true)
     return instance
 end
 

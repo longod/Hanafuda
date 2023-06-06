@@ -1,5 +1,4 @@
 local config = require("Hanafuda.config")
-local utils = require("Hanafuda.utils")
 
 ---@param _ initializedEventData
 local function OnInitialized(_)
@@ -17,7 +16,11 @@ local function OnInitialized(_)
                 service = nil
             else
                 service = require("Hanafuda.KoiKoi.service").new(
-                    require("Hanafuda.KoiKoi.game").new(),
+                    require("Hanafuda.KoiKoi.game").new(
+                        require("Hanafuda.config").koikoi,
+                        require("Hanafuda.KoiKoi.brain.simpleBrain").new(),
+                        nil
+                    ),
                     require("Hanafuda.KoiKoi.view").new(),
                     function()
                         if service then

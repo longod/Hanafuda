@@ -2,7 +2,6 @@ local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local combination = require("Hanafuda.KoiKoi.combination")
-local config = require("Hanafuda.config")
 local houseRule = require("Hanafuda.KoiKoi.houseRule")
 
 ---@class KoiKoi.Settings
@@ -88,31 +87,30 @@ local function ValidateSettings(settings)
 end
 ValidateSettings(defaults.settings)
 
----comment
+---@param settings Config.KoiKoi
+---@param opponentBrain KoiKoi.IBrain?
+---@param playerBrain KoiKoi.IBrain?
 ---@return KoiKoi
-function KoiKoi.new()
+function KoiKoi.new(settings, opponentBrain, playerBrain)
     ---@type KoiKoi
     local instance = table.deepcopy(defaults)
-    instance.settings.houseRule = table.deepcopy(config.koikoi.houseRule) -- do not change in game
-    instance.settings.round = config.koikoi.round
+    instance.settings.houseRule = table.deepcopy(settings.houseRule) -- do not change in game
+    instance.settings.round = settings.round
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
+    instance:SetBrains(opponentBrain, koi.player.opponent)
+    instance:SetBrains(playerBrain, koi.player.you)
     return instance
 end
 
 -- event base or command base
 -- important split view and logic for replacing visualize using MVC or like as
 
----comment
 ---@param self KoiKoi
----@param brain KoiKoi.IBrain
----@param player boolean?
+---@param brain KoiKoi.IBrain?
+---@param player KoiKoi.Player
 function KoiKoi.SetBrains(self, brain, player)
-    if player then -- rarely
-        self.brains[koi.player.you] = brain
-    else
-        self.brains[koi.player.opponent] = brain
-    end
+    self.brains[player] = brain
 end
 
 ---@param self KoiKoi

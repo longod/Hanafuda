@@ -465,13 +465,7 @@ function Service.Initialize(self)
         end
         event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
     end
-    local brain = require("Hanafuda.KoiKoi.brain.simpleBrain").new()
-    -- todo set brain anywhere
-    self.game:SetBrains(brain)
-    --self.game:SetBrains(brain, true) -- player
     self.game:Initialize()
-    -- self.game.parent = koi.player.opponent -- testing
-    -- self.game.current = koi.player.opponent -- testing
     self.view:Initialize(self)
     self.view:UpdateRound(self.game.round, self.game.settings.round)
     self.view:UpdateScorePoint(koi.player.you, self.game.points[koi.player.you])
