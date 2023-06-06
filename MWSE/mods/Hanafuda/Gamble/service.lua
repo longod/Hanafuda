@@ -134,11 +134,105 @@ local function ActorHasServiceMenu(mobile)
     return true
 end
 
+---@param mobile tes3mobileNPC
+local function HasServiceMenuByClass(mobile)
+    local classes = {
+        -- pc and npc classes
+        ["acrobat"] = false,
+        ["agent"] = true,
+        ["archer"] = false,
+        ["assassin"] = false,
+        ["barbarian"] = false,
+        ["bard"] = false,
+        ["battlemage"] = false,
+        ["crusader"] = false,
+        ["healer"] = false,
+        ["knight"] = false,
+        ["mage"] = false,
+        ["monk"] = false,
+        ["nightblade"] = false,
+        ["pilgrim"] = false,
+        ["rogue"] = true,
+        ["scout"] = false,
+        ["sorcerer"] = false,
+        ["spellsword"] = false,
+        ["thief"] = true,
+        ["warrior"] = false,
+        ["witchhunter"] = false,
+        -- npc only classes
+        ["alchemist"] = false,
+        ["apothecary"] = false,
+        ["bookseller"] = true,
+        ["buoyant armiger"] = false,
+        ["caravaner"] = true,
+        ["champion"] = false,
+        ["clothier"] = false,
+        ["commoner"] = false,
+        ["dreamer"] = false,
+        ["drillmaster"] = false,
+        ["enchanter"] = false,
+        ["enforcer"] = false,
+        ["farmer"] = false,
+        ["gondolier"] = false,
+        ["guard"] = false,
+        ["guild guide"] = false,
+        ["herder"] = false,
+        ["hunter"] = false,
+        ["mabrigash"] = false,
+        ["master-at-arms"] = false,
+        ["merchant"] = true,
+        ["miner"] = false,
+        ["necromancer"] = false,
+        ["noble"] = false,
+        ["ordinator"] = false,
+        ["ordinator guard"] = false,
+        ["pauper"] = false,
+        ["pawnbroker"] = true,
+        ["priest"] = false,
+        ["publican"] = false,
+        ["savant"] = false,
+        ["sharpshooter"] = false,
+        ["shipmaster"] = false,
+        ["slave"] = false,
+        ["smith"] = false,
+        ["smuggler"] = true,
+        ["trader"] = true,
+        ["warlock"] = false,
+        ["wise woman"] = false,
+        ["witch"] = false,
+        -- tribunals
+        ["caretaker"] = false,
+        ["gardener"] = false,
+        ["journalist"] = false,
+        ["king"] = false,
+        ["queen mother"] = false,
+        -- bloodmoon
+        ["shaman"] = false,
+    }
+    -- modded class?
+    local class = mobile.object.class.id:lower()
+    logger:trace(class)
+    local v = classes[class]
+    if v == nil then
+        -- Some classes have service as a suffix, so look for it by forward matching.
+        -- It may be easier to support mods than to cover them all in a table.
+        for key, value in pairs(classes) do
+            if class:startswith(key) then
+                v = value
+                break
+            end
+        end
+    end
+    -- logger:trace(v)
+    return (v == nil) or (v == true) -- ignored only false
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
 local function HasServiceMenu(player, opponent)
     if not ActorHasServiceMenu(opponent) then
+        logger:trace("service is not allowed opponent condition")
         return false
     end
 
@@ -148,6 +242,7 @@ local function HasServiceMenu(player, opponent)
         ---@return boolean
             function(a)
                 if not special.IsAllowdCreature(a) then
+                    logger:trace("service is not allowed creature")
                     return false
                 end
                 return true
@@ -156,9 +251,18 @@ local function HasServiceMenu(player, opponent)
         ---@param a tes3mobileNPC
         ---@return boolean
             function(a)
-                if not special.IsAllowdNPC(a) then
+                if special.IsAllowdNPC(a) then
+                    logger:trace("service allowd by special npc")
+                    return true
+                end
+                if not HasServiceMenuByClass(a) then
+                    logger:trace("service is not allowd by class")
                     return false
                 end
+                -- if CanBarter(a) then
+                --     return false
+                -- end
+                -- todo faction-member only npc
                 return true
             end,
         [tes3.actorType.player] =
@@ -194,7 +298,7 @@ local function ActorCanPerformService(mobile)
         "isSneaking",
         "isSwimming",
     }
-    for index, value in ipairs(condition) do
+    for _, value in ipairs(condition) do
         if mobile[value] then
             return false
         end
@@ -203,30 +307,56 @@ local function ActorCanPerformService(mobile)
 end
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC
+---@return boolean
+local function CanPerformServiceByFight(player, opponent)
+    local baseFight = 70
+    local threshold = baseFight
+    -- todo Varying thresholds based on faction and other affinities with the player.
+    return opponent.fight <= threshold
+end
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileNPC
+---@return boolean
+local function CanPerformServiceByDisposition(player, opponent)
+    local baseDisposition = 30
+    local threshold = baseDisposition
+    -- todo Varying thresholds based on faction and other affinities with the player.
+    return opponent.object.disposition >= threshold
+end
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
 local function CanPerformService(player, opponent)
     if not ActorCanPerformService(player)then
+        logger:trace("not perform by player condition")
         return false
     end
     if not ActorCanPerformService(opponent)then
+        logger:trace("not perform by opponent condition")
+        return false
+    end
+    if not CanPerformServiceByFight(player, opponent)then
+        logger:trace("not perform by fight")
         return false
     end
 
-    --todo not in-combat
     local types = {
         [tes3.actorType.creature] =
         ---@param a tes3mobileCreature
         ---@return boolean
             function(a)
+                -- no disposition
                 return true
             end,
         [tes3.actorType.npc] =
         ---@param a tes3mobileNPC
         ---@return boolean
             function(a)
-                -- todo
-                if a.object.disposition < 0 then
+                if not CanPerformServiceByDisposition(player, a)then
+                    logger:trace("not perform by disposition")
                     return false
                 end
                 return true
@@ -411,6 +541,7 @@ local function OnMenuDialogActivated(e)
     end
 
     if not HasServiceMenu(tes3.mobilePlayer, actor) then
+        logger:trace("no service")
         return
     end
     logger:trace("Player money " .. tostring(GetActorGold(tes3.mobilePlayer)))

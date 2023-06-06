@@ -167,8 +167,8 @@ Depending on the house rules, either Parent or Child scores points, or Parent an
 [[The player with the highest total score after repeating the specified number of rounds is the winner of the game.
 The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.]],
     ["koi.view.drawGame"] = "Draw Game",
-    ["koi.view.winGame"] = "%s Win!",
-    ["koi.view.loseGame"] = "%s Lose!",
+    ["koi.view.winGame"] = "%s Wins!",
+    ["koi.view.loseGame"] = "%s Loses!",
     ["koi.view.gameResult"] = "%s: %u point\n%s: %u point\n",
     ["koi.view.exitMessage"] = "Exit and you lose.",
     ["koi.view.drawRound"] = "Draw in this round.",

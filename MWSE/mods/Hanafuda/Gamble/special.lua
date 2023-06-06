@@ -2,11 +2,66 @@
 local this = {}
 
 local npcs = {
+    -- essential
     -- morrowind
-    ["caius cosades"] = true,
-    ["fargoth"] = true,
+    ["addhiranirr"] = false,
+    ["athyn sarethi"] = false,
+    ["Blatta Hateria"] = false,
+    ["caius cosades"] = false,
+    ["crassius curio"] = true,
+    ["crazy_batou"] = false,
+    ["danso indules"] = false,
+    ["divayth fyr"] = true,
+    ["dram bero"] = false,
+    ["dutadalk"] = false,
+    ["endryn llethan"] = false,
+    ["falura llervu"] = false,
+    ["garisa llethri"] = false,
+    ["gilvas barelo"] = false,
+    ["goris the maggot king"] = false,
+    ["han-ammu"] = false,
+    ["hasphat antabolis"] = true,
+    ["hassour zainsubani"] = true,
+    ["hlaren ramoran"] = false,
+    ["huleeya"] = false,
+    ["kaushad"] = false,
+    ["kausi"] = false,
+    ["lord cluttermonkey"] = false,
+    ["manirai"] = false,
+    ["mehra milo"] = false,
+    ["miner arobar"] = false,
+    ["brara morvayn"] = false,
+    ["nevena ules"] = false,
+    ["nibani maesa"] = false,
+    ["raesa pullia"] = false,
+    ["savile imayn"] = false,
+    ["sharn gra-muzgob"] = false,
+    ["sinnammu mirpal"] = false,
+    ["sonummu zabamat"] = false,
+    ["sul-matuul"] = false,
+    ["tholer saryoni"] = false,
+    ["uupse fyr"] = false,
+    ["varvur sarethi"] = false,
+    ["velanda omani"] = false,
+    ["yenammu"] = false,
     -- tribunals
+    ["apelles matius"] = false,
+    ["asciene rane"] = false,
+    ["barenziah"] = true,
+    ["effe_tei"] = false,
+    ["fedris hler"] = false,
+    ["gavas drin"] = false,
+    ["karrod"] = false,
+    ["King Hlaalu Helseth"] = true,
+    ["Tienius Delitian"] = false,
     -- bloodmoon
+    ["falx carius"] = false,
+    ["tharsten heart-fang"] = true,
+    ["tharsten heart-fang2"] = false,
+    -- notable npcs
+    ["fargoth"] = true,
+    ["nelos onmar"] = true,
+    ["baladas demnevanni"] = true,
 }
 
 -- A unique name, with a stand-alone page in uesp. Not yet investigated if it is conversable.
@@ -117,17 +172,15 @@ local creatures = {
 ---@param mobile tes3mobileNPC
 ---@return boolean
 function this.IsAllowdNPC(mobile)
-    -- ignored only false
     local v = npcs[mobile.object.baseObject.id]
-    return not v or v == true
+    return (v ~= nil) and (v == true) -- allowed only true
 end
 
 ---@param mobile tes3mobileCreature
 ---@return boolean
 function this.IsAllowdCreature(mobile)
-    -- allowed only true
     local v = creatures[mobile.object.baseObject.id]
-    return v ~= nil and v == true
+    return (v ~= nil) and (v == true) -- allowed only true
 end
 
 return this
