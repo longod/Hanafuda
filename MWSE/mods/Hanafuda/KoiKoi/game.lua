@@ -123,6 +123,11 @@ function KoiKoi.Initialize(self)
     self.calls = table.deepcopy(defaults.calls)
     self.groundPool = {}
     self.combinations = {}
+    for _, b in pairs(self.brains) do
+        if b then
+            b:Reset()
+        end
+    end
 end
 
 -- The choice of the parents of the Hanafuda is flawed.
@@ -220,11 +225,15 @@ end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param drawnCardId integer?
+---@param deltaTime number
+---@param timestamp number
 ---@return KoiKoi.MatchCommand?
-function KoiKoi.Simulate(self, player, drawnCardId)
+function KoiKoi.Simulate(self, player, drawnCardId, deltaTime, timestamp)
     if self.brains[player] then
         ---@type KoiKoi.AI.Params
         local params = {
+            deltaTime = deltaTime,
+            timestamp = timestamp,
             drawnCard = drawnCardId,
             pool = self.pools[player],
             opponentPool = self.pools[koi.GetOpponent(player)],
@@ -244,12 +253,16 @@ end
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
 ---@param combination { [KoiKoi.CombinationType] : integer }
+---@param deltaTime number
+---@param timestamp number
 ---@return KoiKoi.CallCommand?
-function KoiKoi.Call(self, player, combination)
+function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
     if self.brains[player] then
         -- todo temp
         ---@type KoiKoi.AI.Params
         local params = {
+            deltaTime = deltaTime,
+            timestamp = timestamp,
             drawnCard = nil,
             pool = self.pools[player],
             opponentPool = self.pools[koi.GetOpponent(player)],

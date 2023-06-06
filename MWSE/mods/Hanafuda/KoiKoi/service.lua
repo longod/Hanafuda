@@ -248,7 +248,7 @@ function Service.OnEnterFrame(self, e)
                 self:RequestPhase(phase.drawCard)
                 return
             end
-            local command = self.game:Simulate(self.game.current, nil)
+            local command = self.game:Simulate(self.game.current, nil, e.delta, e.timestamp)
             if command then
                 -- first flip card
                 self.lastCommand = command
@@ -314,7 +314,7 @@ function Service.OnEnterFrame(self, e)
             -- waiting...
         end,
         [phase.matchDrawCard] = function()
-            local command = self.game:Simulate(self.game.current, self.drawnCard)
+            local command = self.game:Simulate(self.game.current, self.drawnCard, e.delta, e.timestamp)
             if command then
                 -- todo com:Execute()
                 -- todo view
@@ -365,7 +365,7 @@ function Service.OnEnterFrame(self, e)
         [phase.checkComboWait] = function()
         end,
         [phase.calling] = function()
-            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current]) -- fixme use accessor
+            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp) -- fixme combinations uses accessor
             if command then
                 self.lastCommand = command
                 self.view:ShowCalling(self.game.current, self, command.calling)

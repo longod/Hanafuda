@@ -1,8 +1,5 @@
----@class KoiKoi.IBrain
-local this = {}
-
 ---@class KoiKoi.ICommand
----@field Execute fun(self)
+---@field Execute fun(self) -- todo
 
 ---@class KoiKoi.MatchCommand : KoiKoi.ICommand
 ---@field selectedCard integer
@@ -12,6 +9,8 @@ local this = {}
 ---@field calling KoiKoi.Calling
 
 ---@class KoiKoi.AI.Params
+---@field deltaTime number
+---@field timestamp number
 ---@field drawnCard integer? if it is not nil, you must use this.
 ---@field pool KoiKoi.PlayerPool your card pools
 ---@field opponentPool KoiKoi.PlayerPool eval for scoreing combinations, but peeping hand is cheating
@@ -19,11 +18,40 @@ local this = {}
 ---@field deck integer[] for cheating
 ---@field combination { [KoiKoi.CombinationType] : integer }?
 
+---@class KoiKoi.Range
+---@field start number
+---@field end number
+
+---@class KoiKoi.AI.waitRange
+---@field hand KoiKoi.Range?
+---@field drawn KoiKoi.Range?
+---@field calling KoiKoi.Range?
+
+---@class KoiKoi.IBrain
+local this = {}
+local logger = require("Hanafuda.logger")
+
+---@param data table?
+---@return KoiKoi.IBrain
+function this.new(data)
+    ---@type KoiKoi.IBrain
+    local instance = data and table.copy(data) or {}
+    setmetatable(instance, { __index = this })
+    return instance
+end
+
+--- reset state
+---@param self KoiKoi.IBrain
+function this.Reset(self)
+    logger:trace("IBrain:Reset")
+end
+
 --- simulate on every frame
 ---@param self KoiKoi.IBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.MatchCommand?
 function this.Simulate(self, p)
+    logger:trace("IBrain:Simulate")
 end
 
 --- Call koikoi or shobu
@@ -31,6 +59,7 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
+    logger:trace("IBrain:Call")
 end
 
 return this

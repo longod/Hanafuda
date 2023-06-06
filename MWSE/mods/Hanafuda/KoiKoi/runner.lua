@@ -50,7 +50,7 @@ function this.Run(self)
             self:Next()
         end,
         [1] = function()
-            local command = self.game:Simulate(self.game.current)
+            local command = self.game:Simulate(self.game.current, nil, 1, 0)
             if command then
                 -- todo com:Execute()
                 if command.selectedCard and command.matchedCard then
@@ -72,7 +72,7 @@ function this.Run(self)
             self:Next()
         end,
         [3] = function()
-            local command = self.game:Simulate(self.game.current, self.drawnCard)
+            local command = self.game:Simulate(self.game.current, self.drawnCard, 1, 0)
             if command then
                 -- todo com:Execute()
                 if command.selectedCard and command.matchedCard then
@@ -94,7 +94,7 @@ function this.Run(self)
             -- fixme if called koi-koi the combination is subtract before combination
             local combo = self.game:CheckCombination(self.game.current)
             if combo then
-                local command = self.game:Call(self.game.current, combo)
+                local command = self.game:Call(self.game.current, combo, 1, 0)
                 if command then
                     if command.calling == koi.calling.koikoi then
                         -- continue
