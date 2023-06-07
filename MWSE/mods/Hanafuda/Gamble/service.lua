@@ -389,6 +389,7 @@ local penaltyPointPerRound = 3 -- per round
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param conf Config.KoiKoi
 local function CalculateBettingSettings(player, opponent, conf)
+    -- todo mercantile, speechcraft, personality, luck, disposition, faction reaction
     local playerGold = GetActorGold(player)
     local opponentGold = GetActorGold(opponent)
     -- Allow odds if there is some amount of payment on both sides.
@@ -403,16 +404,181 @@ local function CalculateBettingSettings(player, opponent, conf)
     return playerGold, enables
 end
 
+---@param value number better normalized
+---@param lowIn number
+---@param lowOut number
+---@return number
+local function remapUncapped(value, lowIn, lowOut)
+	return lowOut + (value - lowIn)
+end
+
+-- fate
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+local function CalculateLucky(mobile)
+    local value = 0
+    local total = 0
+    do
+        local weight = 1.0
+        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        ---@cast mobile tes3mobileCreature
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+    end
+    value = value / total -- normalize
+    return value
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+local function CalculateCheatAbility(mobile)
+    local value = 0
+    local total = 0
+    do
+        local weight = 1
+        value = value + math.remap(mobile.willpower.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 1
+        value = value + math.remap(mobile.agility.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 0.5
+        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        ---@cast mobile tes3mobileCreature
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        do
+            local weight = 1
+            value = value + math.remap(mobile.sneak.current, 0, 100, 0, 1) * weight
+            total = total + weight
+        end
+        do
+            local weight = 1
+            value = value + math.remap(mobile.speechcraft.current, 0, 100, 0, 1) * weight
+            total = total + weight
+        end
+    end
+    value = value / total -- normalize
+    return value
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+local function CalculateSpotAbility(mobile)
+    local value = 0
+    local total = 0
+    do
+        local weight = 1
+        value = value + math.remap(mobile.willpower.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 1
+        value = value + math.remap(mobile.intelligence.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 0.5
+        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        ---@cast mobile tes3mobileCreature
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        local weight = 1
+        value = value + math.remap(mobile.security.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    value = value / total -- normalize
+    return value
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+local function CalculateGreedy(mobile)
+    local value = 0
+    local total = 0
+    do
+        local weight = 1
+        value = value + math.remap(mobile.willpower.current, 0, 100, 1, 0) * weight
+        total = total + weight
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        -- no skill
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        local weight = 1
+        value = value + math.remap(mobile.mercantile.current, 0, 100, 0, 1) * weight
+        total = total + weight
+    end
+    value = value / total -- normalize
+    return value
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+local function CalculateGambleAbility(mobile)
+    local value = 0
+    local total = 0
+    do
+        local weight = 1
+        local v = math.remap(mobile.willpower.current, 30, 150, 0, 1)
+        value = value + v * weight
+        total = total + weight
+    end
+    do
+        local weight = 1
+        local v = math.remap(mobile.intelligence.current, 30, 150, 0, 1)
+        value = value + v * weight
+        total = total + weight
+    end
+    do
+        local weight = 0.5
+        local v = math.remap(mobile.luck.current, 0, 100, 0, 1)
+        value = value + v * weight
+        total = total + weight
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        -- no skill
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        local weight = 1
+        local v = math.remap(mobile.mercantile.current, 0, 100, 0, 1)
+        value = value + v * weight
+        total = total + weight
+    end
+    value = value / total -- normalize
+    return value
+end
+
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param odds integer
 ---@param penaltyPoint integer
 local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
-    -- todo passing more parameters from actor
+    local gamble = CalculateGambleAbility(opponent)
+    local greedy = CalculateGreedy(opponent)
+    logger:debug("gamble %f, greedy %f", gamble, greedy)
 
     -- todo choice brain depends on actor stats
-    local brain = require("Hanafuda.KoiKoi.brain.simpleBrain").new()
+    local brain = require("Hanafuda.KoiKoi.brain.randomBrain").new({
+        koikoiChance = greedy, -- temp
+        meaninglessDiscardChance = (1 - gamble) * 0.3, -- temp
+        waitHand = { s = 1, e = 4 },
+        waitDrawn = { s = 1, e = 2 },
+        waitCalling = { s = 2, e = 4 },
+    })
 
     service = require("Hanafuda.KoiKoi.service").new(
         require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil),
