@@ -18,14 +18,9 @@
 ---@field deck integer[] for cheating
 ---@field combination { [KoiKoi.CombinationType] : integer }?
 
----@class KoiKoi.Range
----@field start number
----@field end number
-
----@class KoiKoi.AI.waitRange
----@field hand KoiKoi.Range?
----@field drawn KoiKoi.Range?
----@field calling KoiKoi.Range?
+---@class KoiKoi.AI.WaitRange
+---@field s number start
+---@field e number end
 
 ---@class KoiKoi.IBrain
 local this = {}

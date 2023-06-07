@@ -9,8 +9,8 @@ local logger = require("Hanafuda.logger")
 ---@field drawnCard integer?
 local this = {}
 
----@param opponentBrain KoiKoi.IBrain?
----@param playerBrain KoiKoi.IBrain?
+---@param opponentBrain KoiKoi.IBrain
+---@param playerBrain KoiKoi.IBrain
 ---@return KoiKoi.Runner
 function this.new(opponentBrain, playerBrain)
     --@type KoiKoi.Runner

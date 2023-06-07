@@ -18,7 +18,7 @@ local function OnInitialized(_)
                 service = require("Hanafuda.KoiKoi.service").new(
                     require("Hanafuda.KoiKoi.game").new(
                         require("Hanafuda.config").koikoi,
-                        require("Hanafuda.KoiKoi.brain.randomBrain").new({}),
+                        require("Hanafuda.KoiKoi.brain.randomBrain").new({ waitHand = { s = 1, e = 3}, waitDrawn = { s = 1, e = 2}, waitCalling = { s = 2, e = 5 } }),
                         nil
                     ),
                     require("Hanafuda.KoiKoi.view").new(),

@@ -1,7 +1,10 @@
 --- baseline AI
 ---@class KoiKoi.RandomBrain : KoiKoi.IBrain
 ---@field koikoiChance number
----@field waitRange number[]? wait range
+---@field meaninglessDiscardChance number
+---@field waitHand KoiKoi.AI.WaitRange?
+---@field waitDrawn KoiKoi.AI.WaitRange?
+---@field waitCalling KoiKoi.AI.WaitRange?
 ---@field timer number
 ---@field wait number?
 local this = {}
@@ -13,15 +16,20 @@ local logger = require("Hanafuda.logger")
 
 ---@class KoiKoi.RandomBrain.Params
 ---@field koikoiChance number?
----@field waitRange number[]?
+---@field meaninglessDiscardChance number?
+---@field waitHand KoiKoi.AI.WaitRange?
+---@field waitDrawn KoiKoi.AI.WaitRange?
+---@field waitCalling KoiKoi.AI.WaitRange?
 
 ---@param params KoiKoi.RandomBrain.Params
 ---@return KoiKoi.RandomBrain
 function this.new(params)
     local instance = brain.new({
-        --allowDiscard = false,
         koikoiChance = params.koikoiChance ~= nil and params.koikoiChance or 0.3,
-        waitRange = params.waitRange,
+        meaninglessDiscardChance = params.meaninglessDiscardChance ~= nil and params.meaninglessDiscardChance or 0,
+        waitHand = params.waitHand,
+        waitDrawn = params.waitDrawn,
+        waitCalling = params.waitCalling,
         timer = 0,
         wait = nil,
     })
@@ -51,24 +59,34 @@ local function Match(cardId, ground)
 end
 
 ---@param self KoiKoi.RandomBrain
----@param p KoiKoi.AI.Params
----@return KoiKoi.MatchCommand?
-function this.Simulate(self, p)
-    --[[
-    if self.waitRange then
+---@param waitRange KoiKoi.AI.WaitRange?
+---@param deltaTime number
+---@return boolean
+function this.Wait(self, waitRange, deltaTime)
+    local w = waitRange
+    if w then
         if self.wait == nil then
             self.timer = 0
-            self.wait = math.random() * (self.waitRange[2]- self.waitRange[1]) + self.waitRange[1]
+            self.wait = math.random() * (w.e - w.s) + w.s
             logger:trace(string.format("wait for %f seconds", self.wait))
         end
         if self.timer < self.wait then
-            self.timer = self.timer + p.deltaTime
-            return nil -- feigning thinking
+            self.timer = self.timer + deltaTime
+            return true -- feigning thinking
         end
     end
-    ]]
+    return false
+end
 
+---@param self KoiKoi.RandomBrain
+---@param p KoiKoi.AI.Params
+---@return KoiKoi.MatchCommand?
+function this.Simulate(self, p)
     if p.drawnCard then
+        if self:Wait(self.waitDrawn, p.deltaTime) then
+            return nil
+        end
+
         local matched = Match(p.drawnCard, p.groundPool)
         if table.size(matched) > 0 then
             local id = matched[math.random(1, table.size(matched))]
@@ -81,6 +99,20 @@ function this.Simulate(self, p)
         self.wait = nil
         return { selectedCard = p.drawnCard, matchedCard = nil } -- discard
     else
+        if self:Wait(self.waitHand, p.deltaTime) then
+            return nil
+        end
+
+        if self.meaninglessDiscardChance > 0 and self.meaninglessDiscardChance > math.random() then
+            -- try meaningless discard
+            if table.size(p.pool.hand) > 0 then
+                local id = p.pool.hand[math.random(1, table.size(p.pool.hand))]
+                logger:trace(string.format("meaningless discard selectedCard = %d", id))
+                self.wait = nil
+                return { selectedCard = id, matchedCard = nil } -- discard
+            end
+        end
+
         local allMatches = {} ---@type integer[][]
         for _, hand in ipairs(p.pool.hand) do
             local matched = Match(hand, p.groundPool)
@@ -116,6 +148,10 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
+    if self:Wait(self.waitCalling, p.deltaTime) then
+        return nil
+    end
+
     local k = math.random() < self.koikoiChance
     logger:trace(k and "koikoi" or "shobu")
     return { calling = k and koi.calling.koikoi or koi.calling.shobu }
