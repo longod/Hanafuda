@@ -56,9 +56,10 @@ local npcs = {
     ["Tienius Delitian"] = false,
     -- bloodmoon
     ["falx carius"] = false,
-    ["tharsten heart-fang"] = true,
+    ["tharsten heart-fang"] = false,
     ["tharsten heart-fang2"] = false,
     -- notable npcs
+    ["chargen name"] = true, -- jiub
     ["fargoth"] = true,
     ["nelos onmar"] = true,
     ["baladas demnevanni"] = true,

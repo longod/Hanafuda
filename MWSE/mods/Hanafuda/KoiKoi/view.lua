@@ -362,6 +362,7 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowNoMatch(self, parent, service)
+    -- TODO ok confirm
     tes3.messageBox(i18n("koi.view.drawRound"))
     service:NotifyRoundFinished()
 end
@@ -370,6 +371,7 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
+    -- TODO ok confirm
     local name = self.names[player]
     tes3.messageBox(i18n("koi.view.winRound", {name}))
     service:NotifyRoundFinished()
