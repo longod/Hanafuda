@@ -16,8 +16,9 @@ this.se = {
 this.voice = {
     continue = 1, -- koi-koi
     finish = 2, -- shobu
-    -- lose responce
-    -- thinking etc
+    loseRound = 3,
+    winGame = 4,
+    think = 5,
 }
 
 ---@enum MusicId
@@ -277,6 +278,25 @@ local voiceData = {
     },
 }
 
+-- special
+---@type {[string] : {[VoiceId] : string[]}} race, sex, VoiceId, file excluding directory
+local creatures = {
+    ["dagoth_ur_1"] = {
+        [this.voice.continue] = {
+            "vo\\misc\\Hit_DU011.mp3",
+        },
+        [this.voice.finish] = {
+            "vo\\misc\\Hit_DU002.mp3",
+            "vo\\misc\\Hit_DU005.mp3",
+        },
+        [this.voice.loseRound] = {
+            "vo\\misc\\Hit Heart 1.mp3",
+            "vo\\misc\\Hit Heart 4.mp3",
+            "vo\\misc\\Hit Heart 6.mp3",
+        },
+    }
+}
+
 local soundGenData = {
     [this.voice.continue] = { gen = tes3.soundGenType.moan },
     [this.voice.finish] = { gen = tes3.soundGenType.roar },
@@ -324,8 +344,8 @@ function this.Play(id)
 end
 
 ---@param id VoiceId
----@param race string -- todo
----@param female boolean -- todo
+---@param race string
+---@param female boolean
 local function PlayVoice(id, race, female)
     if not tes3.onMainMenu() then
         local r = voiceData[string.lower(race)]
@@ -336,9 +356,9 @@ local function PlayVoice(id, race, female)
         if not s then
             return
         end
-        local data = s[id]
-        if data then
-            local file = table.choice(data)
+        local voice = s[id]
+        if voice then
+            local file = table.choice(voice)
             local path = GenerateVoicePath(race, female) .. file
             tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
         end
@@ -350,15 +370,21 @@ end
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
-        -- TODO unique character/creature
-        -- https://en.uesp.net/wiki/Morrowind:Special_Creatures
-        -- https://en.uesp.net/wiki/Tribunal:Special_Creatures
-        -- https://en.uesp.net/wiki/Bloodmoon:Creatures
 
         local types = {
             [tes3.actorType.creature] =
             ---@param m tes3mobileCreature
             function(m)
+                local sp = creatures[m.object.baseObject.id]
+                if sp then
+                    local voice = sp[id]
+                    if voice then
+                        local path = table.choice(voice)
+                        tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+                        return
+                    end
+                end
+
                 local soundCreature = m.object.baseObject
                 local data = soundGenData[id]
                 if soundCreature and data then
@@ -371,11 +397,13 @@ function this.PlayVoice(id, mobile)
             [tes3.actorType.npc] =
             ---@param m tes3mobileNPC
             function(m)
+                -- todo special npc if exists
                 PlayVoice(id, m.object.race.id, m.object.female)
             end,
             [tes3.actorType.player] =
             ---@param m tes3mobilePlayer
             function(m)
+                -- todo disable by config
                 PlayVoice(id, m.object.race.id, m.object.female)
             end,
         }

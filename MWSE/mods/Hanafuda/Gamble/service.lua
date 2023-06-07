@@ -301,6 +301,7 @@ local function ActorCanPerformService(mobile)
     }
     for _, value in ipairs(condition) do
         if mobile[value] then
+            logger:trace(value)
             return false
         end
     end
