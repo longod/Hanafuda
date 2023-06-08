@@ -113,16 +113,18 @@ function this.Simulate(self, p)
             end
         end
 
+        local hands = {} ---@type integer[]
         local allMatches = {} ---@type integer[][]
         for _, hand in ipairs(p.pool.hand) do
             local matched = Match(hand, p.groundPool)
             if table.size(matched) > 0 then
+                table.insert(hands, hand)
                 table.insert(allMatches, matched)
             end
         end
-        if table.size(allMatches) > 0 then
-            local index = math.random(1, table.size(allMatches))
-            local hand = p.pool.hand[index]
+        if table.size(hands) > 0 then
+            local index = math.random(1, table.size(hands))
+            local hand = hands[index]
             local matched = allMatches[index]
             local id = matched[math.random(1, table.size(matched))]
             logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))

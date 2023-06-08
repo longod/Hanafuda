@@ -360,7 +360,7 @@ function Service.OnEnterFrame(self, e)
                     -- message? or other notify
                     self.view:ShowCombo(self.game.current, self, combo, basePoint, multiplier)
                 else
-                    self.view:ShowCallingDialog(self.game.current, self, combo, basePoint, multiplier) -- todo and combo
+                    self.view:ShowCallingDialog(self.game.current, self, combo, basePoint, multiplier)
                 end
             else
                 -- no comb
@@ -376,7 +376,8 @@ function Service.OnEnterFrame(self, e)
             if command then
                 self:RequestPhase(phase.callingWait)
                 self.lastCommand = command
-                self.view:ShowCalling(self.game.current, self, command.calling)
+                local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)
+                self.view:ShowCalling(self.game.current, self, command.calling, basePoint * multiplier)
             else
                 self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
             end

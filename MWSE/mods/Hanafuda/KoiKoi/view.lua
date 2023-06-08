@@ -391,11 +391,11 @@ end
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 ---@param calling KoiKoi.Calling
-function View.ShowCalling(self, player, service, calling)
-    -- todo show earn point if shobu?
+---@param point integer
+function View.ShowCalling(self, player, service, calling, point)
     local name = self.names[player]
     tes3.messageBox({
-        message = calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name}),
+        message = calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name, point}),
         buttons = {
             tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
         },
@@ -423,7 +423,7 @@ local timer = 0
 function View.ThinkMatchingHand(self, player, isAI, deltaTime)
     -- todo idle reactions
     timer = timer + deltaTime
-    if timer > 6 then
+    if timer > 30 then
         if isAI then
             sound.PlayVoice(sound.voice.think, self.mobile[player])
         else
@@ -438,6 +438,7 @@ end
 ---@param deltaTime number
 function View.ThinkMatchingDrawn(self, player, isAI, deltaTime)
     -- todo idle reactions
+    --[[
     timer = timer + deltaTime
     if timer > 6 then
         if isAI then
@@ -447,6 +448,7 @@ function View.ThinkMatchingDrawn(self, player, isAI, deltaTime)
         end
         timer = 0
     end
+    ]]
 end
 
 ---@param self KoiKoi.View
@@ -455,6 +457,7 @@ end
 ---@param deltaTime number
 function View.ThinkCalling(self, player, isAI, deltaTime)
     -- todo idle reactions
+    --[[
     timer = timer + deltaTime
     if timer > 6 then
         if isAI then
@@ -464,6 +467,7 @@ function View.ThinkCalling(self, player, isAI, deltaTime)
         end
         timer = 0
     end
+    ]]
 end
 
 --- custom block has max width. and it excluding frame size...

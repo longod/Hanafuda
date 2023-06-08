@@ -57,6 +57,9 @@ function this.Run(self)
                 -- todo com:Execute()
                 if command.selectedCard and command.matchedCard then
                     -- match
+                    if not koi.CanMatchSuit(command.selectedCard, command.matchedCard) then
+                        logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
+                    end
                     self.game:Capture(self.game.current, command.selectedCard, false, false)
                     self.game:Capture(self.game.current, command.matchedCard, true, false)
                 elseif not command.matchedCard then
@@ -79,6 +82,9 @@ function this.Run(self)
                 -- todo com:Execute()
                 if command.selectedCard and command.matchedCard then
                     -- match
+                    if not koi.CanMatchSuit(command.selectedCard, command.matchedCard) then
+                        logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
+                    end
                     self.game:Capture(self.game.current, command.selectedCard, false, true)
                     self.game:Capture(self.game.current, command.matchedCard, true, true)
                 elseif not command.matchedCard then
