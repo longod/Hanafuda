@@ -298,15 +298,21 @@ this.voiceData = {
 this.creatures = {
     ["dagoth_ur_1"] = {
         [this.voice.continue] = {
+            "vo\\misc\\Hit_DU006.mp3",
+            "vo\\misc\\Hit_DU007.mp3",
             "vo\\misc\\Hit_DU011.mp3",
         },
         [this.voice.finish] = {
             "vo\\misc\\Hit_DU002.mp3",
+            "vo\\misc\\Hit_DU004.mp3",
         },
         [this.voice.loseRound] = {
             "vo\\misc\\Hit Heart 1.mp3",
+            "vo\\misc\\Hit Heart 2.mp3",
             "vo\\misc\\Hit Heart 4.mp3",
+            "vo\\misc\\Hit Heart 5.mp3",
             "vo\\misc\\Hit Heart 6.mp3",
+            "vo\\misc\\Hit_DU012.mp3",
         },
         [this.voice.winGame] = {
             "vo\\misc\\Hit_DU005.mp3",
@@ -316,7 +322,12 @@ this.creatures = {
             "vo\\misc\\Hit_DU003.mp3",
         },
         [this.voice.remind] = {
+            "vo\\misc\\Dagoth Ur Taunt 1.mp3",
             "vo\\misc\\Dagoth Ur Taunt 3.mp3",
+            "vo\\misc\\Dagoth Ur Taunt 4.mp3",
+            "vo\\misc\\Dagoth Ur Taunt 6.mp3",
+            "vo\\misc\\Dagoth Ur Taunt 7.mp3",
+            "vo\\misc\\Hit_DU010.mp3",
         },
     }
 }

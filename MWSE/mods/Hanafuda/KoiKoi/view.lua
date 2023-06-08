@@ -113,8 +113,11 @@ local function FlipCard(element)
     image.scaleMode = true
     image.consumeMouseEvents = false
 
-    -- todo register/unregister event
-
+    element:unregister(tes3.uiEvent.help)
+    element:register(tes3.uiEvent.help,
+    function(_)
+        ui.CreateCardTooltip(cardId, false)
+    end)
     return element
 end
 
@@ -673,9 +676,18 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
     assert(gameMenu)
     local g0 = gameMenu:findChild(uiid.boardGroundRow0)
     local g1 = gameMenu:findChild(uiid.boardGroundRow1)
-    -- todo need tooltip
     local c0 = PutCard(g0, cardId0, true, true)
     local c1 = PutCard(g1, cardId1, true, true)
+    c0:register(tes3.uiEvent.help,
+    function(_)
+        local tooltip = tes3ui.createTooltipMenu()
+        tooltip:createLabel({ text = i18n("koi.view.decideParentTooltip") })
+    end)
+    c1:register(tes3.uiEvent.help,
+    function(_)
+        local tooltip = tes3ui.createTooltipMenu()
+        tooltip:createLabel({ text = i18n("koi.view.decideParentTooltip") })
+    end)
     c0:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
@@ -684,6 +696,9 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         FlipCard(c1)
         UnregisterEvents(c0)
         UnregisterEvents(c1)
+        -- no tooltips after flipped
+        c0:unregister(tes3.uiEvent.help)
+        c1:unregister(tes3.uiEvent.help)
         sound.Play(sound.se.pickCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId0
@@ -697,6 +712,9 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         FlipCard(c1)
         UnregisterEvents(c0)
         UnregisterEvents(c1)
+        -- no tooltips after flipped
+        c0:unregister(tes3.uiEvent.help)
+        c1:unregister(tes3.uiEvent.help)
         sound.Play(sound.se.pickCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId1
