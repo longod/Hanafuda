@@ -7,33 +7,35 @@ local config = require("Hanafuda.config")
 local phase = {
     new = 1,
     initialized = 2,
-    decidingParent = 3,
-    decidedParent = 4,
-    decidedParentWait = 5,
-    setupRound = 6,
-    dealingInitial = 7,
-    checkLuckyHands = 8,
-    beginTurn = 9,
-    matchCard = 10, -- rename
-    matchCardFlip = 11, -- rename
-    matchCardFlipWait = 12, -- rename
-    matchCardWait = 13, -- rename
-    drawCard = 14, -- rename
-    drawCardWait = 15, -- rename
-    matchDrawCard = 16, -- rename
-    matchDrawCardWait = 17, -- rename
-    checkCombo = 18,
-    checkComboWait = 19,
-    calling = 20,
-    endTurn = 21,
-    noMatch = 22,
-    win = 23,
-    roundFinished = 24,
-    gameFinished = 25,
-    resultWait = 26,
-    terminate = 27,
+    decidingParent = 10,
+    decidedParent = 11,
+    decidedParentWait = 12,
+    setupRound = 20,
+    dealingInitial = 21,
+    checkLuckyHands = 22,
+    beginTurn = 30,
+    matchCard = 40, -- rename
+    matchCardFlip = 41, -- rename
+    matchCardFlipWait = 42, -- rename
+    matchCardWait = 43, -- rename
+    drawCard = 50, -- rename
+    drawCardWait = 51, -- rename
+    matchDrawCard = 52, -- rename
+    matchDrawCardWait = 53, -- rename
+    checkCombo = 60,
+    checkComboWait = 61,
+    calling = 70,
+    callingWait = 71,
+    endTurn = 72,
+    noMatch = 80,
+    win = 81,
+    roundResultWait = 82,
+    roundFinished = 83,
+    gameFinished = 90,
+    resultWait = 91,
+    terminate = 100,
 
-    wait = 100,
+    wait = 1000,
 }
 
 ---@class KoiKoi.ExitStatus
@@ -273,6 +275,7 @@ function Service.OnEnterFrame(self, e)
                 -- if no brain
                 -- tes3.messageBox("match in your hand or discard")
                 -- self:RequestPhase(phase.matchCardWait)
+                self.view:ThinkMatchingHand(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
             end
         end,
         [phase.matchCardFlip] = function()
@@ -341,6 +344,7 @@ function Service.OnEnterFrame(self, e)
                 -- if no brain
                 -- tes3.messageBox("draw card and match it or discard")
                 -- self:RequestPhase(phase.matchDrawCardWait)
+                self.view:ThinkMatchingDrawn(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta)
             end
         end,
         [phase.matchDrawCardWait] = function()
@@ -349,6 +353,7 @@ function Service.OnEnterFrame(self, e)
             local combo = self.game:CheckCombination(self.game.current)
             -- fixme if called koi-koi the combination is subtract before combination
             if combo then
+                self:RequestPhase(phase.checkComboWait)
                 local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)
                 if self.game.brains[self.game.current] then
                     -- message? or other notify
@@ -356,20 +361,27 @@ function Service.OnEnterFrame(self, e)
                 else
                     self.view:ShowCallingDialog(self.game.current, self, combo, basePoint, multiplier) -- todo and combo
                 end
-                self:RequestPhase(phase.checkComboWait)
             else
                 -- no comb
                 self:RequestPhase(phase.endTurn)
             end
         end,
         [phase.checkComboWait] = function()
+            -- wait for pc calling
+            self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
         end,
         [phase.calling] = function()
             local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp) -- fixme combinations uses accessor
             if command then
+                self:RequestPhase(phase.callingWait)
                 self.lastCommand = command
                 self.view:ShowCalling(self.game.current, self, command.calling)
+            else
+                self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
             end
+        end,
+        [phase.callingWait] = function()
+            -- wait view
         end,
         [phase.endTurn] = function()
             if self.game:CheckEnd() then
@@ -381,14 +393,19 @@ function Service.OnEnterFrame(self, e)
             end
         end,
         [phase.noMatch] = function()
+            self:RequestPhase(phase.roundResultWait)
             self.view:ShowNoMatch(self.game.parent, self)
             -- TODO draw or parent win (house rule)
         end,
         [phase.win] = function()
+            self:RequestPhase(phase.roundResultWait)
             self.view:ShowWin(self.game.current, self)
             -- win current player
             self.game:SetRoundWinner(self.game.current)
             self.view:UpdateScorePoint(self.game.current, self.game.points[self.game.current])
+        end,
+        [phase.roundResultWait] = function()
+            --wait
         end,
         [phase.roundFinished] = function ()
             if self.game:NextRound() then

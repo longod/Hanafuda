@@ -37,7 +37,6 @@ assert(blueRibbon and table.size(blueRibbon) == 3)
 ---@return tes3uiElement
 function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, cardScale, summary)
     --local indent = 0
-    --local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
     local block = parent:createBlock()
     block.flowDirection = tes3.flowDirection.topToBottom
     block.widthProportional = 1
@@ -596,7 +595,7 @@ function this.CreateCardTooltip(cardId, backface)
         thumb.scaleMode = true
         local ref = card.GetCardData(cardId)
         local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
-        name.color = tes3ui.getPalette(tes3.palette.headerColor)
+        name.color = headerColor
         tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
         local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
         type.color = card.GetCardTypeColor(ref.type)
@@ -619,9 +618,9 @@ end
 ---@return tes3uiElement tooltip
 function this.CreateDeckTooltip(deck)
     local tooltip = tes3ui.createTooltipMenu()
-    tooltip:createLabel({ text = "Deck" })
+    local header = tooltip:createLabel({ text = "Deck" })
+    header.color = headerColor
     local label = tooltip:createLabel({ text = i18n("koi.deck.remain", { table.size(deck) }) })
-    label.color = tes3ui.getPalette(tes3.palette.headerColor)
     return tooltip
 end
 

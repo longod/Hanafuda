@@ -322,6 +322,7 @@ function View.ShowResult(self, service, player, points)
             header = i18n("koi.view.loseGame", {name})
             sound.PlayMusic(sound.music.lose)
         end
+        sound.PlayVoice(sound.voice.winGame, self.mobile[player])
     end
 
     tes3ui.showMessageMenu({
@@ -362,18 +363,27 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowNoMatch(self, parent, service)
-    -- TODO ok confirm
-    tes3.messageBox(i18n("koi.view.drawRound"))
-    service:NotifyRoundFinished()
+    tes3.messageBox({
+        message = i18n("koi.view.drawRound"),
+        buttons = {
+            tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
+        },
+        callback =
+        function(btnCallbackData)
+            if btnCallbackData.button == 0 then
+                service:NotifyRoundFinished()
+            end
+        end,
+    })
 end
 
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
-    -- TODO ok confirm
     local name = self.names[player]
     tes3.messageBox(i18n("koi.view.winRound", {name}))
+    sound.PlayVoice(sound.voice.loseRound, self.mobile[koi.GetOpponent(player)]) -- ovrelap previous voice?
     service:NotifyRoundFinished()
 end
 
@@ -382,14 +392,78 @@ end
 ---@param service KoiKoi.Service
 ---@param calling KoiKoi.Calling
 function View.ShowCalling(self, player, service, calling)
+    -- todo show earn point if shobu?
     local name = self.names[player]
-    tes3.messageBox(calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name}) )
+    tes3.messageBox({
+        message = calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name}),
+        buttons = {
+            tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
+        },
+        callback =
+        function(btnCallbackData)
+            if btnCallbackData.button == 0 then
+                service:NotifyCalling(calling)
+            end
+        end,
+    })
     if calling == koi.calling.koikoi then
         sound.PlayVoice(sound.voice.continue, self.mobile[player])
     elseif calling == koi.calling.shobu then
         sound.PlayVoice(sound.voice.finish, self.mobile[player])
     end
-    service:NotifyCalling(calling)
+end
+
+
+local timer = 0
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param isAI boolean
+---@param deltaTime number
+function View.ThinkMatchingHand(self, player, isAI, deltaTime)
+    -- todo idle reactions
+    timer = timer + deltaTime
+    if timer > 6 then
+        if isAI then
+            sound.PlayVoice(sound.voice.think, self.mobile[player])
+        else
+            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
+        end
+        timer = 0
+    end
+end
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param isAI boolean
+---@param deltaTime number
+function View.ThinkMatchingDrawn(self, player, isAI, deltaTime)
+    -- todo idle reactions
+    timer = timer + deltaTime
+    if timer > 6 then
+        if isAI then
+            sound.PlayVoice(sound.voice.think, self.mobile[player])
+        else
+            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
+        end
+        timer = 0
+    end
+end
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param isAI boolean
+---@param deltaTime number
+function View.ThinkCalling(self, player, isAI, deltaTime)
+    -- todo idle reactions
+    timer = timer + deltaTime
+    if timer > 6 then
+        if isAI then
+            sound.PlayVoice(sound.voice.think, self.mobile[player])
+        else
+            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
+        end
+        timer = 0
+    end
 end
 
 --- custom block has max width. and it excluding frame size...
@@ -440,7 +514,6 @@ end
 function View.ShowCallingDialog(self, player, service, combo, basePoint, multiplier)
     local total = basePoint * multiplier
 
-    -- todo show multipiled score
     tes3ui.showMessageMenu({
         header = i18n("koi.view.callingHeader", {self.names[player]}),
         message = i18n("koi.view.callingMessage" , {total, basePoint, multiplier}),
@@ -603,6 +676,8 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         -- Good with weights and animations, but hard without coroutine
         FlipCard(c0)
         FlipCard(c1)
+        UnregisterEvents(c0)
+        UnregisterEvents(c1)
         sound.Play(sound.se.pickCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId0
@@ -614,6 +689,8 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         -- Good with weights and animations, but hard without coroutine
         FlipCard(c0)
         FlipCard(c1)
+        UnregisterEvents(c0)
+        UnregisterEvents(c1)
         sound.Play(sound.se.pickCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId1
@@ -628,6 +705,7 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.InformParent(self, parent, service)
+    -- todo more rich
     tes3.messageBox({
         message = i18n("koi.view.informParent", { self.names[parent], self.names[koi.GetOpponent(parent)] }),
         buttons = { tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] },
