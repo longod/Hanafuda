@@ -28,6 +28,7 @@ local houseRule = require("Hanafuda.KoiKoi.houseRule")
 ---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@field points { KoiKoi.Player : integer }
 ---@field calls { KoiKoi.Player : integer }
+---@field decidingParentCardId integer?
 ---@field decidingParent integer[] card deck
 local KoiKoi = {}
 
@@ -75,6 +76,7 @@ local defaults = {
         [koi.player.you] = 0,
         [koi.player.opponent] = 0,
     },
+    decidingParentCardId = nil,
     decidingParent = {},
 }
 
@@ -169,6 +171,7 @@ function KoiKoi.DecideParent(self, selectedCardId)
         end
     end
 
+    self.decidingParentCardId = selectedCardId
     self.parent = selectedCardId == most and koi.player.you or koi.player.opponent
     --self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent

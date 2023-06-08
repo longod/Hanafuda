@@ -588,14 +588,15 @@ function this.CreateCardTooltip(cardId, backface)
         tooltip:createLabel({ text = i18n("koi.opponentCard") })
     else
         tooltip = tes3ui.createTooltipMenu()
+        tooltip.flowDirection = tes3.flowDirection.leftToRight
         local asset = card.GetCardAsset(cardId)
+        local ref = card.GetCardData(cardId)
+        local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
+        name.color = headerColor
         local thumb = tooltip:createImage({ path = asset.path })
         thumb.width = card.GetCardWidth() * 2
         thumb.height = card.GetCardHeight() * 2
         thumb.scaleMode = true
-        local ref = card.GetCardData(cardId)
-        local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
-        name.color = headerColor
         tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
         local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
         type.color = card.GetCardTypeColor(ref.type)

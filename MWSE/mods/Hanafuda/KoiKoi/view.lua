@@ -661,6 +661,8 @@ end
 
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
+---@param cardId0 integer
+---@param cardId1 integer
 function View.CreateDecidingParent(self, service, cardId0, cardId1)
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -704,18 +706,82 @@ end
 ---@param self KoiKoi.View
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
-function View.InformParent(self, parent, service)
-    -- todo more rich
-    tes3.messageBox({
-        message = i18n("koi.view.informParent", { self.names[parent], self.names[koi.GetOpponent(parent)] }),
-        buttons = { tes3.findGMST(tes3.gmst.sOK).value --[[@as string]] },
-        callback =
-            function(btnCallbackData)
-                if btnCallbackData.button == 0 then
-                    service:NotifyInformParent()
+---@param selectedId integer
+---@param cardId0 integer
+---@param cardId1 integer
+function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
+    local unselectedId = selectedId == cardId0 and cardId1 or cardId0
+
+    tes3ui.showMessageMenu({
+        header = i18n("koi.view.informParentHeader", { self.names[parent] }),
+        message = i18n("koi.view.informParentMessage"),
+        buttons = {
+            {
+                text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
+                callback = function()
+                    if service then
+                        service:NotifyInformParent()
+                    end
+                end,
+            },
+        },
+        customBlock =
+        ---@param element tes3uiElement
+        function(element)
+            element.widthProportional = 1
+            local maxWidth = ComputeParentMaxWidth(element)
+            local function Create(cardId, name)
+                local block = element:createBlock()
+                block.flowDirection = tes3.flowDirection.leftToRight
+                block.widthProportional = 1
+                block.autoWidth = true
+                block.autoHeight = true
+                --block.borderAllSides = 8
+                block.paddingAllSides = 0
+                -- block.paddingLeft = 8
+                -- block.paddingRight = 8
+                if maxWidth then
+                    block.maxWidth = maxWidth
                 end
-            end,
+                local scale = 1
+                local asset = card.GetCardAsset(cardId)
+                local ref = card.GetCardData(cardId)
+                local b = block:createBlock()
+                b.borderAllSides = 2
+                b.autoWidth = true
+                b.autoHeight = true
+                b.flowDirection = tes3.flowDirection.topToBottom
+                --b.childAlignX = 0.5
+                local image = b:createImage({ path = asset.path })
+                image.width = card.GetCardWidth() * scale
+                image.height = card.GetCardHeight() * scale
+                image.scaleMode = true
+                image.consumeMouseEvents = false
+                --image.borderAllSides = 2
+                image.flowDirection = tes3.flowDirection.topToBottom
+                b:register(tes3.uiEvent.help,
+                    function(_)
+                        ui.CreateCardTooltip(cardId, false)
+                    end)
+                local t = block:createBlock()
+                t.borderAllSides = 2
+                t.autoWidth = true
+                t.autoHeight = true
+                t.flowDirection = tes3.flowDirection.topToBottom
+                t:createLabel({ text = i18n("koi.view.informParentPick", {name})})
+                local l = t:createLabel({ text = card.GetCardText(cardId).name })
+                l.color = tes3ui.getPalette(tes3.palette.headerColor)
+                t:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
+                local type = t:createLabel({ text = card.GetCardTypeText(ref.type).name })
+                type.color = card.GetCardTypeColor(ref.type)
+            end
+            Create(selectedId, self.names[koi.player.you])
+            Create(unselectedId, self.names[koi.player.opponent])
+            element:createDivider().widthProportional = 1.0
+
+        end
     })
+
     self:UpdateParent(parent)
 end
 

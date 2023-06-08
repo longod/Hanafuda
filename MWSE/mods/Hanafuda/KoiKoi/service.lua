@@ -220,7 +220,8 @@ function Service.OnEnterFrame(self, e)
         [phase.decidedParent] = function()
             logger:info("inform parent %d", self.game.parent)
             self:RequestPhase(phase.decidedParentWait)
-            self.view:InformParent(self.game.parent, self)
+            local cards = self.game.decidingParent
+            self.view:InformParent(self.game.parent, self, self.game.decidingParentCardId, cards[1], cards[2])
         end,
         [phase.decidedParentWait] = function()
             -- wait for view
