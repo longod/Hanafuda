@@ -28,9 +28,11 @@ local defaultConfig = {
             -- wild card
         },
     },
-    -- audio = {
-    --     volume = 100,
-    -- },
+    audio = {
+        --volume = 100,
+        playerVoice = true,
+        opponentVoice = true,
+    },
     development = {
         logLevel = "INFO",
         logToConsole = false,

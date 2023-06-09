@@ -3,10 +3,10 @@ local this = {}
 local logger = require("Hanafuda.logger")
 local special = require("Hanafuda.Gamble.special")
 
----@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
-function this.CanBarter(actor)
-    local ai = actor.object.aiConfig
+function this.CanBarter(mobile)
+    local ai = mobile.object.aiConfig
     local barters = {
         "bartersAlchemy",
         "bartersApparatus",
@@ -30,10 +30,10 @@ function this.CanBarter(actor)
     return false
 end
 
----@param actor tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return integer
-function this.GetActorGold(actor)
-    local gold = actor.barterGold
+function this.GetActorGold(mobile)
+    local gold = mobile.barterGold
 
     local goldId = {
         ["Gold_001"] = true,
@@ -43,7 +43,7 @@ function this.GetActorGold(actor)
         ["Gold_100"] = true,
     }
 
-    local items = actor.inventory
+    local items = mobile.inventory
     for _, item in ipairs(items) do
         if goldId[item.object.id] then
             gold = gold + item.object.value * item.count

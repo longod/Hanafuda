@@ -275,10 +275,38 @@ local function CaptureCard(element, player)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local to = gameMenu:findChild(dest)
-
+    assert(to)
     local moved = element:move({ to = to })
     -- todo scale or overlap
     SetCardColor(moved, true)
+
+    -- Overlap placement if it does not fit
+    gameMenu:updateLayout() -- calculate after moved
+    local merginL = to.paddingLeft or to.paddingAllSides
+    local merginR = to.paddingRight or to.paddingAllSides
+    local availableWidth = to.width - merginL - merginR
+
+    -- Assuming the same width, there is no need to do so. In fact, they are the same width.
+    local requiredWidth = 0
+    for _, child in ipairs(to.children) do
+        requiredWidth = requiredWidth + child.width
+        requiredWidth = requiredWidth + (child.borderLeft or child.borderAllSides)
+        requiredWidth = requiredWidth + (child.borderRight or child.borderAllSides)
+    end
+    if requiredWidth > availableWidth then
+        local count = table.size(to.children)
+        assert(count > 0)
+        local average = requiredWidth / count
+        local interval = (availableWidth - average ) / (count - 1)
+        for index, child in ipairs(to.children) do
+            child.borderAllSides = 0
+            child.borderLeft = nil
+            child.borderRight = nil
+            child.ignoreLayoutX = true
+            child.positionX = math.floor(interval * (index - 1))
+        end
+    end
+
     return moved
 end
 
@@ -1723,14 +1751,16 @@ function View.OpenGameMenu(self, id, service)
     return menu
 end
 
+
+local testShowDialog = nil ---@type fun(e:keyDownEventData)?
+local testCapture = nil ---@type fun(e:keyDownEventData)?
+
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 function View.Initialize(self, service)
     -- driver for testing
     if config.development.debug then
-        event.register(tes3.event.keyDown,
-        ---@param e keyDownEventData
-        function(e)
+        testShowDialog = function(_)
             local combo ={
                 [koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights],
                 [koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly],
@@ -1742,8 +1772,17 @@ function View.Initialize(self, service)
             }
 
             self:ShowCallingDialog(koi.player.you, nil, combo, 12, 2)
-            --self:ShowCombo(koi.player.you, nil, combo, 12, 2) -- fixme calculate actual points
-        end, {filter = tes3.scanCode.c} )
+            --self:ShowCombo(koi.player.you, nil, combo, 12, 2)
+        end
+        event.register(tes3.event.keyDown, testShowDialog, {filter = tes3.scanCode.c} )
+
+        testCapture = function(_)
+            local m = tes3ui.findMenu(uiid.gameMenu)
+            assert(m)
+            CaptureCard(PutCard(m, 4, false), koi.player.opponent)
+            m:updateLayout()
+        end
+        event.register(tes3.event.keyDown, testCapture, {filter = tes3.scanCode.z} )
     end
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -1763,6 +1802,16 @@ function View.Shutdown(self)
     if gameMenu then
         gameMenu:destroy()
         tes3ui.leaveMenuMode()
+    end
+
+    -- unregister debug key events
+    if testShowDialog then
+        event.unregister(tes3.event.keyDown, testShowDialog, {filter = tes3.scanCode.c})
+        testShowDialog = nil
+    end
+    if testCapture then
+        event.unregister(tes3.event.keyDown, testCapture, {filter = tes3.scanCode.z})
+        testCapture = nil
     end
 end
 

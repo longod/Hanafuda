@@ -555,14 +555,14 @@ end
 ---@param self KoiKoi.Service
 function Service.NotifyMatchedCards(self)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- hmm...
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- fixme bad conditions
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDiscardCard(self)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- hmm...
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- fixme bad conditions
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 

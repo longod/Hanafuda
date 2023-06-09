@@ -56,3 +56,6 @@ if config.development.unittest then
     dofile("Hanafuda/test.lua")
     dofile("Hanafuda/KoiKoi/test.lua")
 end
+
+--- HACK Since the annotation are not defined in MWSE, this is to supress the warning caused by this.
+--- @class tes3scriptVariables
