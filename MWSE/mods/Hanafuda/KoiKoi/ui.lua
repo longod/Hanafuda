@@ -260,6 +260,72 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
     return block
 end
 
+---@param parent tes3uiElement
+---@param luckyHands KoiKoi.LuckyHands
+---@param actualPoint integer?
+---@param maxWidth integer?
+---@return tes3uiElement
+function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
+    --local indent = 0
+    local block = parent:createBlock()
+    block.flowDirection = tes3.flowDirection.topToBottom
+    block.widthProportional = 1
+    block.autoWidth = true
+    block.autoHeight = true
+    --block.borderAllSides = 8
+    block.paddingAllSides = 0
+    block.paddingLeft = 8
+    block.paddingRight = 8
+    if maxWidth then
+        block.maxWidth = maxWidth
+    end
+
+    local desc = {
+        [koi.luckyHands.fourOfAKind] = {
+            name = i18n("koi.luckyHands.fourOfAKind.name"),
+            point = i18n("koi.luckyHands.fourOfAKind.point", { koi.luckyHandsPoint[koi.luckyHands.fourOfAKind] }),
+            condition = i18n("koi.luckyHands.fourOfAKind.condition"),
+        },
+        [koi.luckyHands.fourPairs] = {
+            name = i18n("koi.luckyHands.fourPairs.name"),
+            point = i18n("koi.luckyHands.fourPairs.point", { koi.luckyHandsPoint[koi.luckyHands.fourPairs] }),
+            condition = i18n("koi.luckyHands.fourPairs.condition"),
+        },
+    }
+
+    if desc[luckyHands] then
+        local d = desc[luckyHands]
+
+        local head = block:createBlock()
+        head.widthProportional = 1
+        head.autoHeight = true
+        local name = head:createLabel({ text = d.name })
+        name.color = headerColor
+        --name.borderLeft = indent
+        local right = head:createBlock()
+        right.widthProportional = 1
+        right.autoHeight = true
+        right.childAlignX = 1
+
+        if actualPoint then
+            local point = right:createLabel({ text = i18n("koi.point", { actualPoint }) })
+            --point.borderRight = indent * 2
+            --point.wrapText = true
+        else
+            local point = block:createLabel({ text = d.point })
+            --point.borderLeft = indent * 2
+            point.wrapText = true
+        end
+
+        local condition = block:createLabel({ text = d.condition })
+        --condition.borderLeft = indent * 2
+        condition.wrapText = true
+    else
+        logger:error("unknown luckyhands %u", luckyHands)
+    end
+    return block
+end
+
 ---@param e uiEventEventData
 function this.CreateCardList(e)
     local menu = tes3ui.findMenu(uiid.helpCardListMenu)
@@ -423,13 +489,28 @@ function this.CreateCombinationList(e)
     pane.widthProportional = 1
     pane.heightProportional = 1
 
+    -- combo
     local parent = pane:getContentElement()
+    local label = parent:createLabel({ text = i18n("koi.combinations.label") })
+    label.color = headerColor
+    label.borderAllSides = 0
+    label.borderTop = 8
+    label.borderBottom = 8
     for _, value in ipairs(table.values(koi.combination, true)) do
         this.CreateCombinationView(parent, value)
         parent:createDivider().widthProportional = 1.0
     end
 
-    -- TODO lucky hands list
+    -- luckyhands
+    label = parent:createLabel({ text = i18n("koi.luckyHands.label") })
+    label.color = headerColor
+    label.borderAllSides = 0
+    label.borderTop = 8
+    label.borderBottom = 8
+    for _, value in ipairs(table.values(koi.luckyHands, true)) do
+        this.CreateLuckyHandsView(parent, value)
+        parent:createDivider().widthProportional = 1.0
+    end
 
     local bottom = root:createBlock()
     bottom.widthProportional = 1

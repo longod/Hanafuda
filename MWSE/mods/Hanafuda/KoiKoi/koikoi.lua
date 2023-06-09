@@ -36,14 +36,13 @@ this.combination = {
     chaff = 13,
 }
 
--- todo tweak point including multiplier
 ---@type integer[]
 this.basePoint = {
     -- bright
-    15, -- if multipiler enabled 15 is too high.
+    10, -- if multipiler enabled 15 is too high.
     8,
     7,
-    6,
+    5, -- or 6
     -- animal
     5,
     1,

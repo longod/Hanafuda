@@ -209,12 +209,20 @@ end
 
 ---@param self KoiKoi
 ---@param player KoiKoi.Player
+---@return { [KoiKoi.LuckyHands] : integer }?
+---@return integer
 function KoiKoi.CheckLuckyHands(self, player)
     -- TODO in testing
     local lh = combination.CalculateLuckyHands(self.pools[player].hand, self.settings.houseRule)
-    if not lh then
+    local p = 0
+    if lh then
+        for key, value in pairs(lh) do
+            p = p + value
+        end
+    else
         logger:debug("%d is no lucky hands", player)
     end
+    return lh, p
 end
 
 ---@param self KoiKoi
@@ -445,6 +453,14 @@ function KoiKoi.SetRoundWinner(self, player)
 end
 
 ---@param self KoiKoi
+---@param player KoiKoi.Player
+---@param points integer
+function KoiKoi.SetRoundWinnerByLuckyHands(self, player, points)
+    self.points[player] = self.points[player] + points
+    self.parent = player
+end
+
+---@param self KoiKoi
 ---@return boolean
 function KoiKoi.NextRound(self)
     if self.round < self.settings.round then
@@ -460,7 +476,16 @@ end
 function KoiKoi.GetGameWinner(self)
     local a = self.points[koi.player.you]
     local b = self.points[koi.player.opponent]
-    local winner = (a == b) and nil or (a > b and koi.player.you or koi.player.opponent)
+    local winner = nil
+    if (a ~= b) then
+        if a > b then
+            winner = koi.player.you
+        else
+            winner = koi.player.opponent
+        end
+    end
+    logger:debug("score player %d, opponent %d", a, b)
+    logger:debug("winner " .. tostring(winner))
     return winner
 end
 

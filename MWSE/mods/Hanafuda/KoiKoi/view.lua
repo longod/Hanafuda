@@ -1183,6 +1183,67 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
 end
 
 ---@param self KoiKoi.View
+---@param luckyHands { [KoiKoi.Player] : { [KoiKoi.LuckyHands] : integer }? }
+---@param totalPoints { [KoiKoi.Player] : integer }
+---@param winner KoiKoi.Player?
+---@param service KoiKoi.Service
+function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
+    -- flip cards
+    local tie = winner == nil
+    if not tie and winner == koi.player.opponent then
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
+        --local ph = gameMenu:findChild(uiid.playerHand)
+        local oh = gameMenu:findChild(uiid.opponentHand)
+        if oh.children then
+            for _, child in ipairs(oh.children) do
+                FlipCard(child)
+            end
+            gameMenu:updateLayout()
+        end
+        sound.Play(sound.se.putCard)
+    end
+    if not tie then
+        sound.PlayVoice(sound.voice.remind, self.mobile[winner]) -- todo more better voice
+    end
+
+    tes3ui.showMessageMenu({
+        header = i18n("koi.view.luckyHands.label"),
+        message = tie and i18n("koi.view.drawRound") or i18n("koi.view.winRound", {self.names[winner]}),
+        buttons = {
+            {
+                text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
+                callback = function()
+                    service:NotifyLuckyHands()
+                end,
+            },
+        },
+        customBlock =
+        ---@param parent tes3uiElement
+        function(parent)
+            parent.widthProportional = 1
+            local maxWidth = ComputeParentMaxWidth(parent)
+            local p = koi.player.you
+            if luckyHands[p] then
+                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {self.names[p], totalPoints[p]})})
+                for _, value in ipairs(table.keys(luckyHands[p], true)) do
+                    ui.CreateLuckyHandsView(parent, value, luckyHands[p][value], maxWidth)
+                end
+                parent:createDivider().widthProportional = 1.0
+            end
+            p = koi.player.opponent
+            if luckyHands[p] then
+                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {self.names[p], totalPoints[p]})})
+                for _, value in ipairs(table.keys(luckyHands[p], true)) do
+                    ui.CreateLuckyHandsView(parent, value, luckyHands[p][value], maxWidth)
+                end
+                parent:createDivider().widthProportional = 1.0
+            end
+        end
+    })
+end
+
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
@@ -1601,7 +1662,7 @@ function View.CreateInfo(self, parent, service)
     on.autoHeight = true
     on:createLabel({id = uiid.opponentName, text = self.names[koi.player.opponent]}).color = header
     local opponentDealer = on:createLabel({id = uiid.opponentDealer, text = ""})
-    opponentDealer.borderLeft = 12
+    opponentDealer.borderLeft = 6
 
     local os = opponent:createBlock()
     os.autoWidth = true
@@ -1640,7 +1701,7 @@ function View.CreateInfo(self, parent, service)
     yn.autoHeight = true
     yn:createLabel({id = uiid.playerName, text = self.names[koi.player.you]}).color = header
     local playerDealer = yn:createLabel({id = uiid.playerDealer, text = ""})
-    playerDealer.borderLeft = 12
+    playerDealer.borderLeft = 6
 
     local ys = you:createBlock()
     ys.autoWidth = true

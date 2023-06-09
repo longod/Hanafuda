@@ -102,7 +102,8 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     ["koi.service.payout"] = "Minimum payout for conceding: %u",
     ["koi.koikoi"] = "Koi-Koi",
     ["koi.shobu"] = "Shobu",
-    ["koi.combinations"] = "Yaku",
+    ["koi.combinations.label"] = "Combinations", -- yaku
+    ["koi.luckyHands.label"] = "Lucky Hands", -- teyaku
     ["koi.opponentCard"] = "Opponent's card",
     ["koi.deck.name"] = "Deck",                 -- todo hanafuda -- todo plural
     ["koi.deck.remain"] = "%u cards remaining", -- todo hanafuda
@@ -128,7 +129,8 @@ The dealer shuffles the deck and after dealing 8 cards each to the players and t
     ["koi.help.rule.luckyHands.header"] = "Lucky Hands",
     ["koi.help.rule.luckyHands.description"] =
 [[After the cards are dealt, if the hand contains some combination of cards, the player reveals his or her cards to end the round.
-This is a compensation for a hand that is difficult to win even if the game continues.]],
+This is a compensation for a hand that is difficult to win even if the game continues.
+If both players hold lucky hands, this round is a tie and no score.]],
     ["koi.help.rule.turn.header"] = "Turns",
     ["koi.help.rule.turn.match.header"] = "Matching from the Hand",
     ["koi.help.rule.turn.match.description"] =
@@ -173,6 +175,9 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.exitMessage"] = "Exit and you lose.",
     ["koi.view.drawRound"] = "Draw in this round.",
     ["koi.view.winRound"] = "%s wins in this round.",
+    ["koi.view.luckyHands.label"] = "Lucky Hands", -- teyaku
+    ["koi.view.luckyHands.player"] = "%s holds lucky hands with %u points",
+    ["koi.view.luckyHands.description"] = "Lucky Hands",
     ["koi.view.callKoi"] = "%s calls Koi-Koi.",
     ["koi.view.callShobu"] = "%s calls Shobu with %u points.",
     ["koi.view.callingHeader"] = "%s's Calling",

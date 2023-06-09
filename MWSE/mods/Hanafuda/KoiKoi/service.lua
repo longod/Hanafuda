@@ -13,6 +13,7 @@ local phase = {
     setupRound = 20,
     dealingInitial = 21,
     checkLuckyHands = 22,
+    luckyHandsWait = 23,
     beginTurn = 30,
     matchCard = 40, -- rename
     matchCardFlip = 41, -- rename
@@ -237,10 +238,43 @@ function Service.OnEnterFrame(self, e)
             -- wait for view
         end,
         [phase.checkLuckyHands] = function()
-            -- todo
-            self.game:CheckLuckyHands(self.game.parent)
-            self.game:CheckLuckyHands(koi.GetOpponent(self.game.parent))
-            self:RequestPhase(phase.beginTurn)
+            local lh0, total0 = self.game:CheckLuckyHands(koi.player.you)
+            local lh1, total1 = self.game:CheckLuckyHands(koi.player.opponent)
+            -- test data
+            -- lh0 = {
+            --     [koi.luckyHands.fourOfAKind] = 6,
+            --     [koi.luckyHands.fourPairs] = 6,
+            -- }
+            -- total0 = 12
+            -- lh1 = {
+            --     --[koi.luckyHands.fourOfAKind] = 6,
+            --     [koi.luckyHands.fourPairs] = 6,
+            -- }
+            -- total1 = 6
+            if lh0 or lh1 then
+                self:RequestPhase(phase.luckyHandsWait)
+                local tie = lh0 ~= nil and lh1 ~= nil
+                local winner = nil
+                if not tie then
+                    if lh0 then
+                        winner = koi.player.you
+                    else
+                        winner = koi.player.opponent
+                    end
+                end
+
+                local points = {[koi.player.you] = total0, [koi.player.opponent] = total1}
+                self.view:ShowLuckyHands({[koi.player.you] = lh0, [koi.player.opponent] = lh1}, points, winner, self)
+                if not tie then
+                    -- No transition to win, so we settle here.
+                    self.game:SetRoundWinnerByLuckyHands(winner, points[winner])
+                    self.view:UpdateScorePoint(winner, self.game.points[winner])
+                end
+            else
+                self:RequestPhase(phase.beginTurn)
+            end
+        end,
+        [phase.luckyHandsWait] = function()
         end,
         [phase.beginTurn] = function()
             self.view:BeginTurn(self.game.current, self.game.parent, self)
@@ -540,6 +574,11 @@ end
 ---@param self KoiKoi.Service
 function Service.NotifyDealedInitialCards(self)
     self:RequestPhase(phase.checkLuckyHands)
+end
+
+---@param self KoiKoi.Service
+function Service.NotifyLuckyHands(self)
+    self:RequestPhase(phase.roundFinished)
 end
 
 ---@param self KoiKoi.Service
