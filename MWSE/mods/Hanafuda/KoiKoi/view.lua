@@ -1600,7 +1600,8 @@ function View.CreateInfo(self, parent, service)
     on.autoWidth = true
     on.autoHeight = true
     on:createLabel({id = uiid.opponentName, text = self.names[koi.player.opponent]}).color = header
-    on:createLabel({id = uiid.opponentDealer, text = ""})
+    local opponentDealer = on:createLabel({id = uiid.opponentDealer, text = ""})
+    opponentDealer.borderLeft = 12
 
     local os = opponent:createBlock()
     os.autoWidth = true
@@ -1638,7 +1639,8 @@ function View.CreateInfo(self, parent, service)
     yn.autoWidth = true
     yn.autoHeight = true
     yn:createLabel({id = uiid.playerName, text = self.names[koi.player.you]}).color = header
-    yn:createLabel({id = uiid.playerDealer, text = ""})
+    local playerDealer = yn:createLabel({id = uiid.playerDealer, text = ""})
+    playerDealer.borderLeft = 12
 
     local ys = you:createBlock()
     ys.autoWidth = true

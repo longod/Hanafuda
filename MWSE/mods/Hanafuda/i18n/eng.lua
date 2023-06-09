@@ -1,6 +1,6 @@
 local this = {
-    ["playerDefaultName"] = "Player",
-    ["opponentDefaultName"] = "Opponent",
+    ["playerDefaultName"] = "Outlander",
+    ["opponentDefaultName"] = "Jiub",
     ["gamble.collected"] = "You collected %{actual} gold.",
     ["gamble.collectedInsufficient"] = "You tried to collect %{expected} gold, but were only able to collect %{actual} gold.",
     ["gamble.paid"] = "You paid %{actual} gold.",
@@ -123,8 +123,8 @@ Koi-koi is a strategic game that combines luck and skill in forming combinations
     ["koi.help.rule.header"] = "How to play Koi-Koi",
     ["koi.help.rule.setup.header"] = "Setup",
     ["koi.help.rule.setup.description"] =
-[[Players who takes the face-down Hanafuda card and Whoever chooses the card of the early month becomes Parent (Oya). If it is the same month, it is decided by the higher type of card. The person who does not is Child (Ko).
-Parent is the dealer, shuffles the deck and after dealing 8 cards each to the players and the ground, the turn begins with Parent.]],
+[[Players who takes the face-down Hanafuda card and Whoever chooses the card of the early month becomes the dealer (Oya). If it is the same month, it is decided by the higher type of card. The person who does not is the player (Ko).
+The dealer shuffles the deck and after dealing 8 cards each to the players and the ground, the turn begins with the dealer.]],
     ["koi.help.rule.luckyHands.header"] = "Lucky Hands",
     ["koi.help.rule.luckyHands.description"] =
 [[After the cards are dealt, if the hand contains some combination of cards, the player reveals his or her cards to end the round.
@@ -156,12 +156,12 @@ The phrase 'Shobu' roughly means 'The game is won'.]],
 [[There are two conditions for the end of a round.]],
     ["koi.help.rule.round.scoring.header"] = "The Player Wins",
     ["koi.help.rule.round.scoring.description"] =
-[[The player who declares 'Shobu' and wins is awarded points according to combinations. The winning player becomes Parent and goes to the next round.
+[[The player who declares 'Shobu' and wins is awarded points according to combinations. The winning player becomes the dealer and goes to the next round.
 Depending on the house rules, the multiplier are determined by the number of times 'Koi-Koi' is declared or base points, which is then multiplied.]],
     ["koi.help.rule.round.emptyDeck.header"] = "Deck is Empty",
     ["koi.help.rule.round.emptyDeck.description"] =
 [[If the deck is empty at the end of the turn, the round ends in a tie.
-Depending on the house rules, either Parent or Child scores points, or Parent and Child are swapped to go to the next round.]],
+Depending on the house rules, either the dealer or the player scores points, or the dealer and the player are swapped to go to the next round.]],
     ["koi.help.rule.end.header"] = "End of Game",
     ["koi.help.rule.end.description"] =
 [[The player with the highest total score after repeating the specified number of rounds is the winner of the game.
@@ -182,14 +182,14 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.callingConfirmMessage"] = "%s collected a total of %u points combos.\nBase point: %u, Multiplier: x%u.",
     ["koi.view.point"] = "%u point", -- todo plural
     ["koi.view.round"] = "%u/%u",
-    ["koi.view.parent"] = " Parent",
-    ["koi.view.child"] = " Child",
-    ["koi.view.decideParentMessage"] = "Whoever chooses the card of the early month becomes Parent.",
+    ["koi.view.parent"] = "Oya",
+    ["koi.view.child"] = "Ko",
+    ["koi.view.decideParentMessage"] = "Whoever chooses the card of the early month becomes the dealer.",
     ["koi.view.decideParentTooltip"] = "Choose a card.",
     ["koi.view.leftCard"] = "Left card",
     ["koi.view.rightCard"] = "Right card",
-    ["koi.view.informParentHeader"] = "%s is Parent",
-    ["koi.view.informParentMessage"] = "Parent is the dealer and is the first to play.",
+    ["koi.view.informParentHeader"] = "%s is Oya",
+    ["koi.view.informParentMessage"] = "Oya is the dealer and is the first to play.",
     ["koi.view.informParentPick"] = "%s picked:",
     ["koi.view.infoGround"] = "Can't a card match from hand now.",
     ["koi.view.infoPutback"] = "Can't put back this card in hand",

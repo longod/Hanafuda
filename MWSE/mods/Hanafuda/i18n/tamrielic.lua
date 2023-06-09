@@ -97,5 +97,11 @@ local this = {
     ["koi.combo.chaff.name"] = "Chaff",
     ["koi.luckyHands.fourOfAKind.name"] = "Four of a Kind",
     ["koi.luckyHands.fourPairs.name"] = "Four Pairs",
+    -- koikoi view
+    ["koi.view.parent"] = "Dealer",
+    ["koi.view.child"] = "Player",
+    ["koi.view.informParentHeader"] = "%s is the Dealer",
+    ["koi.view.informParentMessage"] = "The Dealer is the first to play.",
+
 }
 return this
