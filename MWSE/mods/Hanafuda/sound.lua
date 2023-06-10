@@ -1,6 +1,7 @@
 
 
 local logger = require("Hanafuda.logger")
+local config = require("Hanafuda.config")
 
 ---@class Sound
 local this = {}
@@ -69,7 +70,7 @@ local function PlayVoice(id, race, female)
 end
 
 ---@param id VoiceId
----@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
         logger:trace("PlayVoice %d", id, mobile.object.baseObject.id)
@@ -78,6 +79,9 @@ function this.PlayVoice(id, mobile)
             [tes3.actorType.creature] =
             ---@param m tes3mobileCreature
             function(m)
+                if not config.audio.npcVoice then
+                    return
+                end
                 local sp = soundData.creatures[m.object.baseObject.id]
                 if sp then
                     local voice = sp[id]
@@ -100,13 +104,18 @@ function this.PlayVoice(id, mobile)
             [tes3.actorType.npc] =
             ---@param m tes3mobileNPC
             function(m)
+                if not config.audio.npcVoice then
+                    return
+                end
                 -- todo special npc if exists
                 PlayVoice(id, m.object.race.id, m.object.female)
             end,
             [tes3.actorType.player] =
             ---@param m tes3mobilePlayer
             function(m)
-                -- todo disable by config
+                if not config.audio.playerVoice then
+                    return
+                end
                 PlayVoice(id, m.object.race.id, m.object.female)
             end,
         }

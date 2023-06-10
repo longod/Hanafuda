@@ -20,6 +20,8 @@ local cardProperty = "Hanafuda:CardId"
 ---@class KoiKoi.View
 ---@field names { KoiKoi.Player : string }
 ---@field mobile { KoiKoi.Player : tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? }
+---@field testShowDialog fun(e:keyDownEventData)?
+---@field testCapture fun(e:keyDownEventData)?
 local View = {}
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
@@ -1814,16 +1816,12 @@ function View.OpenGameMenu(self, id, service)
     return menu
 end
 
-
-local testShowDialog = nil ---@type fun(e:keyDownEventData)?
-local testCapture = nil ---@type fun(e:keyDownEventData)?
-
 ---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 function View.Initialize(self, service)
     -- driver for testing
     if config.development.debug then
-        testShowDialog = function(_)
+        self.testShowDialog = function(_)
             local combo ={
                 [koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights],
                 [koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly],
@@ -1837,15 +1835,15 @@ function View.Initialize(self, service)
             self:ShowCallingDialog(koi.player.you, nil, combo, 12, 2)
             --self:ShowCombo(koi.player.you, nil, combo, 12, 2)
         end
-        event.register(tes3.event.keyDown, testShowDialog, {filter = tes3.scanCode.c} )
+        event.register(tes3.event.keyDown, self.testShowDialog, {filter = tes3.scanCode.c} )
 
-        testCapture = function(_)
+        self.testCapture = function(_)
             local m = tes3ui.findMenu(uiid.gameMenu)
             assert(m)
             CaptureCard(PutCard(m, 4, false), koi.player.opponent)
             m:updateLayout()
         end
-        event.register(tes3.event.keyDown, testCapture, {filter = tes3.scanCode.z} )
+        event.register(tes3.event.keyDown, self.testCapture, {filter = tes3.scanCode.z} )
     end
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -1868,13 +1866,13 @@ function View.Shutdown(self)
     end
 
     -- unregister debug key events
-    if testShowDialog then
-        event.unregister(tes3.event.keyDown, testShowDialog, {filter = tes3.scanCode.c})
-        testShowDialog = nil
+    if self.testShowDialog then
+        event.unregister(tes3.event.keyDown, self.testShowDialog, {filter = tes3.scanCode.c})
+        self.testShowDialog = nil
     end
-    if testCapture then
-        event.unregister(tes3.event.keyDown, testCapture, {filter = tes3.scanCode.z})
-        testCapture = nil
+    if self.testCapture then
+        event.unregister(tes3.event.keyDown, self.testCapture, {filter = tes3.scanCode.z})
+        self.testCapture = nil
     end
 end
 

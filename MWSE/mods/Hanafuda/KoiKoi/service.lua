@@ -56,6 +56,8 @@ local phase = {
 ---@field skipAnimation boolean
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(params : KoiKoi.ExitStatus)?
+---@field enterFrameCallback fun(e : enterFrameEventData)?
+---@field debugDumpCallback fun(e : keyDownEventData)?
 local Service = {}
 
 -- todo debug: hold key skip to deside parent
@@ -500,23 +502,21 @@ function Service.DumpData(self)
     logger:debug("calls       = {%s}", table.concat(self.game.calls, ", "))
 end
 
-local enterFrameCallback = nil ---@type fun(e : enterFrameEventData)?
-local debugDumpCallback = nil ---@type fun(e : keyDownEventData)?
 
 ---@param self KoiKoi.Service
 function Service.Initialize(self)
     assert(self.phase == phase.new)
     logger:info("Begin Koi-Koi")
-    assert(not enterFrameCallback)
-    enterFrameCallback = function (e)
+    assert(not self.enterFrameCallback)
+    self.enterFrameCallback = function (e)
         self:OnEnterFrame(e)
     end
-    event.register(tes3.event.enterFrame, enterFrameCallback)
+    event.register(tes3.event.enterFrame, self.enterFrameCallback)
     if config.development.debug then
-        debugDumpCallback = function (e)
+        self.debugDumpCallback = function (e)
             self:DumpData()
         end
-        event.register(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
+        event.register(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
     end
     self.game:Initialize()
     self.view:Initialize(self)
@@ -528,13 +528,13 @@ end
 
 ---@param self KoiKoi.Service
 function Service.Destory(self)
-    if enterFrameCallback then
-        event.unregister(tes3.event.enterFrame, enterFrameCallback)
-        enterFrameCallback = nil
+    if self.enterFrameCallback then
+        event.unregister(tes3.event.enterFrame, self.enterFrameCallback)
+        self.enterFrameCallback = nil
     end
-    if debugDumpCallback then
-        event.unregister(tes3.event.keyDown, debugDumpCallback, {filter = tes3.scanCode.d} )
-        debugDumpCallback = nil
+    if self.debugDumpCallback then
+        event.unregister(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
+        self.debugDumpCallback = nil
     end
     self.view:Shutdown()
     logger:info("Finished Koi-Koi")

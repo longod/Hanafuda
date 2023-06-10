@@ -269,7 +269,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["mcm.koi.category"] = "Koi-Koi",
     ["mcm.koi.round.label"] = "Number of Rounds",
     ["mcm.koi.round.description"] = "Number of rounds played during one game.",
-    ["mcm.koi.houseRule.category"] = "House Rule",
+    ["mcm.koi.houseRule.category"] = "House Rules",
     ["mcm.koi.houseRule.multiplier.label"] = "Score Multiplier",
     ["mcm.koi.houseRule.multiplier.description"] = "None: No multiplier\nDouble at least 7: The x2 multiplier earned for having a base score of at least 7\nEach time Koi-Koi was called: Multiplier equal to the number of times Koi-Koi was called in this round",
     ["mcm.koi.houseRule.multiplier.none"] = "None",
@@ -279,6 +279,11 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["mcm.koi.houseRule.flowerViewingSake.description"] = "Because %s combo is too strong.",
     ["mcm.koi.houseRule.moonViewingSake.label"] = "Enable %s",
     ["mcm.koi.houseRule.moonViewingSake.description"] = "Because %s combo is too strong.",
+    ["mcm.audio.category"] = "Audio",
+    ["mcm.audio.playerVoice.label"] = "Player Voice",
+    ["mcm.audio.playerVoice.description"] = "Player character talks according to the game situation.",
+    ["mcm.audio.npcVoice.label"] = "NPC Voice",
+    ["mcm.audio.npcVoice.description"] = "NPCs talk according to the game situation.",
     ["mcm.development.category"] = "Development",
     ["mcm.development.logLevel.label"] = "Logging Level",
     ["mcm.development.logLevel.description"] = "Set the log level.",
@@ -290,6 +295,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["mcm.development.unittest.description"] = "Run unit-test.",
 }
 
+-- Hack to use multiple localizations in a single language
 -- i18n must not be included by require nesting
 local settings = require("Hanafuda.settings")
 local config = require("Hanafuda.config")

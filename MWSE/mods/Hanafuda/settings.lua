@@ -31,7 +31,7 @@ local defaultConfig = {
     audio = {
         --volume = 100,
         playerVoice = true,
-        opponentVoice = true,
+        npcVoice = true,
     },
     development = {
         logLevel = "INFO",

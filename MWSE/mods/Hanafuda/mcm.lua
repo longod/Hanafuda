@@ -87,6 +87,18 @@ local function OnModConfigReady(e)
         end
     end
     do
+        local audio = page:createCategory(i18n("mcm.audio.category"))
+        audio:createOnOffButton({
+            label = i18n("mcm.audio.playerVoice.label"),
+            description = i18n("mcm.audio.playerVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.audio.playerVoice),
+            variable = mwse.mcm.createTableVariable({ id = "playerVoice", table = config.audio })
+        })
+        audio:createOnOffButton({
+            label = i18n("mcm.audio.npcVoice.label"),
+            description = i18n("mcm.audio.npcVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.audio.npcVoice),
+            variable = mwse.mcm.createTableVariable({ id = "npcVoice", table = config.audio })
+        })    end
+    do
         local dev = page:createCategory(i18n("mcm.development.category"))
         dev:createDropdown({
             label = i18n("mcm.development.logLevel.label"),
