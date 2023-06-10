@@ -47,6 +47,7 @@ function this.Play(id)
     end
 end
 
+-- The dialogue corresponding to the opponent's race is not taken into account.
 ---@param id VoiceId
 ---@param race string
 ---@param female boolean
@@ -62,8 +63,10 @@ local function PlayVoice(id, race, female)
         end
         local voice = s[id]
         if voice and table.size(voice) > 0 then
-            local file = table.choice(voice)
-            local path = GenerateVoicePath(race, female) .. file
+            local path = table.choice(voice) ---@type string
+            --path = path:gsub("/", "\\")
+            logger:trace("Voice %d %s", id, path)
+            -- local path = GenerateVoicePath(race, female) .. file
             tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
         end
     end
@@ -73,7 +76,7 @@ end
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
-        logger:trace("PlayVoice %d", id, mobile.object.baseObject.id)
+        logger:trace("PlayVoice %d %s", id, mobile.object.baseObject.id)
 
         local types = {
             [tes3.actorType.creature] =

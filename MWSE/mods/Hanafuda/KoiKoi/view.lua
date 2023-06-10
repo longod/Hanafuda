@@ -457,7 +457,8 @@ function View.ThinkMatchingHand(self, player, isAI, deltaTime)
     -- todo idle reactions
     timer = timer + deltaTime
     if timer > 30 then
-        if isAI then
+        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
+        if p == player then
             sound.PlayVoice(sound.voice.think, self.mobile[player])
         else
             sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
@@ -471,17 +472,16 @@ end
 ---@param deltaTime number
 function View.ThinkMatchingDrawn(self, player, isAI, deltaTime)
     -- todo idle reactions
-    --[[
     timer = timer + deltaTime
-    if timer > 6 then
-        if isAI then
+    if timer > 30 then
+        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
+        if p == player then
             sound.PlayVoice(sound.voice.think, self.mobile[player])
         else
             sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
         end
         timer = 0
     end
-    ]]
 end
 
 ---@param self KoiKoi.View
@@ -490,17 +490,16 @@ end
 ---@param deltaTime number
 function View.ThinkCalling(self, player, isAI, deltaTime)
     -- todo idle reactions
-    --[[
     timer = timer + deltaTime
-    if timer > 6 then
-        if isAI then
+    if timer > 10 then
+        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
+        if p == player then
             sound.PlayVoice(sound.voice.think, self.mobile[player])
         else
             sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
         end
         timer = 0
     end
-    ]]
 end
 
 --- custom block has max width. and it excluding frame size...
