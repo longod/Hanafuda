@@ -71,8 +71,8 @@ this.cardSymbol = {
 }
 
 this.cardCount = 48 ---@type integer
-this.cardWidth = math.ceil( 32 * 1.5 ) ---@type number
-this.cardHeight = math.ceil( 53 * 1.5 ) ---@type number
+this.cardWidth = math.ceil( 32 * 2 ) ---@type number
+this.cardHeight = math.ceil( 53 * 2 ) ---@type number
 assert(this.cardCount > 0)
 assert(this.cardWidth > 0)
 assert(this.cardHeight > 0)

@@ -57,7 +57,7 @@ local function createListBox(parent, texts, enables, selectedIndexChanged, initi
     end
     local items = {} ---@type tes3uiElement[]
     local alpha = 0.5
-    local selectedColor = tes3ui.getPalette(tes3.palette.answerColor)
+    local selectedColor = tes3ui.getPalette(tes3.palette.activeColor)
     local disabledColor = tes3ui.getPalette(tes3.palette.disabledColor)
 
     ---@param p tes3uiElement

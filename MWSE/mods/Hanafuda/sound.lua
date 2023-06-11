@@ -12,19 +12,12 @@ this.se = soundData.se
 this.voice = soundData.voice
 this.music = soundData.music
 
----@param race string
----@param female boolean
-local function GenerateVoicePath(race, female)
-    local r = string.lower(string.sub(race, 1, 1))
-    local s = female and "f" or "m"
-    local path = string.format( "vo\\%s\\%s\\", r, s )
-    return path
-end
+-- todo need driver menu for testing audio
 
 ---@param id SoundEffectId
 function this.Play(id)
     local data = soundData.soundData[id]
-    -- todo mixxhannel feder
+    -- todo mixchannel fader
     -- todo reference if 3D
     if data then
         -- tes3.playSound performs 3D audio with references, so it crashes when used in the main menu because of no references exist.

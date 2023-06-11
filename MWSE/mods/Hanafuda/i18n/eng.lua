@@ -202,14 +202,17 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.infoDiscard"] = "Can't discard this card, it shoud be matched.",
     ["koi.view.infoDraw"] = "Can't draw a card now.",
     ["koi.view.beginTurn"] = "%s's Turn",
-    ["koi.view.capturedTooltip"] = "Here captured %s cards are lined up.",
+    ["koi.view.hand.player"] = "Your hand",
+    ["koi.view.hand.opponent"] = "Opponent's hand",
+    ["koi.view.capturedTooltip.player"] = "%s cards captured by you are placed.",
+    ["koi.view.capturedTooltip.opponent"] = "%s cards captured by opponent are placed.",
     ["koi.view.capturedLabel"] = "%s's Captured Cards",
     ["koi.view.exit"] = "Concede",
     ["koi.view.cardList"] = "Cards",             -- todo hanafuda
     ["koi.view.comboList"] = "Combos",
     ["koi.view.quickRule"] = "Rule",
     ["koi.view.totalScore"] = "Total Score: ", -- merge with number
-    ["koi.view.roundCombo"] = "Combination in this round:",
+    ["koi.view.roundCombo"] = "Combos in this round:",
     ["koi.view.roundLabel"] = "Round: ",       -- merge with number
     -- koikoi combo
     ["koi.combo.fiveBrights.name"] = "Goko",

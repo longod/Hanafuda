@@ -42,7 +42,7 @@ local function OnInitialized(_)
                 return
             end
             require("Hanafuda.Gamble.ui").CreateBettingMenu(123456, {0, 1, 2}, {true, true, false}, 3 * config.koikoi.round)
-        end, {filter = tes3.scanCode.x} )
+        end, { filter = tes3.scanCode.x })
     end
 
     require("Hanafuda.Gamble.service")

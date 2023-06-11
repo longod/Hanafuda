@@ -9,8 +9,13 @@ local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 -- with mergin
-local cardLayoutWidth = card.GetCardWidth() + 4
-local cardLayoutHeight = card.GetCardHeight() + 4
+local paddingSize = 4
+local smallSize = 0.5
+
+local cardLayoutWidth = card.GetCardWidth() + paddingSize * 2
+local cardLayoutHeight = card.GetCardHeight() + paddingSize * 2
+local cardLayoutWidthSmall = card.GetCardWidth() * smallSize + paddingSize * smallSize * 2
+local cardLayoutHeightSmall = card.GetCardHeight() * smallSize + paddingSize * smallSize * 2
 local enabledCardColor = { 1, 1, 1 }
 local disabledCardColor = { 0.3, 0.3, 0.3 }
 
@@ -78,7 +83,7 @@ local function PutCard(parent, cardId, backface, notooltip)
     local element = parent:createBlock() -- drop shadow better
     element.autoWidth = true
     element.autoHeight = true
-    element.paddingAllSides = 2
+    element.paddingAllSides = paddingSize
     element:setPropertyInt(cardProperty, cardId)
 
     local image = element:createImage({ path = asset.path })
@@ -131,13 +136,13 @@ local function PutDeck(parent, deck)
     local element = parent:createBlock()
     element.autoWidth = true
     element.autoHeight = true
-    element.paddingAllSides = 2
+    element.paddingAllSides = paddingSize
     local image = element:createImage({ path = asset.path })
     image.width = card.GetCardWidth()
     image.height = card.GetCardHeight()
     image.scaleMode = true
     image.consumeMouseEvents = true
-    image.borderAllSides = 2
+    --image.borderAllSides = 2
 
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
@@ -158,6 +163,15 @@ local function SetCardColor(element, highlight)
     -- if use rect or background image then it is changed too.
     for key, value in pairs(element.children) do
         value.color = highlight and enabledCardColor or disabledCardColor
+    end
+end
+---@param element tes3uiElement
+---@param scale number
+local function SetCardSize(element, scale)
+    element.paddingAllSides = math.ceil(element.paddingAllSides * scale)
+    for key, value in pairs(element.children) do
+        value.width = card.GetCardWidth() * scale
+        value.height = card.GetCardHeight() * scale
     end
 end
 
@@ -279,8 +293,8 @@ local function CaptureCard(element, player)
     local to = gameMenu:findChild(dest)
     assert(to)
     local moved = element:move({ to = to })
-    -- todo scale or overlap
     SetCardColor(moved, true)
+    SetCardSize(moved, smallSize)
 
     -- Overlap placement if it does not fit
     gameMenu:updateLayout() -- calculate after moved
@@ -527,7 +541,7 @@ local function CreateTightCombinationList(parent, combo)
     parent.widthProportional = 1
     local maxWidth = ComputeParentMaxWidth(parent)
     for _, value in ipairs(table.keys(combo, true)) do
-        ui.CreateCombinationView(parent, value, combo[value], maxWidth, 0.5)
+        ui.CreateCombinationView(parent, value, combo[value], maxWidth, 0.5 * 0.75)
     end
     parent:createDivider().widthProportional = 1.0
 end
@@ -1450,21 +1464,26 @@ end
 ---@param parent tes3uiElement
 ---@param id number
 ---@param type CardType
+---@param you boolean
 ---@return tes3uiElement
-local function CreateTypeArea(parent, id, type)
+local function CreateTypeArea(parent, id, type, you)
     local area = parent:createRect({ id = id, color = card.GetCardTypeColor(type) })
     area.widthProportional = 1
-    area.minHeight = cardLayoutHeight
-    area.height = cardLayoutHeight
+    --area.autoWidth = true
+    --area.minHeight = cardLayoutHeight + 2
+    area.height = cardLayoutHeightSmall + 2
+    --area.autoHeight = true
     area.flowDirection = tes3.flowDirection.leftToRight
-    area.alpha = 0.25
+    --area.alpha = 0.25
+    area.alpha = 0.2
     --area.paddingAllSides = 2
     area.childAlignY = 0.5
+    local text = you and i18n("koi.view.capturedTooltip.player", {card.GetCardTypeText(type).name}) or i18n("koi.view.capturedTooltip.opponent", {card.GetCardTypeText(type).name})
     area:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
         local tooltip = tes3ui.createTooltipMenu()
-        local label = tooltip:createLabel({ text = i18n("koi.view.capturedTooltip", {card.GetCardTypeText(type).name}) })
+        local label = tooltip:createLabel({ text = text })
     end)
     return area
 end
@@ -1472,16 +1491,22 @@ end
 ---@param parent tes3uiElement
 ---@return tes3uiElement
 local function CreateTypeFrame(parent)
-    local frame = parent:createThinBorder()
+    local frame = parent:createBlock()
     frame.widthProportional = 1
-    frame.minHeight = cardLayoutHeight + 2
-    frame.height = cardLayoutHeight + 2
+    --frame.autoWidth = true
+    --frame.minHeight = cardLayoutHeightSmall + 2
+    --frame.height = cardLayoutHeightSmall + 2
+    --frame.minHeight = cardLayoutHeightSmall
+    frame.autoHeight = true
     frame.flowDirection = tes3.flowDirection.leftToRight
-    frame.paddingAllSides = 2
+    --frame.paddingAllSides = 2
     return frame
 end
 
 ---@param parent tes3uiElement
+---@param id number
+---@param height number
+---@return tes3uiElement
 local function CreateHandView(parent, id, height)
     local border = parent:createThinBorder()
     border.borderAllSides = 6
@@ -1494,10 +1519,11 @@ local function CreateHandView(parent, id, height)
     hand.heightProportional = 1
     hand.flowDirection = tes3.flowDirection.leftToRight
     --hand.paddingAllSides = 2
-    hand.childAlignX = 0.5
+    hand.childAlignX = 0.5 -- fixme doesnt work...
     hand.childAlignY = 0.5
-    hand.minWidth= cardLayoutWidth * 8
+    hand.minWidth = cardLayoutWidth * 8
     hand.minHeight = cardLayoutHeight
+    return hand
 end
 
 ---@param parent tes3uiElement
@@ -1507,7 +1533,6 @@ local function CreateBoard(parent, height)
     area.heightProportional = height
     area.flowDirection = tes3.flowDirection.leftToRight
 
-    -- todo tweak layout
     local border = area:createBlock()
     -- for placement dealing card or vertical placement
     -- border.minWidth = cardLayoutWidth
@@ -1579,17 +1604,25 @@ function View.CreateYourCaptured(self, parent)
     captured.heightProportional = 1
     captured.flowDirection = tes3.flowDirection.topToBottom
     captured.childAlignY = 1
+    local border = captured:createThinBorder()
+    border.widthProportional = 1
+    border.autoHeight = true
+    border.flowDirection = tes3.flowDirection.topToBottom
+    border.childAlignY = 1
+    border.borderAllSides = 6
+    border.paddingAllSides = 2 -- avoid thin border
 
-    local block = captured:createBlock()
-    block.childAlignX = 0
-    block.widthProportional = 1
-    block.autoHeight = true
-    block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.you]})})
+    -- local block = captured:createBlock()
+    -- block.childAlignX = 0
+    -- block.widthProportional = 1
+    -- block.autoHeight = true
+    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.you]})})
+    -- label.wrapText = true
 
-    local bright = CreateTypeArea(CreateTypeFrame(captured), uiid.playerBright, card.type.bright)
-    local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.playerAnimal, card.type.animal)
-    local ribbon = CreateTypeArea(CreateTypeFrame(captured), uiid.playerRibbon, card.type.ribbon)
-    local chaff = CreateTypeArea(CreateTypeFrame(captured), uiid.playerChaff, card.type.chaff)
+    local bright = CreateTypeArea(CreateTypeFrame(border), uiid.playerBright, card.type.bright, true)
+    local animal = CreateTypeArea(CreateTypeFrame(border), uiid.playerAnimal, card.type.animal, true)
+    local ribbon = CreateTypeArea(CreateTypeFrame(border), uiid.playerRibbon, card.type.ribbon, true)
+    local chaff = CreateTypeArea(CreateTypeFrame(border), uiid.playerChaff, card.type.chaff, true)
 
 end
 
@@ -1601,20 +1634,28 @@ function View.CreateOpponentCaptured(self, parent)
     captured.widthProportional = 1
     captured.autoHeight = true
     captured.flowDirection = tes3.flowDirection.topToBottom
-    local bright = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentBright, card.type.bright)
-    local animal = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentAnimal, card.type.animal)
-    local ribbon = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentRibbon, card.type.ribbon)
-    local chaff = CreateTypeArea(CreateTypeFrame(captured), uiid.opponentChaff, card.type.chaff)
+    local border = captured:createThinBorder()
+    border.widthProportional = 1
+    border.autoHeight = true
+    border.flowDirection = tes3.flowDirection.topToBottom
+    border.borderAllSides = 6
+    border.paddingAllSides = 2 -- avoid thin border
+
+    local bright = CreateTypeArea(CreateTypeFrame(border), uiid.opponentBright, card.type.bright, false)
+    local animal = CreateTypeArea(CreateTypeFrame(border), uiid.opponentAnimal, card.type.animal, false)
+    local ribbon = CreateTypeArea(CreateTypeFrame(border), uiid.opponentRibbon, card.type.ribbon, false)
+    local chaff = CreateTypeArea(CreateTypeFrame(border), uiid.opponentChaff, card.type.chaff, false)
     bright.childAlignX = 1.0
     animal.childAlignX = 1.0
     ribbon.childAlignX = 1.0
     chaff.childAlignX = 1.0
 
-    local block = captured:createBlock()
-    block.childAlignX = 1
-    block.widthProportional = 1
-    block.autoHeight = true
-    local label = block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.opponent]})})
+    -- local block = captured:createBlock()
+    -- block.childAlignX = 1
+    -- block.widthProportional = 1
+    -- block.autoHeight = true
+    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.opponent]})})
+    -- label.wrapText = true
 end
 
 ---@param self KoiKoi.View
@@ -1629,10 +1670,18 @@ function View.CreateInfo(self, parent, service)
     --upper.paddingAllSides = 6
 
     local exit = upper:createButton({text = i18n("koi.view.exit")})
-    upper:createBlock().widthProportional = 1
-    local cards = upper:createButton({text = i18n("koi.view.cardList")})
-    local combo = upper:createButton({text = i18n("koi.view.comboList")})
-    local rule = upper:createButton({text = i18n("koi.view.quickRule")})
+    local right = upper:createBlock()
+    right.widthProportional = 1
+    right.autoWidth= true
+    right.autoHeight = true
+    right.childAlignX = 1.0
+    local cards = right:createButton({text = i18n("koi.view.cardList")})
+    local combo = right:createButton({text = i18n("koi.view.comboList")})
+    local rule = right:createButton({text = i18n("koi.view.quickRule")})
+    exit.borderAllSides = 0
+    cards.borderAllSides = 0
+    combo.borderAllSides = 0
+    rule.borderAllSides = 0
     -- todo exit enabled condition
     exit:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -1646,22 +1695,44 @@ function View.CreateInfo(self, parent, service)
 
     local header = tes3ui.getPalette(tes3.palette.headerColor)
 
+    -- local mid = split:createBlock()
+    -- mid.widthProportional = 1
+    -- mid.autoHeight = true
+    -- mid.childAlignX = 0.5
+    local rn = parent:createBlock()
+    rn.widthProportional = 1
+    rn.autoHeight = true
+    rn.childAlignX = 0.5
+    rn:createLabel({text = i18n("koi.view.roundLabel")})
+    rn:createLabel({id = uiid.round, text = ""})
+    local tn = parent:createBlock()
+    tn.widthProportional = 1
+    tn.autoHeight = true
+    tn.childAlignX = 0.5
+    local turn = tn:createLabel({id = uiid.turn, text = ""})
+    turn.color = header
+    turn.wrapText = true
+
     local split = parent:createBlock()
     split.widthProportional = 1
     split.heightProportional = 1
     split.flowDirection = tes3.flowDirection.topToBottom
 
-    local opponent = split :createThinBorder()
+    local opponent = split:createThinBorder()
     opponent.widthProportional = 1
     opponent.heightProportional = 1
     opponent.flowDirection = tes3.flowDirection.topToBottom
     opponent.borderAllSides = 6
     opponent.paddingAllSides = 6
+    --opponent.height = cardLayoutHeight * 1.75
 
     local on = opponent:createBlock()
-    on.autoWidth = true
+    on.widthProportional = 1
+    --on.autoWidth = true
     on.autoHeight = true
-    on:createLabel({id = uiid.opponentName, text = self.names[koi.player.opponent]}).color = header
+    local oname = on:createLabel({id = uiid.opponentName, text = self.names[koi.player.opponent]})
+    oname.color = header
+    oname.wrapText = true
     local opponentDealer = on:createLabel({id = uiid.opponentDealer, text = ""})
     opponentDealer.borderLeft = 6
 
@@ -1678,29 +1749,21 @@ function View.CreateInfo(self, parent, service)
     opponentCombo.autoHeight = true
     opponentCombo.flowDirection = tes3.flowDirection.topToBottom
 
-    local rn = split:createBlock()
-    rn.widthProportional = 1
-    rn.autoHeight = true
-    rn.childAlignX = 0.5
-    rn:createLabel({text = i18n("koi.view.roundLabel")})
-    rn:createLabel({id = uiid.round, text = ""})
-    local tn = split:createBlock()
-    tn.widthProportional = 1
-    tn.autoHeight = true
-    tn.childAlignX = 0.5
-    tn:createLabel({id = uiid.turn, text = ""}).color = header
-
     local you = split:createThinBorder()
     you.widthProportional = 1
     you.heightProportional = 1
     you.flowDirection = tes3.flowDirection.topToBottom
     you.borderAllSides = 6
     you.paddingAllSides = 6
+    --you.height = cardLayoutHeight * 1.75
 
     local yn = you:createBlock()
-    yn.autoWidth = true
+    yn.widthProportional = 1
+    --yn.autoWidth = true
     yn.autoHeight = true
-    yn:createLabel({id = uiid.playerName, text = self.names[koi.player.you]}).color = header
+    local yname = yn:createLabel({id = uiid.playerName, text = self.names[koi.player.you]})
+    yname.color = header
+    yname.wrapText = true
     local playerDealer = yn:createLabel({id = uiid.playerDealer, text = ""})
     playerDealer.borderLeft = 6
 
@@ -1727,22 +1790,27 @@ function View.OpenGameMenu(self, id, service)
 
     local viewportWidth, viewportHeight = tes3ui.getViewportSize()
 
+    -- estiamte center or right pane height
+    local baseHeight = math.max(cardLayoutHeight * 4 + (4 * 4) + (8 * 2), cardLayoutHeightSmall * 8 + (48 * 2) )
+    local centerWidth = cardLayoutWidth * 9
+    local rightWidth = cardLayoutWidthSmall * 8 + 8 * 2 -- + bordar, padding
+    local leftWidth = rightWidth -- same size for easly centering
+
     local menu = tes3ui.createMenu({ id = id, fixedFrame = true })
     menu:destroyChildren()
     --menu.disabled = true
-    local borderSize = 0
     menu.absolutePosAlignX = 0.5
 	menu.absolutePosAlignY = 0.5
-    menu.borderAllSides = borderSize
+    menu.borderAllSides = 0
     menu.paddingAllSides = 0
     menu.color = { 0.0, 0.0, 0.0 }
     menu.alpha = 0.5
     menu.autoWidth = false
     menu.autoHeight = false
-    menu.minWidth = viewportWidth / 2
-    menu.minHeight = viewportHeight / 2
-    menu.width = viewportWidth - borderSize * 2
-    menu.height = viewportHeight - borderSize * 2
+    -- menu.minWidth = viewportWidth / 2
+    -- menu.minHeight = viewportHeight / 2
+    menu.width = leftWidth + centerWidth + rightWidth
+    menu.height = baseHeight
     menu.maxWidth = viewportWidth
     menu.maxHeight = viewportHeight
     menu.positionX = -menu.width * 0.5 -- center
@@ -1752,27 +1820,44 @@ function View.OpenGameMenu(self, id, service)
     menu.flowDirection = tes3.flowDirection.leftToRight
     --menu:updateLayout()
 
-    -- local bg = menu:createImage({ path = "Textures/Tx_b_n_khajiit_f_h03.dds" })
-    -- bg.widthProportional = 1
-    -- bg.heightProportional = 1
+    local bg = menu:createImage({ path = "Textures/Hanafuda/bg2k.dds" })
+    bg.width = menu.width
+    bg.height = menu.height
+    bg.widthProportional = 1
+    bg.heightProportional = 1
+    bg.autoWidth = false
+    bg.autoHeight = false
+    menu:updateLayout() -- for calculate widht and height
+    bg.scaleMode = true
+    bg.imageScaleX = 1
+    bg.imageScaleY = 16.0/9.0 -- original aspect
+    bg.childAlignX = 0.5
+    bg.childAlignY = 0.5
+    bg.flowDirection = tes3.flowDirection.leftToRight
+    bg.color = { 0.6, 0.6, 0.6 } -- darker
+    bg.alpha = 1.0
+
     -- bg.imageScaleX = 4
     -- bg.imageScaleY = 3 -- todo aspect
-    -- bg.scaleMode = false -- true is buggy, then using false and set manulay imageScaleX/Y
 
-    local left = menu:createBlock()
-    left.widthProportional = 0.8
+    local left = bg:createBlock()
+    --left.widthProportional = 0.8
+    left.width = leftWidth
     left.heightProportional = 1
     left.flowDirection = tes3.flowDirection.topToBottom
     left.childAlignY = 0.5
-    local center = menu:createBlock()
-    center.widthProportional = 1.2
+    local center = bg:createBlock()
+    center.width = centerWidth
+    --center.widthProportional = 1.2
     center.heightProportional = 1
     center.flowDirection = tes3.flowDirection.topToBottom
-    center.minWidth = cardLayoutWidth * 8 -- initial card
+    --center.minWidth = cardLayoutWidth * 8 -- initial card
     center.childAlignY = 0.5
-    local right = menu:createBlock()
-    right.widthProportional = 1
+    local right = bg:createBlock()
+    -- right.widthProportional = 1
     right.heightProportional = 1
+    right.width = rightWidth
+    --right.height = cardLayoutHeightSmall * 5
     right.flowDirection = tes3.flowDirection.topToBottom
     right.childAlignY = 0.5
 
@@ -1781,15 +1866,29 @@ function View.OpenGameMenu(self, id, service)
     self:CreateOpponentCaptured(right)
     self:CreateYourCaptured(right)
 
-    local board = center:createRect()
-    board.color = { 0.0, 0.0, 0.0 }
-    board.alpha = 0.5
+    local board = center:createBlock()
+    -- board.color = { 0.0, 0.0, 0.0 }
+    -- board.alpha = 0.5
     board.widthProportional = 1
     board.heightProportional = 1
     board.flowDirection = tes3.flowDirection.topToBottom
-    CreateHandView(board, uiid.opponentHand, 0.75)
-    CreateBoard(board, 1.5)
-    CreateHandView(board, uiid.playerHand, 0.75)
+    local opponentHand = CreateHandView(board, uiid.opponentHand, 0.75) -- 1/4
+    CreateBoard(board, 1.5) -- 2/4
+    local playerHand = CreateHandView(board, uiid.playerHand, 0.75)-- 1/4
+
+    -- annoying tooltip?
+    opponentHand:register(tes3.uiEvent.help,
+    ---@param e uiEventEventData
+    function(e)
+        local tooltip = tes3ui.createTooltipMenu()
+        local label = tooltip:createLabel({ text = i18n("koi.view.hand.opponent") })
+    end)
+    playerHand:register(tes3.uiEvent.help,
+    ---@param e uiEventEventData
+    function(e)
+        local tooltip = tes3ui.createTooltipMenu()
+        local label = tooltip:createLabel({ text = i18n("koi.view.hand.player") })
+    end)
 
     self:RegisterHandEvent(board:findChild(uiid.opponentHand), service)
     self:RegisterHandEvent(board:findChild(uiid.playerHand), service)
@@ -1831,8 +1930,8 @@ function View.Initialize(self, service)
                 [koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (12 - 10),
             }
 
-            self:ShowCallingDialog(koi.player.you, nil, combo, 12, 2)
-            --self:ShowCombo(koi.player.you, nil, combo, 12, 2)
+            --self:ShowCallingDialog(koi.player.you, nil, combo, 12, 2)
+            self:ShowCombo(koi.player.you, nil, combo, 12, 2)
         end
         event.register(tes3.event.keyDown, self.testShowDialog, {filter = tes3.scanCode.c} )
 

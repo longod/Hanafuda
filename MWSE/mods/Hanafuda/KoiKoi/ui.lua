@@ -44,8 +44,8 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
     block.autoHeight = true
     --block.borderAllSides = 8
     block.paddingAllSides = 0
-    block.paddingLeft = 8
-    block.paddingRight = 8
+    -- block.paddingLeft = 8
+    -- block.paddingRight = 8
     if maxWidth then
         block.maxWidth = maxWidth
     end
@@ -274,8 +274,8 @@ function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
     block.autoHeight = true
     --block.borderAllSides = 8
     block.paddingAllSides = 0
-    block.paddingLeft = 8
-    block.paddingRight = 8
+    -- block.paddingLeft = 8
+    -- block.paddingRight = 8
     if maxWidth then
         block.maxWidth = maxWidth
     end
@@ -354,9 +354,10 @@ function this.CreateCardList(e)
     pane.widthProportional = 1
     pane.heightProportional = 1
     local parent = pane:getContentElement()
+    parent.paddingAllSides = 6
 
     -- card table
-    local scale = 1
+    local scale = 0.75
     local padding = 4
     local minWidth = math.max(card.GetCardWidth() * scale + padding, 72)
     local suitWidth = math.max(card.GetCardWidth() * scale + padding, 128)
@@ -372,7 +373,7 @@ function this.CreateCardList(e)
         row.autoWidth = true
         row.autoHeight = true
         row.flowDirection = tes3.flowDirection.leftToRight
-        row.paddingAllSides = 2
+        --row.paddingAllSides = 2
         do
             local col = row:createBlock()
             col.autoHeight = true
@@ -395,7 +396,7 @@ function this.CreateCardList(e)
         row.autoWidth = true
         row.autoHeight = true
         row.flowDirection = tes3.flowDirection.leftToRight
-        row.paddingAllSides = 2
+        --row.paddingAllSides = 2
         do
             local col = row:createBlock()
             col.autoHeight = true
@@ -491,11 +492,13 @@ function this.CreateCombinationList(e)
 
     -- combo
     local parent = pane:getContentElement()
+    parent.paddingAllSides = 6
+
     local label = parent:createLabel({ text = i18n("koi.combinations.label") })
     label.color = headerColor
     label.borderAllSides = 0
-    label.borderTop = 8
-    label.borderBottom = 8
+    label.borderTop = 6
+    label.borderBottom = 6
     for _, value in ipairs(table.values(koi.combination, true)) do
         this.CreateCombinationView(parent, value)
         parent:createDivider().widthProportional = 1.0
@@ -505,8 +508,8 @@ function this.CreateCombinationList(e)
     label = parent:createLabel({ text = i18n("koi.luckyHands.label") })
     label.color = headerColor
     label.borderAllSides = 0
-    label.borderTop = 8
-    label.borderBottom = 8
+    label.borderTop = 6
+    label.borderBottom = 6
     for _, value in ipairs(table.values(koi.luckyHands, true)) do
         this.CreateLuckyHandsView(parent, value)
         parent:createDivider().widthProportional = 1.0
@@ -565,7 +568,7 @@ function this.CreateRule(e)
         local l = p:createLabel({ text = text })
         l.color = headerColor
         l.wrapText = true
-        l.borderAllSides = 4
+        l.borderAllSides = 6
         l.borderTop = 12
         l.borderLeft = indent * 12
     end
@@ -576,7 +579,7 @@ function this.CreateRule(e)
         indent = indent or 1
         local l = p:createLabel({ text = text })
         l.wrapText = true
-        l.borderAllSides = 4
+        l.borderAllSides = 6
         l.borderLeft = indent * 12
     end
     ---@param p tes3uiElement
@@ -586,7 +589,7 @@ function this.CreateRule(e)
         indent = indent or 1
         local l = p:createHyperlink({ text = text, url = url })
         l.wrapText = true
-        l.borderAllSides = 4
+        l.borderAllSides = 6
         l.borderLeft = indent * 12
     end
     -- tl;dr
@@ -675,8 +678,8 @@ function this.CreateCardTooltip(cardId, backface)
         local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
         name.color = headerColor
         local thumb = tooltip:createImage({ path = asset.path })
-        thumb.width = card.GetCardWidth() * 2
-        thumb.height = card.GetCardHeight() * 2
+        thumb.width = card.GetCardWidth() * 1.5
+        thumb.height = card.GetCardHeight() * 1.5
         thumb.scaleMode = true
         tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
         local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
