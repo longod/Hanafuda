@@ -21,24 +21,6 @@ this.cardSuit = {
     december = 12,
 }
 
---- altanative of suit
----@enum CardFlower
-this.cardFlower = {
-    pine = 1,
-    plumBlossoms = 2,
-    cherryBlossoms = 3,
-    wisteria = 4,
-    iris = 5,
-    peony = 6,
-    bushClover = 7,
-    pampas = 8,
-    chrysanthemum = 9,
-    maple = 10,
-    willow = 11,
-    paulownia = 12,
-}
-assert(table.size(this.cardSuit) == table.size(this.cardFlower))
-
 --- rank, tier
 ---@enum CardType
 this.cardType = {

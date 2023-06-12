@@ -15,8 +15,20 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
   - https://en.wikipedia.org/wiki/Koi-Koi
   - https://fudawiki.org/en/hanafuda/games/koi-koi
 
+## Specification
+- `Hanafuda/KoiKoi` operates Koi-Koi on an MVC-like architecture.
+  - game.lua: It corresponds to Model. It is a set of basic game logic.
+  - view.lua: It corresponds to View. It provides screen output and receives the player input and notifies Controller.
+  - service.lua: It corresponds to Controller. It manages the progress of the entire game, manipulates Models, and provides data for display to View.
+  - runner.lua is also Controller that allows automatic play without input from the player.
+- `Hanafuda/Gamble` provides the means to launch Koi-Koi from the world of morrowind.
+  - Add the service menu to the dialog menu.
+  - Filter actor who have the ability to play Koi-Koi. It also determines if Koi-Koi is currently playable with that actor.
+  - Before launching Koi-Koi, a gambling arrangement is made with that actor.
+  - Depending on the game result of Koi-Koi, it will affect that actor orand the world of Morrowind.
+
 ## TODO
-- see [Project page](https://github.com/longod/Hanafuda/projects?query=is%3Aopen)
+- See [Project page](https://github.com/longod/Hanafuda/projects?query=is%3Aopen)
 
 ## Contributing
 I hope you can do it together.  

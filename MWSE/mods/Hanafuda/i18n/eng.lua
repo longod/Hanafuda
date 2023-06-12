@@ -185,7 +185,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.shobuTooltip"] = "You Win",
     ["koi.view.callingConfirmMessage"] = { one = "%{name} collected a total of %{count} point combos.\nBase point: %{base} Multiplier: x%{mult}", other = "%{name} collected a total of %{count} points combos.\nBase point: %{base} Multiplier: x%{mult}"},
     ["koi.view.point"] = { one = "%{count} point", other = "%{count} points"},
-    ["koi.view.round"] = "%{count} / %{max}",
+    ["koi.view.round"] = "Round: %{count} / %{max}",
     ["koi.view.parent"] = "Oya",
     ["koi.view.child"] = "Ko",
     ["koi.view.decideParentMessage"] = "Whoever chooses the card of the early month becomes the dealer.",
@@ -207,12 +207,11 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.capturedTooltip.opponent"] = "%{name} cards captured by opponent are placed.",
     ["koi.view.capturedLabel"] = "%{name}'s Captured Cards",
     ["koi.view.exit"] = "Concede",
-    ["koi.view.cardList"] = "Cards",             -- todo hanafuda
+    ["koi.view.cardList"] = "Cards",
     ["koi.view.comboList"] = "Combos",
     ["koi.view.quickRule"] = "Rule",
-    ["koi.view.totalScore"] = "Total Score: ", -- merge with number
+    ["koi.view.totalScore"] = "Total Score: ",
     ["koi.view.roundCombo"] = "Combos in this round:",
-    ["koi.view.roundLabel"] = "Round: ",       -- merge with number
     -- koikoi combo
     ["koi.combo.fiveBrights.name"] = "Goko",
     ["koi.combo.fiveBrights.point"] = "%{count} points.",

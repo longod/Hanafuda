@@ -4,7 +4,6 @@ local sound = require("Hanafuda.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local ui = require("Hanafuda.KoiKoi.ui")
-local utils = require("Hanafuda.utils")
 local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
@@ -29,6 +28,16 @@ local cardProperty = "Hanafuda:CardId"
 ---@field testCapture fun(e:keyDownEventData)?
 local View = {}
 
+---@param mobile tes3mobileActor?
+---@param defaultName string
+---@return string
+function GetActorName(mobile, defaultName)
+    if mobile and mobile.reference and mobile.reference.object and mobile.reference.object.name then
+        return mobile.reference.object.name
+    end
+    return defaultName
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@return KoiKoi.View
@@ -36,8 +45,8 @@ function View.new(player, opponent)
     --@type KoiKoi.UI
     local instance = {
         names = {
-            [koi.player.you] = utils.GetActorName(player, i18n("playerDefaultName")),
-            [koi.player.opponent] = utils.GetActorName(opponent, i18n("opponentDefaultName")),
+            [koi.player.you] = GetActorName(player, i18n("playerDefaultName")),
+            [koi.player.opponent] = GetActorName(opponent, i18n("opponentDefaultName")),
         },
         mobile = {
             [koi.player.you] = player,
@@ -1705,8 +1714,7 @@ function View.CreateInfo(self, parent, service)
     rn.widthProportional = 1
     rn.autoHeight = true
     rn.childAlignX = 0.5
-    rn:createLabel({text = i18n("koi.view.roundLabel")})
-    rn:createLabel({id = uiid.round, text = ""}).borderLeft = 6
+    rn:createLabel({id = uiid.round, text = ""})
     local tn = parent:createBlock()
     tn.widthProportional = 1
     tn.autoHeight = true
