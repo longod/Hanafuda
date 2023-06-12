@@ -135,6 +135,8 @@ local function HasServiceMenuByClass(mobile)
         ["queen mother"] = false,
         -- bloodmoon
         ["shaman"] = false,
+        -- mod
+        ["gambler"] = true,
     }
     -- modded class?
     local class = mobile.object.class.id:lower()

@@ -66,6 +66,26 @@ local function PlayVoice(id, race, female)
 end
 
 ---@param id VoiceId
+---@param objectId string
+---@param special {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+---@return boolean
+local function PlaySpecialVoice(id, objectId, special)
+    if special then
+        local sp = special[objectId]
+        if sp then
+            local voice = sp[id]
+            if voice and table.size(voice) > 0 then
+                local path = table.choice(voice)
+                logger:trace("Special Voice %d %s %s", id, objectId, path)
+                tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+                return true
+            end
+        end
+    end
+    return false
+end
+
+---@param id VoiceId
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
@@ -78,14 +98,8 @@ function this.PlayVoice(id, mobile)
                 if not config.audio.npcVoice then
                     return
                 end
-                local sp = soundData.creatures[m.object.baseObject.id]
-                if sp then
-                    local voice = sp[id]
-                    if voice and table.size(voice) > 0 then
-                        local path = table.choice(voice)
-                        tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
-                        return
-                    end
+                if PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures) then
+                    return
                 end
 
                 local soundCreature = m.object.baseObject
@@ -103,7 +117,9 @@ function this.PlayVoice(id, mobile)
                 if not config.audio.npcVoice then
                     return
                 end
-                -- todo special npc if exists
+                if PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs) then
+                    return
+                end
                 PlayVoice(id, m.object.race.id, m.object.female)
             end,
             [tes3.actorType.player] =

@@ -681,6 +681,11 @@ this.voiceData = {
 
 -- special
 ---@type {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+this.npcs = {
+}
+
+-- special
+---@type {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
 this.creatures = {
     ["dagoth_ur_1"] = {
         [this.voice.continue] = {

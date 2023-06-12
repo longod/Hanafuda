@@ -1742,7 +1742,6 @@ function View.CreateInfo(self, parent, service)
     os:createLabel({text = i18n("koi.view.totalScore")})
     os:createLabel({id = uiid.opponentScore, text = ""})
     opponent:createLabel({text = i18n("koi.view.roundCombo")})
-    -- todo driver for test
     local opponentCombo = opponent:createBlock({id = uiid.opponentCombination })
     opponentCombo.widthProportional = 1
     opponentCombo.autoWidth = true
@@ -1774,7 +1773,6 @@ function View.CreateInfo(self, parent, service)
     ys:createLabel({id = uiid.playerScore, text = ""})
 
     you:createLabel({text = i18n("koi.view.roundCombo")})
-    -- todo driver for test
     local yourCombo = you:createBlock({id = uiid.playerCombination })
     yourCombo.widthProportional = 1
     yourCombo.autoWidth = true
@@ -1811,8 +1809,8 @@ function View.OpenGameMenu(self, id, service)
     -- menu.minHeight = viewportHeight / 2
     menu.width = leftWidth + centerWidth + rightWidth
     menu.height = baseHeight
-    menu.maxWidth = viewportWidth
-    menu.maxHeight = viewportHeight
+    -- menu.maxWidth = viewportWidth
+    -- menu.maxHeight = viewportHeight
     menu.positionX = -menu.width * 0.5 -- center
     menu.positionY = menu.height * 0.5 -- center
     menu.childAlignX = 0.5
@@ -1836,9 +1834,6 @@ function View.OpenGameMenu(self, id, service)
     bg.flowDirection = tes3.flowDirection.leftToRight
     bg.color = { 0.6, 0.6, 0.6 } -- darker
     bg.alpha = 1.0
-
-    -- bg.imageScaleX = 4
-    -- bg.imageScaleY = 3 -- todo aspect
 
     local left = bg:createBlock()
     --left.widthProportional = 0.8

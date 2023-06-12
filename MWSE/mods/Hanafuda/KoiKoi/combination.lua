@@ -26,8 +26,6 @@ assert(sakeCup)
 assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
 
---todo test
-
 -- or {combotype = N, point = M} can be accessed ipairs
 ---@param captured { [CardType] : integer[] }
 ---@param houseRule Config.KoiKoi.HouseRule

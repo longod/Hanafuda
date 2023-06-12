@@ -251,9 +251,6 @@ function KoiKoi.Simulate(self, player, drawnCardId, deltaTime, timestamp)
             combination = nil,
         }
         local command = self.brains[player]:Simulate(params)
-        if command then
-            -- todo validate
-        end
         return command
     end
     return nil
@@ -267,7 +264,7 @@ end
 ---@return KoiKoi.CallCommand?
 function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
     if self.brains[player] then
-        -- todo temp
+        -- todo this is temp parameter
         ---@type KoiKoi.AI.Params
         local params = {
             deltaTime = deltaTime,
@@ -280,9 +277,6 @@ function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
             combination = combination,
         }
         local command = self.brains[player]:Call(params)
-        if command then
-            -- todo validate
-        end
         return command
     end
     return nil

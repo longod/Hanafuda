@@ -64,9 +64,15 @@ function this.Run(self)
                     self.game:Capture(self.game.current, command.matchedCard, true, false)
                 elseif not command.matchedCard then
                     -- discard
+                    for _, cardId in ipairs(self.game.groundPool) do
+                        if koi.CanMatchSuit(command.selectedCard, cardId) then
+                            logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
+                        end
+                    end
                     self.game:Discard(self.game.current, command.selectedCard, false)
                 else
                     -- skip
+                    -- todo validate
                 end
                 self:Next()
             end
@@ -89,9 +95,15 @@ function this.Run(self)
                     self.game:Capture(self.game.current, command.matchedCard, true, true)
                 elseif not command.matchedCard then
                     -- discard
+                    for _, cardId in ipairs(self.game.groundPool) do
+                        if koi.CanMatchSuit(command.selectedCard, cardId) then
+                            logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
+                        end
+                    end
                     self.game:Discard(self.game.current, command.selectedCard, true)
                 else
                     -- skip
+                    -- todo validate
                 end
                 self.drawnCard = nil
                 self:Next()

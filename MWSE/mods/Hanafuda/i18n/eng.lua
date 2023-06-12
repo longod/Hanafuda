@@ -97,7 +97,7 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     ["koi.service.tooltip"] = "Let's play Koi-Koi",
     ["koi.service.odds.label"] = "Betting Odds",
     ["koi.service.odds.free"] = "Free",
-    ["koi.service.odds.rate"] = "%u golds per point",
+    ["koi.service.odds.rate"] = "%u gold per point",
     ["koi.service.odds.disabled"] = "You or the opponent does not have sufficient ability to pay.",
     ["koi.service.payout"] = "Minimum payout for conceding: %u",
     ["koi.koikoi"] = "Koi-Koi",
@@ -105,7 +105,7 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     ["koi.combinations.label"] = "Combinations", -- yaku
     ["koi.luckyHands.label"] = "Lucky Hands", -- teyaku
     ["koi.opponentCard"] = "Opponent's card",
-    ["koi.deck.name"] = "Deck",                 -- todo hanafuda -- todo plural
+    ["koi.deck.name"] = "Deck",                 -- todo hanafuda
     ["koi.deck.remain"] = "%u cards remaining", -- todo hanafuda
     ["koi.point"] = "%u points",                -- todo plural
     ["koi.help.more"] = "More Informations",
@@ -231,7 +231,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.combo.boarDeerButterfly.point"] = "%u points.",
     ["koi.combo.boarDeerButterfly.condition"] = "%s, %s and %s.",
     ["koi.combo.animals.name"] = "Tane",
-    ["koi.combo.animals.point"] = "%u point and 1 additional point for each additional %s card.", -- todo plural
+    ["koi.combo.animals.point"] = "%u point and 1 additional point for each additional %s card.",
     ["koi.combo.animals.condition"] = "Any five %s cards.",
     ["koi.combo.poetryAndBlueRibbons.name"] = "Akatan-Aotan",
     ["koi.combo.poetryAndBlueRibbons.point"] = "%u points and 1 additional point for each additional %s card.",
@@ -243,7 +243,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.combo.blueRibbons.point"] = "%u points and 1 additional point for each additional %s card.",
     ["koi.combo.blueRibbons.condition"] = "%s, %s and %s.",
     ["koi.combo.ribbons.name"] = "Tan",
-    ["koi.combo.ribbons.point"] = "%u point and 1 additional point for each additional %s card.", -- todo plural
+    ["koi.combo.ribbons.point"] = "%u point and 1 additional point for each additional %s card.",
     ["koi.combo.ribbons.condition"] = "Any 5 %s cards.",
     ["koi.combo.flowerViewingSake.name"] = "Hanami-Zake",
     ["koi.combo.flowerViewingSake.point"] = "%u points.",
@@ -252,7 +252,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.combo.moonViewingSake.point"] = "%u points.",
     ["koi.combo.moonViewingSake.condition"] = "%s and %s.",
     ["koi.combo.chaff.name"] = "Kasu",
-    ["koi.combo.chaff.point"] = "%u point and 1 additional point for each additional %s card.", -- todo plural
+    ["koi.combo.chaff.point"] = "%u point and 1 additional point for each additional %s card.",
     ["koi.combo.chaff.condition"] = "Any 10 %s cards.",
     ["koi.luckyHands.fourOfAKind.name"] = "Teshi",
     ["koi.luckyHands.fourOfAKind.point"] = "%u points.",
