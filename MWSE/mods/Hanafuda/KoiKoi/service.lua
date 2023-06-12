@@ -253,6 +253,8 @@ function Service.OnEnterFrame(self, e)
             --     [koi.luckyHands.fourPairs] = 6,
             -- }
             -- total1 = 6
+
+            -- todo in game?
             if lh0 or lh1 then
                 self:RequestPhase(phase.luckyHandsWait)
                 local tie = lh0 ~= nil and lh1 ~= nil
@@ -372,7 +374,8 @@ function Service.OnEnterFrame(self, e)
                     self:Discard(command.selectedCard)
                     assert(not self.drawnCard)
                 else
-                    -- skip?
+                    -- error
+                    logger:error("wrong command for drawn card")
                 end
 
                 --self:Next()
@@ -408,7 +411,7 @@ function Service.OnEnterFrame(self, e)
             self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
         end,
         [phase.calling] = function()
-            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp) -- fixme combinations uses accessor
+            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp)
             if command then
                 self:RequestPhase(phase.callingWait)
                 self.lastCommand = command

@@ -1,4 +1,4 @@
---- baseline AI
+--- randomness AI
 ---@class KoiKoi.RandomBrain : KoiKoi.IBrain
 ---@field koikoiChance number
 ---@field meaninglessDiscardChance number

@@ -40,9 +40,9 @@ end
 ---@param parent tes3uiElement
 ---@param texts string[]
 ---@param enables boolean[]?
----@param initialIndex integer?
 ---@param selectedIndexChanged fun(selectedIndex:integer)?
-local function createListBox(parent, texts, enables, selectedIndexChanged, initialIndex)
+---@param initialIndex integer?
+local function CreateListBox(parent, texts, enables, selectedIndexChanged, initialIndex)
     local frame = parent:createThinBorder()
     frame.widthProportional = 1
     frame.autoWidth = true
@@ -176,7 +176,7 @@ function this.CreateBettingMenu(gold, oddsList, enables, penaltyPoint, callback)
         table.insert(texts, t)
     end
 
-    selectedIndex, items = createListBox(o, texts, enables,
+    selectedIndex, items = CreateListBox(o, texts, enables,
     function(index)
         selectedIndex = index
         payout.text = i18n("koi.service.payout", { estimatePayout() })

@@ -48,8 +48,29 @@ function this.Run(self)
             local choices = self.game:ChoiceDecidingParentCards(2)
             self.game:DecideParent(choices[1])
             self.game:DealInitialCards()
-            -- todo lucky hand
-            self:Next()
+            local lh0, total0 = self.game:CheckLuckyHands(koi.player.you)
+            local lh1, total1 = self.game:CheckLuckyHands(koi.player.opponent)
+
+            -- todo in game?
+            if lh0 or lh1 then
+                local tie = lh0 ~= nil and lh1 ~= nil
+                local winner = nil
+                if not tie then
+                    if lh0 then
+                        winner = koi.player.you
+                    else
+                        winner = koi.player.opponent
+                    end
+                end
+                local points = {[koi.player.you] = total0, [koi.player.opponent] = total1}
+                if not tie then
+                    -- No transition to win, so we settle here.
+                    self.game:SetRoundWinnerByLuckyHands(winner, points[winner])
+                    self:Next(99)
+                end
+            else
+                self:Next()
+            end
         end,
         [1] = function()
             local command = self.game:Simulate(self.game.current, nil, 1, 0)
@@ -72,7 +93,9 @@ function this.Run(self)
                     self.game:Discard(self.game.current, command.selectedCard, false)
                 else
                     -- skip
-                    -- todo validate
+                    if table.size(self.game.pools[self.game.current].hand) > 0 then
+                        logger:error("wrong command, must be choice card in hand")
+                    end
                 end
                 self:Next()
             end
@@ -103,35 +126,43 @@ function this.Run(self)
                     self.game:Discard(self.game.current, command.selectedCard, true)
                 else
                     -- skip
-                    -- todo validate
+                    if self.drawnCard then
+                        logger:error("wrong command, must be matching or discard %d", self.drawnCard)
+                    else
+                        logger:error("wrong drawnCard is nil")
+                    end
                 end
                 self.drawnCard = nil
-                self:Next()
+                local combo = self.game:CheckCombination(self.game.current)
+                if combo then
+                    self:Next()
+                else
+                    self:Next(5)
+                end
             end
         end,
         [4] = function()
-            -- todo cache
-            -- fixme if called koi-koi the combination is subtract before combination
-            local combo = self.game:CheckCombination(self.game.current)
+            local combo = self.game.combinations[self.game.current]
             if combo then
-                local command = self.game:Call(self.game.current, combo, 1, 0)
+                local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], 1, 0)
                 if command then
                     if command.calling == koi.calling.koikoi then
                         -- continue
                         self:Next()
                     elseif command.calling == koi.calling.shobu then
                         -- finish
-                        self:Next(99) -- fixme temp
+                        self:Next(99)
                     end
                 end
             else
                 -- no comb
+                logger:error("wrong state")
                 self:Next()
             end
         end,
         [5] = function()
             if self.game:CheckEnd() then
-                self:Next(100) -- fixme temp
+                self:Next(100)
             else
                 self.game:SwapPlayer()
                 self:Next(1)

@@ -320,6 +320,7 @@ function KoiKoi.CheckCombination(self, player)
     local latest = self.combinations[player]
     local diff = combination.Different(combo, latest)
     if diff then
+        logger:debug("%d Update new combos", player)
         self.combinations[player] = combo
         return combo
     end

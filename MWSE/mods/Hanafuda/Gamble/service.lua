@@ -10,6 +10,35 @@ local i18n = mwse.loadTranslations("Hanafuda")
 
 local service ---@type KoiKoi.Service?
 
+local oddsList = {
+    0, -- free
+    1,
+    5,
+    25,
+    100,
+}
+local penaltyPointPerRound = 3 -- per round
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param conf Config.KoiKoi
+local function CalculateBettingSettings(player, opponent, conf)
+    -- todo mercantile, speechcraft, personality, luck, disposition, faction reaction
+    local playerGold = act.GetActorGold(player)
+    local opponentGold = act.GetActorGold(opponent)
+    -- Allow odds if there is some amount of payment on both sides.
+    local gold = math.min(playerGold, opponentGold)
+    local metric = math.ceil(gold / (penaltyPointPerRound * conf.round)) -- average points per round... no evidence!
+    local enables = {}
+    for _, value in ipairs(oddsList) do
+        local enable = value <= metric
+        logger:trace("odds %d <= %d " .. tostring(enable), value, metric)
+        table.insert(enables, enable)
+    end
+    return playerGold, enables
+end
+
+
 --- This is popular in hanafuda gambling, where money is transferred according to difference scores and unit price.
 --- NPCs in morrowind have little or no money. It may be more obvious to deal with a unique currency. or other gambling, debt system.
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -75,34 +104,6 @@ local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice, all
     end
 
     return 0, 0, 0
-end
-
-local oddsList = {
-    0, -- free
-    1,
-    5,
-    25,
-    100,
-}
-local penaltyPointPerRound = 3 -- per round
-
----@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@param conf Config.KoiKoi
-local function CalculateBettingSettings(player, opponent, conf)
-    -- todo mercantile, speechcraft, personality, luck, disposition, faction reaction
-    local playerGold = act.GetActorGold(player)
-    local opponentGold = act.GetActorGold(opponent)
-    -- Allow odds if there is some amount of payment on both sides.
-    local gold = math.min(playerGold, opponentGold)
-    -- todo tweak
-    local metric = math.max(gold / penaltyPointPerRound, gold > 0 and 1 or 0) -- average points per round... no evidence!
-    local enables = {}
-    for index, value in ipairs(oddsList) do
-        local enable = value * conf.round <= metric
-        table.insert(enables, enable)
-    end
-    return playerGold, enables
 end
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
