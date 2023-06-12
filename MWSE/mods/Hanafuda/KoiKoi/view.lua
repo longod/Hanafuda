@@ -363,18 +363,20 @@ function View.ShowResult(self, service, player, points)
     if player then
         local name = self.names[koi.player.you]
         if player == koi.player.you then
-            header = i18n("koi.view.winGame", {name})
+            header = i18n("koi.view.winGame", {name = name})
             sound.PlayMusic(sound.music.win)
         else
-            header = i18n("koi.view.loseGame", {name})
+            header = i18n("koi.view.loseGame", {name = name})
             sound.PlayMusic(sound.music.lose)
         end
         sound.PlayVoice(sound.voice.winGame, self.mobile[player])
     end
 
+    local message = i18n("koi.view.gameResult", { name = self.names[koi.player.you], count = points[koi.player.you]}) .. "\n" ..
+    i18n("koi.view.gameResult", { name = self.names[koi.player.opponent], count = points[koi.player.opponent] })
     tes3ui.showMessageMenu({
         header = header,
-        message = i18n("koi.view.gameResult", { self.names[koi.player.you], points[koi.player.you], self.names[koi.player.opponent], points[koi.player.opponent] }),
+        message = message,
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -429,7 +431,7 @@ end
 ---@param service KoiKoi.Service
 function View.ShowWin(self, player, service)
     local name = self.names[player]
-    tes3.messageBox(i18n("koi.view.winRound", {name}))
+    tes3.messageBox(i18n("koi.view.winRound", {name = name}))
     sound.PlayVoice(sound.voice.loseRound, self.mobile[koi.GetOpponent(player)]) -- ovrelap previous voice?
     service:NotifyRoundFinished()
 end
@@ -442,7 +444,7 @@ end
 function View.ShowCalling(self, player, service, calling, point)
     local name = self.names[player]
     tes3.messageBox({
-        message = calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name}) or i18n("koi.view.callShobu", {name, point}),
+        message = calling == koi.calling.koikoi and i18n("koi.view.callKoi", {name = name}) or i18n("koi.view.callShobu", {name = name, count = point}),
         buttons = {
             tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
         },
@@ -565,8 +567,8 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
     local total = basePoint * multiplier
 
     tes3ui.showMessageMenu({
-        header = i18n("koi.view.callingHeader", {self.names[player]}),
-        message = i18n("koi.view.callingMessage" , {total, basePoint, multiplier}),
+        header = i18n("koi.view.callingHeader", { name = self.names[player]}),
+        message = i18n("koi.view.callingMessage" , {count = total, base = basePoint, mult = multiplier}),
         buttons = {
             {
                 -- todo condition, if deck 0 is disable
@@ -630,8 +632,8 @@ function View.ShowCombo(self, player, service, combo, basePoint, multiplier)
 
     -- todo show multipiled score
     tes3ui.showMessageMenu({
-        header = i18n("koi.view.callingHeader", {name}),
-        message = i18n("koi.view.callingConfirmMessage", {name, total, basePoint, multiplier}),
+        header = i18n("koi.view.callingHeader", {name = name}),
+        message = i18n("koi.view.callingConfirmMessage", {name = name, count = total, base = basePoint, mult = multiplier}),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -673,7 +675,7 @@ function View.UpdateScorePoint(self, player, score)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local label = gameMenu:findChild(labelId[player])
-    label.text = i18n("koi.view.point", {score})
+    label.text = i18n("koi.view.point", {count = score})
     --gameMenu:updateLayout()
 end
 
@@ -684,7 +686,7 @@ function View.UpdateRound(self, current, max)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local label = gameMenu:findChild(uiid.round)
-    label.text = i18n("koi.view.round", {current, max})
+    label.text = i18n("koi.view.round", {count = current, max = max})
     --gameMenu:updateLayout()
 end
 
@@ -778,7 +780,7 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
     local unselectedId = selectedId == cardId0 and cardId1 or cardId0
 
     tes3ui.showMessageMenu({
-        header = i18n("koi.view.informParentHeader", { self.names[parent] }),
+        header = i18n("koi.view.informParentHeader", { name = self.names[parent] }),
         message = i18n("koi.view.informParentMessage"),
         buttons = {
             {
@@ -833,7 +835,7 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
                 t.autoWidth = true
                 t.autoHeight = true
                 t.flowDirection = tes3.flowDirection.topToBottom
-                t:createLabel({ text = i18n("koi.view.informParentPick", {name})})
+                t:createLabel({ text = i18n("koi.view.informParentPick", {name = name})})
                 local l = t:createLabel({ text = card.GetCardText(cardId).name })
                 l.color = tes3ui.getPalette(tes3.palette.headerColor)
                 t:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
@@ -1224,7 +1226,7 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
 
     tes3ui.showMessageMenu({
         header = i18n("koi.view.luckyHands.label"),
-        message = tie and i18n("koi.view.drawRound") or i18n("koi.view.winRound", {self.names[winner]}),
+        message = tie and i18n("koi.view.drawRound") or i18n("koi.view.winRound", {name = self.names[winner]}),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],
@@ -1240,7 +1242,7 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
             local maxWidth = ComputeParentMaxWidth(parent)
             local p = koi.player.you
             if luckyHands[p] then
-                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {self.names[p], totalPoints[p]})})
+                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {name = self.names[p], count = totalPoints[p]})})
                 for _, value in ipairs(table.keys(luckyHands[p], true)) do
                     ui.CreateLuckyHandsView(parent, value, luckyHands[p][value], maxWidth)
                 end
@@ -1248,7 +1250,7 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
             end
             p = koi.player.opponent
             if luckyHands[p] then
-                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {self.names[p], totalPoints[p]})})
+                parent:createLabel({ text = i18n("koi.view.luckyHands.player", {name = self.names[p], count = totalPoints[p]})})
                 for _, value in ipairs(table.keys(luckyHands[p], true)) do
                     ui.CreateLuckyHandsView(parent, value, luckyHands[p][value], maxWidth)
                 end
@@ -1414,7 +1416,7 @@ end
 ---@param parent KoiKoi.Player
 ---@param service KoiKoi.Service
 function View.BeginTurn(self, player, parent, service)
-    local text = i18n("koi.view.beginTurn", {self.names[player]})
+    local text = i18n("koi.view.beginTurn", {name = self.names[player]})
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
@@ -1478,7 +1480,7 @@ local function CreateTypeArea(parent, id, type, you)
     area.alpha = 0.2
     --area.paddingAllSides = 2
     area.childAlignY = 0.5
-    local text = you and i18n("koi.view.capturedTooltip.player", {card.GetCardTypeText(type).name}) or i18n("koi.view.capturedTooltip.opponent", {card.GetCardTypeText(type).name})
+    local text = you and i18n("koi.view.capturedTooltip.player", {name = card.GetCardTypeText(type).name}) or i18n("koi.view.capturedTooltip.opponent", {name = card.GetCardTypeText(type).name})
     area:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
@@ -1616,7 +1618,7 @@ function View.CreateYourCaptured(self, parent)
     -- block.childAlignX = 0
     -- block.widthProportional = 1
     -- block.autoHeight = true
-    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.you]})})
+    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {name = self.names[koi.player.you]})})
     -- label.wrapText = true
 
     local bright = CreateTypeArea(CreateTypeFrame(border), uiid.playerBright, card.type.bright, true)
@@ -1654,7 +1656,7 @@ function View.CreateOpponentCaptured(self, parent)
     -- block.childAlignX = 1
     -- block.widthProportional = 1
     -- block.autoHeight = true
-    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {self.names[koi.player.opponent]})})
+    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {name = self.names[koi.player.opponent]})})
     -- label.wrapText = true
 end
 
@@ -1704,7 +1706,7 @@ function View.CreateInfo(self, parent, service)
     rn.autoHeight = true
     rn.childAlignX = 0.5
     rn:createLabel({text = i18n("koi.view.roundLabel")})
-    rn:createLabel({id = uiid.round, text = ""})
+    rn:createLabel({id = uiid.round, text = ""}).borderLeft = 6
     local tn = parent:createBlock()
     tn.widthProportional = 1
     tn.autoHeight = true
@@ -1740,7 +1742,7 @@ function View.CreateInfo(self, parent, service)
     os.autoWidth = true
     os.autoHeight = true
     os:createLabel({text = i18n("koi.view.totalScore")})
-    os:createLabel({id = uiid.opponentScore, text = ""})
+    os:createLabel({id = uiid.opponentScore, text = ""}).borderLeft = 6
     opponent:createLabel({text = i18n("koi.view.roundCombo")})
     local opponentCombo = opponent:createBlock({id = uiid.opponentCombination })
     opponentCombo.widthProportional = 1
@@ -1770,7 +1772,7 @@ function View.CreateInfo(self, parent, service)
     ys.autoWidth = true
     ys.autoHeight = true
     ys:createLabel({text = i18n("koi.view.totalScore")})
-    ys:createLabel({id = uiid.playerScore, text = ""})
+    ys:createLabel({id = uiid.playerScore, text = ""}).borderLeft = 6
 
     you:createLabel({text = i18n("koi.view.roundCombo")})
     local yourCombo = you:createBlock({id = uiid.playerCombination })

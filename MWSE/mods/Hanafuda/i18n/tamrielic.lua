@@ -100,7 +100,7 @@ local this = {
     -- koikoi view
     ["koi.view.parent"] = "Dealer",
     ["koi.view.child"] = "Player",
-    ["koi.view.informParentHeader"] = "%s is the Dealer",
+    ["koi.view.informParentHeader"] = "%{name} is the Dealer",
     ["koi.view.informParentMessage"] = "The Dealer is the first to play.",
 
 }

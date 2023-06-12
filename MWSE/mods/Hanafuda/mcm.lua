@@ -41,6 +41,11 @@ local function OnModConfigReady(e)
             restartRequired = true,
         }),
     })
+    hanafuda:createYesNoButton({
+        label = i18n("mcm.hanafuda.tooltipImage.label"),
+        description = i18n("mcm.hanafuda.tooltipImage.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.tooltipImage),
+        variable = mwse.mcm.createTableVariable({ id = "tooltipImage", table = config })
+    })
 
     do
         local koikoi = hanafuda:createCategory(i18n("mcm.koi.category"))
@@ -75,13 +80,13 @@ local function OnModConfigReady(e)
             })
 
             house:createYesNoButton({
-                label = i18n("mcm.koi.houseRule.flowerViewingSake.label", {i18n("koi.combo.flowerViewingSake.name")}),
-                description = i18n("mcm.koi.houseRule.flowerViewingSake.description", {i18n("koi.combo.flowerViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.flowerViewingSake),
+                label = i18n("mcm.koi.houseRule.flowerViewingSake.label", {name = i18n("koi.combo.flowerViewingSake.name")}),
+                description = i18n("mcm.koi.houseRule.flowerViewingSake.description", {name = i18n("koi.combo.flowerViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.flowerViewingSake),
                 variable = mwse.mcm.createTableVariable({ id = "flowerViewingSake", table = config.koikoi.houseRule })
             })
             house:createYesNoButton({
-                label = i18n("mcm.koi.houseRule.moonViewingSake.label", {i18n("koi.combo.moonViewingSake.name")}),
-                description = i18n("mcm.koi.houseRule.moonViewingSake.description", {i18n("koi.combo.moonViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.moonViewingSake),
+                label = i18n("mcm.koi.houseRule.moonViewingSake.label", {name = i18n("koi.combo.moonViewingSake.name")}),
+                description = i18n("mcm.koi.houseRule.moonViewingSake.description", {name = i18n("koi.combo.moonViewingSake.name")}) .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.houseRule.moonViewingSake),
                 variable = mwse.mcm.createTableVariable({ id = "moonViewingSake", table = config.koikoi.houseRule })
             })
         end
@@ -97,7 +102,8 @@ local function OnModConfigReady(e)
             label = i18n("mcm.audio.npcVoice.label"),
             description = i18n("mcm.audio.npcVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.audio.npcVoice),
             variable = mwse.mcm.createTableVariable({ id = "npcVoice", table = config.audio })
-        })    end
+        })
+    end
     do
         local dev = page:createCategory(i18n("mcm.development.category"))
         dev:createDropdown({

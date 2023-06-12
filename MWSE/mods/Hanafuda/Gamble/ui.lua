@@ -172,14 +172,14 @@ function this.CreateBettingMenu(gold, oddsList, enables, penaltyPoint, callback)
 
     local texts = {}
     for index, value in ipairs(oddsList) do
-        local t = value > 0 and i18n("koi.service.odds.rate", {value}) or i18n("koi.service.odds.free")
+        local t = value > 0 and i18n("koi.service.odds.rate", {count = value}) or i18n("koi.service.odds.free")
         table.insert(texts, t)
     end
 
     selectedIndex, items = CreateListBox(o, texts, enables,
     function(index)
         selectedIndex = index
-        payout.text = i18n("koi.service.payout", { estimatePayout() })
+        payout.text = i18n("koi.service.payout", { count = estimatePayout() })
     end,
     selectedIndex)
     for index, item in ipairs(items) do
@@ -200,7 +200,7 @@ function this.CreateBettingMenu(gold, oddsList, enables, penaltyPoint, callback)
     info.borderAllSides = 4
     info.flowDirection = tes3.flowDirection.topToBottom
     info:createLabel({ text = tes3.findGMST(tes3.gmst.sGold).value --[[@as string]] .. string.format(": %u", gold) })
-    payout = info:createLabel({ text = i18n("koi.service.payout", { estimatePayout() })})
+    payout = info:createLabel({ text = i18n("koi.service.payout", { count = estimatePayout() })})
     --payout.wrapText = true
 
     -- house rule

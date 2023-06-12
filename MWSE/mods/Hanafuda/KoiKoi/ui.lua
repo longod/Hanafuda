@@ -5,6 +5,7 @@ local uiid = require("Hanafuda.uiid")
 local card = require("Hanafuda.card")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
+local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 local headerColor = tes3ui.getPalette(tes3.palette.headerColor)
@@ -86,95 +87,102 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         [koi.combination.fiveBrights] = {
             name = i18n("koi.combo.fiveBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.fiveBrights.point", { koi.basePoint[koi.combination.fiveBrights] }),
-            condition = i18n("koi.combo.fiveBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
+            point = i18n("koi.combo.fiveBrights.point", { count = koi.basePoint[koi.combination.fiveBrights] }),
+            condition = i18n("koi.combo.fiveBrights.condition", { type = card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.fourBrights] = {
             name = i18n("koi.combo.fourBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.fourBrights.point", { koi.basePoint[koi.combination.fourBrights] }),
+            point = i18n("koi.combo.fourBrights.point", { count = koi.basePoint[koi.combination.fourBrights] }),
             condition = i18n("koi.combo.fourBrights.condition",
-                { card.GetCardTypeText(card.type.bright).name, card.GetCardText(rainman).name }),
+                { type = card.GetCardTypeText(card.type.bright).name, symbol = card.GetCardText(rainman).name }),
         },
         [koi.combination.rainyFourBrights] = {
             name = i18n("koi.combo.rainyFourBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.rainyFourBrights.point", { koi.basePoint[koi.combination.rainyFourBrights] }),
-            condition = i18n("koi.combo.rainyFourBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
+            point = i18n("koi.combo.rainyFourBrights.point", { count = koi.basePoint[koi.combination.rainyFourBrights] }),
+            condition = i18n("koi.combo.rainyFourBrights.condition", { type = card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.threeBrights] = {
             name = i18n("koi.combo.threeBrights.name"),
             type = card.type.bright,
-            point = i18n("koi.combo.threeBrights.point", { koi.basePoint[koi.combination.threeBrights] }),
-            condition = i18n("koi.combo.threeBrights.condition", { card.GetCardTypeText(card.type.bright).name }),
+            point = i18n("koi.combo.threeBrights.point", { count = koi.basePoint[koi.combination.threeBrights] }),
+            condition = i18n("koi.combo.threeBrights.condition", { type = card.GetCardTypeText(card.type.bright).name }),
         },
         [koi.combination.boarDeerButterfly] = {
             name = i18n("koi.combo.boarDeerButterfly.name"),
             type = card.type.animal,
-            point = i18n("koi.combo.boarDeerButterfly.point", { koi.basePoint[koi.combination.boarDeerButterfly] }),
-            condition = i18n("koi.combo.boarDeerButterfly.condition",
-                { card.GetCardText(boar).name, card.GetCardText(deer).name, card.GetCardText(butterfly).name }),
+            point = i18n("koi.combo.boarDeerButterfly.point", { count = koi.basePoint[koi.combination.boarDeerButterfly] }),
+            condition = i18n("koi.combo.boarDeerButterfly.condition", {
+                symbol1 = card.GetCardText(boar).name,
+                symbol2 = card.GetCardText(deer).name,
+                symbol3 = card.GetCardText(butterfly).name
+            }),
         },
         [koi.combination.animals] = {
             name = i18n("koi.combo.animals.name"),
             type = card.type.animal,
             point = i18n("koi.combo.animals.point",
-                { koi.basePoint[koi.combination.animals], card.GetCardTypeText(card.type.animal).name }),
-            condition = i18n("koi.combo.animals.condition", { card.GetCardTypeText(card.type.animal).name }),
+                { count = koi.basePoint[koi.combination.animals], type = card.GetCardTypeText(card.type.animal).name }),
+            condition = i18n("koi.combo.animals.condition", { type = card.GetCardTypeText(card.type.animal).name }),
         },
         [koi.combination.poetryAndBlueRibbons] = {
             name = i18n("koi.combo.poetryAndBlueRibbons.name"),
             type = card.type.ribbon,
             point = i18n("koi.combo.poetryAndBlueRibbons.point",
-                { koi.basePoint[koi.combination.poetryAndBlueRibbons], card.GetCardTypeText(card.type.ribbon).name }),
+                { count = koi.basePoint[koi.combination.poetryAndBlueRibbons], type = card.GetCardTypeText(card.type.ribbon).name }),
             condition = i18n("koi.combo.poetryAndBlueRibbons.condition",
-                { card.GetCardTypeText(card.type.ribbon).name, card.GetCardTypeText(card.type.ribbon).name }),
+                { type = card.GetCardTypeText(card.type.ribbon).name }),
         },
         [koi.combination.poetryRibbons] = {
             name = i18n("koi.combo.poetryRibbons.name"),
             type = card.type.ribbon,
             point = i18n("koi.combo.poetryRibbons.point",
-                { koi.basePoint[koi.combination.poetryRibbons], card.GetCardTypeText(card.type.ribbon).name }),
-            condition = i18n("koi.combo.poetryRibbons.condition",
-                { card.GetCardText(redPoetry[1]).name, card.GetCardText(redPoetry[2]).name,
-                    card.GetCardText(redPoetry[3]).name }),
+                { count = koi.basePoint[koi.combination.poetryRibbons], type = card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.poetryRibbons.condition", {
+                symbol1 = card.GetCardText(redPoetry[1]).name,
+                symbol2 = card.GetCardText(redPoetry[2]).name,
+                symbol3 = card.GetCardText(redPoetry[3]).name
+            }),
         },
         [koi.combination.blueRibbons] = {
             name = i18n("koi.combo.blueRibbons.name"),
             type = card.type.ribbon,
             point = i18n("koi.combo.blueRibbons.point",
-                { koi.basePoint[koi.combination.blueRibbons], card.GetCardTypeText(card.type.ribbon).name }),
-            condition = i18n("koi.combo.blueRibbons.condition",
-                { card.GetCardText(blueRibbon[1]).name, card.GetCardText(blueRibbon[2]).name,
-                    card.GetCardText(blueRibbon[3]).name }),
+                { count = koi.basePoint[koi.combination.blueRibbons], type = card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.blueRibbons.condition", {
+                symbol1 = card.GetCardText(blueRibbon[1]).name,
+                symbol2 = card.GetCardText(blueRibbon[2]).name,
+                symbol3 = card.GetCardText(blueRibbon[3]).name
+            }),
         },
         [koi.combination.ribbons] = {
             name = i18n("koi.combo.ribbons.name"),
             type = card.type.ribbon,
             point = i18n("koi.combo.ribbons.point",
-                { koi.basePoint[koi.combination.ribbons], card.GetCardTypeText(card.type.ribbon).name }),
-            condition = i18n("koi.combo.ribbons.condition", { card.GetCardTypeText(card.type.ribbon).name }),
+                { count = koi.basePoint[koi.combination.ribbons], type = card.GetCardTypeText(card.type.ribbon).name }),
+            condition = i18n("koi.combo.ribbons.condition", { type = card.GetCardTypeText(card.type.ribbon).name }),
         },
         [koi.combination.flowerViewingSake] = {
             name = i18n("koi.combo.flowerViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = i18n("koi.combo.flowerViewingSake.point", { koi.basePoint[koi.combination.flowerViewingSake] }),
+            point = i18n("koi.combo.flowerViewingSake.point", { count = koi.basePoint[koi.combination.flowerViewingSake] }),
             condition = i18n("koi.combo.flowerViewingSake.condition",
-                { card.GetCardText(curtain).name, card.GetCardText(sakeCup).name }),
+                { symbol1 = card.GetCardText(curtain).name, symbol2 = card.GetCardText(sakeCup).name }),
         },
         [koi.combination.moonViewingSake] = {
             name = i18n("koi.combo.moonViewingSake.name"),
             type = card.type.chaff, -- no chaff but no suitable type
-            point = i18n("koi.combo.moonViewingSake.point", { koi.basePoint[koi.combination.moonViewingSake] }),
+            point = i18n("koi.combo.moonViewingSake.point", { count = koi.basePoint[koi.combination.moonViewingSake] }),
             condition = i18n("koi.combo.moonViewingSake.condition",
-                { card.GetCardText(moon).name, card.GetCardText(sakeCup).name }),
+                { symbol1 = card.GetCardText(moon).name, symbol2 = card.GetCardText(sakeCup).name }),
         },
         [koi.combination.chaff] = {
             name = i18n("koi.combo.chaff.name"),
             type = card.type.chaff,
             point = i18n("koi.combo.chaff.point",
-                { koi.basePoint[koi.combination.chaff], card.GetCardTypeText(card.type.chaff).name }),
-            condition = i18n("koi.combo.chaff.condition", { card.GetCardTypeText(card.type.chaff).name }),
+                { count = koi.basePoint[koi.combination.chaff], type = card.GetCardTypeText(card.type.chaff).name }),
+            condition = i18n("koi.combo.chaff.condition", { type = card.GetCardTypeText(card.type.chaff).name }),
         },
     }
     local combo = {
@@ -237,7 +245,7 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         right.childAlignX = 1
 
         if actualPoint then
-            local point = right:createLabel({ text = i18n("koi.point", { actualPoint }) })
+            local point = right:createLabel({ text = i18n("koi.view.point", { count = actualPoint }) })
             --point.borderRight = indent * 2
             --point.wrapText = true
         else
@@ -283,12 +291,12 @@ function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
     local desc = {
         [koi.luckyHands.fourOfAKind] = {
             name = i18n("koi.luckyHands.fourOfAKind.name"),
-            point = i18n("koi.luckyHands.fourOfAKind.point", { koi.luckyHandsPoint[koi.luckyHands.fourOfAKind] }),
+            point = i18n("koi.luckyHands.fourOfAKind.point", { count = koi.luckyHandsPoint[koi.luckyHands.fourOfAKind] }),
             condition = i18n("koi.luckyHands.fourOfAKind.condition"),
         },
         [koi.luckyHands.fourPairs] = {
             name = i18n("koi.luckyHands.fourPairs.name"),
-            point = i18n("koi.luckyHands.fourPairs.point", { koi.luckyHandsPoint[koi.luckyHands.fourPairs] }),
+            point = i18n("koi.luckyHands.fourPairs.point", { count = koi.luckyHandsPoint[koi.luckyHands.fourPairs] }),
             condition = i18n("koi.luckyHands.fourPairs.condition"),
         },
     }
@@ -308,7 +316,7 @@ function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
         right.childAlignX = 1
 
         if actualPoint then
-            local point = right:createLabel({ text = i18n("koi.point", { actualPoint }) })
+            local point = right:createLabel({ text = i18n("koi.view.point", { count = actualPoint }) })
             --point.borderRight = indent * 2
             --point.wrapText = true
         else
@@ -673,14 +681,16 @@ function this.CreateCardTooltip(cardId, backface)
     else
         tooltip = tes3ui.createTooltipMenu()
         tooltip.flowDirection = tes3.flowDirection.leftToRight
-        local asset = card.GetCardAsset(cardId)
         local ref = card.GetCardData(cardId)
         local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
         name.color = headerColor
-        local thumb = tooltip:createImage({ path = asset.path })
-        thumb.width = card.GetCardWidth() * 1.5
-        thumb.height = card.GetCardHeight() * 1.5
-        thumb.scaleMode = true
+        if config.tooltipImage then -- Unfortunately, displaying the image impairs gameplay.
+            local asset = card.GetCardAsset(cardId)
+            local thumb = tooltip:createImage({ path = asset.path })
+            thumb.width = card.GetCardWidth() * 1.5
+            thumb.height = card.GetCardHeight() * 1.5
+            thumb.scaleMode = true
+        end
         tooltip:createLabel({ text = card.GetCardSuitText(ref.suit).name .. " (" .. tostring(ref.suit) .. ")" })
         local type = tooltip:createLabel({ text = card.GetCardTypeText(ref.type).name })
         type.color = card.GetCardTypeColor(ref.type)
@@ -695,7 +705,7 @@ function this.CreateDeckTooltip(deck)
     local tooltip = tes3ui.createTooltipMenu()
     local header = tooltip:createLabel({ text = "Deck" })
     header.color = headerColor
-    local label = tooltip:createLabel({ text = i18n("koi.deck.remain", { table.size(deck) }) })
+    local label = tooltip:createLabel({ text = i18n("koi.deck.remain", { count = table.size(deck) }) })
     return tooltip
 end
 
