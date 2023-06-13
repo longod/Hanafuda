@@ -549,6 +549,7 @@ end
 ---@param parent tes3uiElement
 ---@param combo { [KoiKoi.CombinationType] : integer }
 local function CreateTightCombinationList(parent, combo)
+    -- todo curent combination cards on tooltip, need card IDs
     parent.widthProportional = 1
     local maxWidth = ComputeParentMaxWidth(parent)
     for _, value in ipairs(table.keys(combo, true)) do
@@ -560,6 +561,7 @@ end
 ---@param parent tes3uiElement
 ---@param combo { [KoiKoi.CombinationType] : integer }
 local function CreateSummaryCombinationList(parent, combo)
+    -- todo curent combination cards on tooltip, need card IDs
     for _, value in ipairs(table.keys(combo, true)) do
         ui.CreateCombinationView(parent, value, combo[value], nil, nil, true)
     end

@@ -15,6 +15,8 @@ local function OnInitialized(_)
                 service:Destory()
                 service = nil
             else
+                -- todo need game settings menu
+                -- brain, parameters, debug options
                 service = require("Hanafuda.KoiKoi.service").new(
                     require("Hanafuda.KoiKoi.game").new(
                         require("Hanafuda.config").koikoi,

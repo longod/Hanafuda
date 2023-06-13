@@ -137,13 +137,13 @@ function this.Different(current, prev)
     assert(prev)
     assert(current)
 
-    -- FIXME including 1 additional point for each
     local diff = {}
     for key, value in pairs(current) do
-        if not prev[key] then
+        if not prev[key] then -- find new combo
+            diff[key] = value
+        elseif value > prev[key] then -- update point by 1 additional point for each
             diff[key] = value
         end
-        -- need tracking upgrade?
     end
     return table.size(diff) > 0 and diff or nil
 end
