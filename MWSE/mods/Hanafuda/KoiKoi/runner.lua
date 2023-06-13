@@ -186,6 +186,7 @@ function this.Run(self)
         return true
     end
     logger:debug("Finished")
+    -- todo output statics. brain, winner, turn, point, combo, koikoi count, etc...
     return false
 end
 

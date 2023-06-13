@@ -1,8 +1,6 @@
 -- define card data, user non configuable.
 local i18n = mwse.loadTranslations("Hanafuda")
 
--- todo test missing indices
-
 local this = {}
 --- month
 ---@enum CardSuit
@@ -55,13 +53,12 @@ this.cardSymbol = {
 this.cardCount = 48 ---@type integer
 this.cardWidth = math.ceil( 32 * 2 ) ---@type number
 this.cardHeight = math.ceil( 53 * 2 ) ---@type number
-assert(this.cardCount > 0)
-assert(this.cardWidth > 0)
-assert(this.cardHeight > 0)
 
 ---@class CardAsset
 ---@field path string
 
+-- TODO Allow switching of art for each game.
+-- directory layout, naming rule, search filesystem
 ---@type CardAsset[]
 this.cardAssets = {
     { path = "Textures/Hanafuda/01-1.dds" },
@@ -113,7 +110,6 @@ this.cardAssets = {
     { path = "Textures/Hanafuda/12-3.dds" },
     { path = "Textures/Hanafuda/12-4.dds" },
 }
-assert(table.size(this.cardAssets) == this.cardCount)
 
 ---@type CardAsset
 this.cardBackAsset = { path = "Textures/Hanafuda/back.dds" }
@@ -186,7 +182,6 @@ this.cardText = {
     { name = i18n("hanafuda.card.name_12_3") },
     { name = i18n("hanafuda.card.name_12_4") },
 }
-assert(table.size(this.cardText) == this.cardCount)
 
 ---@type CardText[]
 this.suitText = {
@@ -203,7 +198,6 @@ this.suitText = {
     { name = i18n("hanafuda.card.suit_11"), alt = i18n("hanafuda.card.suit_alt_11") },
     { name = i18n("hanafuda.card.suit_12"), alt = i18n("hanafuda.card.suit_alt_12") },
 }
-assert(table.size(this.suitText) == table.size(this.cardSuit))
 
 ---@type CardText[]
 this.typeText = {
@@ -212,7 +206,6 @@ this.typeText = {
     { name = i18n("hanafuda.card.type_2") },
     { name = i18n("hanafuda.card.type_3") },
 }
-assert(table.size(this.typeText) == table.size(this.cardType))
 
 ---@type {table : number[]} color
 this.typeColor = {
@@ -221,6 +214,5 @@ this.typeColor = {
     { 0 / 255.0,   112 / 255.0, 221 / 255.0 },
     { 30 / 255.0,  255 / 255.0, 0 / 255.0 },
 }
-assert(table.size(this.typeColor) == table.size(this.cardType))
 
 return this

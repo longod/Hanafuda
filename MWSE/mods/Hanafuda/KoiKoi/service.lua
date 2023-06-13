@@ -391,7 +391,6 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.checkCombo] = function()
             local combo = self.game:CheckCombination(self.game.current)
-            -- fixme if called koi-koi the combination is subtract before combination
             if combo then
                 self:RequestPhase(phase.checkComboWait)
                 local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)

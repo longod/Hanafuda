@@ -60,6 +60,8 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
     local selectedColor = tes3ui.getPalette(tes3.palette.activeColor)
     local disabledColor = tes3ui.getPalette(tes3.palette.disabledColor)
 
+    -- todo use tes3uiTextSelect widget
+
     ---@param p tes3uiElement
     local function createItem(p, text)
         local bg = p:createRect()

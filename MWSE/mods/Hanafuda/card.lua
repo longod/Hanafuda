@@ -81,14 +81,6 @@ local this = {
     symbol = data.cardSymbol,
 }
 
--- function this.getCardReference()
---     return cardReferenceData
--- end
-
--- function this.getCardCount()
---     return #cardReferenceData
--- end
-
 ---@param cardId integer
 ---@return CardData
 function this.GetCardData(cardId)
@@ -150,7 +142,7 @@ end
 
 ---@return integer[] cardId
 function this.CreateDeck()
-    local deck = {}
+    local deck = table.new(data.cardCount, 0)
     for index, _ in ipairs(cardReferenceData) do
         deck[index] = index
     end
@@ -160,9 +152,8 @@ end
 ---@param deck integer[] cardId
 ---@return integer[] cardId
 function this.ShuffleDeck(deck)
-    local s = {}
-    for i = 1, #deck do s[i] = deck[i] end
-    for i = #deck, 2, -1 do
+    local s = table.copy(deck)
+    for i = table.size(deck), 2, -1 do
         local j = math.random(i)
         s[i], s[j] = s[j], s[i]
     end

@@ -208,7 +208,7 @@ local function AddGamblingMenu(menu, player, opponent)
     local serviceButton = parent:createTextSelect({ id = uiid.menuDialogServiceKoiKoi, text = i18n("koi.service.label") })
     parent:reorderChildren(divider, serviceButton, 1) -- above divider
 
-    -- reflesh by update event?
+    -- todo try to use tes3uiTextSelect widget
     if not act.CanPerformService(player, opponent) then
         serviceButton.disabled = true
         serviceButton.color = tes3ui.getPalette(tes3.palette.disabledColor)
