@@ -54,6 +54,7 @@ local phase = {
 ---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
 ---@field skipAnimation boolean
+---@field waitScale number
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(params : KoiKoi.ExitStatus)?
 ---@field enterFrameCallback fun(e : enterFrameEventData)?
@@ -77,6 +78,7 @@ function Service.new(game, view, onExit)
         drawnCard = nil,
         skipDecidingParent = false, -- or table flags
         skipAnimation = true,
+        waitScale = 1.0,
         lastCommand = nil,
         onExit = onExit,
     }
@@ -143,19 +145,72 @@ function Service.TransitPhase(self)
     if self.phase == phase.wait then
         return false
     end
-    self.phase = phase.wait
-    -- todo when player input available, no wait
-    timer.start({
-        type = timer.real,
-        ---@param e mwseTimerCallbackData
-        callback = function(e)
-            logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
-            self.phase = self.phaseNext
-        end,
-        iterations = 1,
-        duration = 0.5,
-        persist = false,
-    })
+    local wait = 0.5 -- default wait
+    -- specific wait
+    local waitNext = {
+        [phase.new] = 0,
+        [phase.initialized] = 1, -- put cards for deciding parent
+        [phase.decidingParent] = 1,
+        [phase.decidedParent] = 1,
+        [phase.decidedParentWait] = 1,
+        [phase.setupRound] = 1,
+        [phase.dealingInitial] = 1,
+        -- [phase.checkLuckyHands] = 1,
+        -- [phase.luckyHandsWait] = 1,
+        -- [phase.beginTurn] = 0,
+        -- [phase.matchCard] = 0,
+        -- [phase.matchCardFlip] = 1,
+        [phase.matchCardFlipWait] = 1.5,
+        -- [phase.matchCardWait] = 0,
+        [phase.drawCard] = 1,
+        -- [phase.drawCardWait] = 0,
+        [phase.matchDrawCard] = 1.5, -- acatial drawn card
+        -- [phase.matchDrawCardWait] = 0,
+        -- [phase.checkCombo] = 0,
+        -- [phase.checkComboWait] = 0,
+        -- [phase.calling] = 0,
+        -- [phase.callingWait] = 0,
+        -- [phase.endTurn] = 0,
+        [phase.noMatch] = 2,
+        [phase.win] = 2,
+        [phase.roundResultWait] = 2,
+        [phase.roundFinished] = 2,
+        [phase.gameFinished] = 2,
+        [phase.resultWait] = 2,
+        [phase.terminate] = 0,
+    }
+    -- or use current phase
+    if waitNext[self.phaseNext] ~= nil then
+        wait = waitNext[self.phaseNext]
+    end
+
+    -- when player input available, no wait
+    if self.game:HasBrain(self.game.current) == false then
+        if phase.matchCard <= self.phaseNext and self.phaseNext <= phase.matchDrawCardWait then
+            wait = 0
+        end
+    end
+
+    wait = wait * self.waitScale
+
+    if wait > 0 then
+        self.phase = phase.wait
+        timer.start({
+            type = timer.real,
+            ---@param e mwseTimerCallbackData
+            callback = function(e)
+                logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
+                self.phase = self.phaseNext
+            end,
+            iterations = 1,
+            duration = wait,
+            persist = false,
+        })
+    else
+        logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
+        self.phase = self.phaseNext
+    end
+
     return true
 end
 
@@ -359,7 +414,6 @@ function Service.OnEnterFrame(self, e)
             local command = self.game:Simulate(self.game.current, self.drawnCard, e.delta, e.timestamp)
             if command then
                 -- todo com:Execute()
-                -- todo view
                 self:RequestPhase(phase.matchDrawCardWait) -- wait for view
 
                 if command.selectedCard and command.matchedCard then

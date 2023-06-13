@@ -777,6 +777,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         service:NotifyDecideParent(selectedCardId)
     end)
     gameMenu:updateLayout()
+    sound.Play(sound.se.dealCard)
     tes3.messageBox(i18n("koi.view.decideParentMessage"))
 
 end

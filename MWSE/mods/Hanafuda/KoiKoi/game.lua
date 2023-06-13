@@ -484,4 +484,11 @@ function KoiKoi.GetGameWinner(self)
     return winner
 end
 
+---@param self KoiKoi
+---@param player KoiKoi.Player
+---@return boolean
+function KoiKoi.HasBrain(self, player)
+    return self.brains[player] ~= nil
+end
+
 return KoiKoi
