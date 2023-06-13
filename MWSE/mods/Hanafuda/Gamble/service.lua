@@ -174,6 +174,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
 
 end
 
+
 ---@param e uiEventEventData
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -182,18 +183,22 @@ local function UpdateVisibility(e, player, opponent)
             local b = e.source:findChild(uiid.menuDialogServiceKoiKoi)
             if b and not b.visible then
                 b.visible = true
-                if act.CanPerformService(player, opponent)then
-                    b.disabled = false
-                    b.color = tes3ui.getPalette(tes3.palette.normalColor)
+                if act.CanPerformService(player, opponent) then
+                    b.widget.state = tes3.uiState.normal
                 else
-                    b.disabled = true
-                    b.color = tes3ui.getPalette(tes3.palette.disabledColor)
+                    b.widget.state = tes3.uiState.disabled
                 end
                 e.source:updateLayout() -- endless calling?
                 logger:trace("UpdateVisibility")
             end
         end,
         timer.real)
+end
+
+---@param mobile tes3mobileActor
+---@return string
+local function GetActorName(mobile)
+    return mobile.reference.object.name
 end
 
 ---@param menu tes3uiElement
@@ -208,10 +213,8 @@ local function AddGamblingMenu(menu, player, opponent)
     local serviceButton = parent:createTextSelect({ id = uiid.menuDialogServiceKoiKoi, text = i18n("koi.service.label") })
     parent:reorderChildren(divider, serviceButton, 1) -- above divider
 
-    -- todo try to use tes3uiTextSelect widget
     if not act.CanPerformService(player, opponent) then
-        serviceButton.disabled = true
-        serviceButton.color = tes3ui.getPalette(tes3.palette.disabledColor)
+        serviceButton.widget.state = tes3.uiState.disabled
     else
     serviceButton:register(tes3.uiEvent.mouseClick,
         ---@param _ uiEventEventData
@@ -230,8 +233,17 @@ local function AddGamblingMenu(menu, player, opponent)
     serviceButton:register(tes3.uiEvent.help,
         ---@param e uiEventEventData
         function(e)
-            if e.source.disabled then
-                -- todo reason if it disabled
+            if e.source.widget.state == tes3.uiState.disabled then
+                -- show reason
+                -- or cache to use setProperty reason
+                local condition, reason, byOpponent = act.CanPerformService(player, opponent)
+                if not condition and reason then
+                    local text = act.GetRefusedReasonText(reason, GetActorName(byOpponent and opponent or player))
+                    if text then
+                        local tooltip = tes3ui.createTooltipMenu()
+                        tooltip:createLabel({ text = text })
+                    end
+                end
             else
                 local tooltip = tes3ui.createTooltipMenu()
                 tooltip:createLabel({ text = i18n("koi.service.tooltip") })

@@ -2,6 +2,7 @@
 local this = {}
 local logger = require("Hanafuda.logger")
 local special = require("Hanafuda.Gamble.special")
+local i18n = mwse.loadTranslations("Hanafuda")
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return boolean
@@ -210,6 +211,7 @@ end
 
 ---@param mobile tes3mobileActor
 ---@return boolean
+---@return string? -- reason
 local function ActorCanPerformService(mobile)
     local condition = {
         "attacked",
@@ -226,11 +228,12 @@ local function ActorCanPerformService(mobile)
         "isReadyingWeapon",
         "isSneaking",
         "isSwimming",
+        "weaponDrawn", -- weaponReady, castReady?
     }
     for _, value in ipairs(condition) do
         if mobile[value] then
             logger:trace(value)
-            return false
+            return false, value
         end
     end
     return true
@@ -256,27 +259,37 @@ local function CanPerformServiceByDisposition(player, opponent)
     return opponent.object.disposition >= threshold
 end
 
----@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@return boolean
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@return boolean -- can perform
+---@return string? -- reason
+---@return boolean? -- byOpponent
 function this.CanPerformService(player, opponent)
-    if not ActorCanPerformService(player)then
+    if player == nil or opponent == nil then
+        return false, nil, nil
+    end
+
+    local condition, reason = ActorCanPerformService(player)
+    if not condition then
         logger:trace("not perform by player condition")
-        return false
+        return condition, reason, false
     end
-    if not ActorCanPerformService(opponent)then
+    condition, reason = ActorCanPerformService(opponent)
+    if not condition then
         logger:trace("not perform by opponent condition")
-        return false
+        return condition, reason, true
     end
-    if not CanPerformServiceByFight(player, opponent)then
+    if not CanPerformServiceByFight(player, opponent) then
         logger:trace("not perform by fight")
-        return false
+        return false, "fight", true
     end
 
     local types = {
         [tes3.actorType.creature] =
         ---@param a tes3mobileCreature
         ---@return boolean
+        ---@return string?
+        ---@return boolean?
             function(a)
                 -- no disposition
                 return true
@@ -284,25 +297,59 @@ function this.CanPerformService(player, opponent)
         [tes3.actorType.npc] =
         ---@param a tes3mobileNPC
         ---@return boolean
+        ---@return string?
+        ---@return boolean?
             function(a)
-                if not CanPerformServiceByDisposition(player, a)then
+                if not CanPerformServiceByDisposition(player, a) then
                     logger:trace("not perform by disposition")
-                    return false
+                    return false, "disposition", true
                 end
                 return true
             end,
         [tes3.actorType.player] =
         ---@param a tes3mobilePlayer
         ---@return boolean
+        ---@return string?
+        ---@return boolean
             function(a)
                 -- possible?
-                return false
+                return false, nil, false
             end,
     }
     if types[opponent.actorType] then
         return types[opponent.actorType](opponent)
     end
-    return false
+    return false, nil, nil
+end
+
+---@param reason string
+---@param name string
+---@return string?
+function this.GetRefusedReasonText(reason, name)
+    local condition = {
+        ["attacked"] = "gamble.refusedReason.combat",
+        ["inCombat"] = "gamble.refusedReason.combat",
+        ["isAttackingOrCasting"] = "gamble.refusedReason.combat",
+        ["isDead"] = "gamble.refusedReason.dead",
+        ["isDiseased"] = "gamble.refusedReason.diseased",
+        ["isFlying"] = "gamble.refusedReason.floating",
+        ["isJumping"] = "gamble.refusedReason.floating",
+        ["isKnockedDown"] = "gamble.refusedReason.knocked",
+        ["isKnockedOut"] = "gamble.refusedReason.knocked",
+        ["isParalyzed"] = "gamble.refusedReason.paralyzed",
+        ["isPlayerHidden"] = "gamble.refusedReason.hidden",
+        ["isReadyingWeapon"] = "gamble.refusedReason.combat",
+        ["isSneaking"] = "gamble.refusedReason.sneaking",
+        ["isSwimming"] = "gamble.refusedReason.swimming",
+        ["weaponDrawn"] = "gamble.refusedReason.combat",
+        ["fight"] = "gamble.refusedReason.fight",
+        ["disposition"] = "gamble.refusedReason.disposition",
+    }
+    local key = condition[reason]
+    if key then
+        return i18n(key, {name = name})
+    end
+    return nil
 end
 
 

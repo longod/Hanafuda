@@ -31,7 +31,7 @@ local View = {}
 ---@param mobile tes3mobileActor?
 ---@param defaultName string
 ---@return string
-function GetActorName(mobile, defaultName)
+local function GetActorName(mobile, defaultName)
     if mobile and mobile.reference and mobile.reference.object and mobile.reference.object.name then
         return mobile.reference.object.name
     end
