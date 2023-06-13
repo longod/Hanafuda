@@ -68,25 +68,26 @@ end
 ---@param id VoiceId
 ---@param objectId string
 ---@param special {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
----@return boolean
+---@return integer?
 local function PlaySpecialVoice(id, objectId, special)
     if special then
         local sp = special[objectId]
         if sp then
             local voice = sp[id]
             if voice and table.size(voice) > 0 then
-                local path = table.choice(voice)
-                logger:trace("Special Voice %d %s %s", id, objectId, path)
+                local path, k = table.choice(voice)
+                logger:trace("Special Voice %d %s : %d %s", id, objectId, k, path)
                 tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
-                return true
+                return k
             end
         end
     end
-    return false
+    return nil
 end
 
 ---@param id VoiceId
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
+---@return integer? -- random choice index
 function this.PlayVoice(id, mobile)
     if not tes3.onMainMenu() and mobile then
         logger:trace("PlayVoice %d %s", id, mobile.object.baseObject.id)
@@ -98,8 +99,9 @@ function this.PlayVoice(id, mobile)
                 if not config.audio.npcVoice then
                     return
                 end
-                if PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures) then
-                    return
+                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures)
+                if sp ~= nil then
+                    return sp
                 end
 
                 local soundCreature = m.object.baseObject
@@ -108,33 +110,37 @@ function this.PlayVoice(id, mobile)
                     local gen = tes3.getSoundGenerator(soundCreature.id, data.gen)
                     if gen and gen.sound then
                         gen.sound:play(nil, 1)
+                        return nil -- There is only one voice assigned.
                     end
                 end
+                return nil
             end,
             [tes3.actorType.npc] =
             ---@param m tes3mobileNPC
             function(m)
                 if not config.audio.npcVoice then
-                    return
+                    return nil
                 end
-                if PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs) then
-                    return
+                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs)
+                if sp ~= nil then
+                    return sp
                 end
-                PlayVoice(id, m.object.race.id, m.object.female)
+                return PlayVoice(id, m.object.race.id, m.object.female)
             end,
             [tes3.actorType.player] =
             ---@param m tes3mobilePlayer
             function(m)
                 if not config.audio.playerVoice then
-                    return
+                    return nil
                 end
-                PlayVoice(id, m.object.race.id, m.object.female)
+                return PlayVoice(id, m.object.race.id, m.object.female)
             end,
         }
         if types[mobile.actorType] then
-            types[mobile.actorType](mobile)
+            return types[mobile.actorType](mobile)
         end
     end
+    return nil
 end
 
 ---@param id MusicId

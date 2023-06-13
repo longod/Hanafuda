@@ -584,7 +584,7 @@ function this.CreateRule(e)
     ---@param text string
     ---@param indent integer?
     local function createText(p, text, indent)
-        indent = indent or 1
+        indent = indent and (indent + 1) or 1
         local l = p:createLabel({ text = text })
         l.wrapText = true
         l.borderAllSides = 6
@@ -594,7 +594,7 @@ function this.CreateRule(e)
     ---@param text string
     ---@param indent integer?
     local function createLink(p, text, url, indent)
-        indent = indent or 1
+        indent = indent and (indent + 1) or 1
         local l = p:createHyperlink({ text = text, url = url })
         l.wrapText = true
         l.borderAllSides = 6
@@ -603,6 +603,8 @@ function this.CreateRule(e)
     -- tl;dr
     createHeader(parent, i18n("koi.help.tldr.header"))
     createText(parent, i18n("koi.help.tldr.description"))
+    createHeader(parent, i18n("koi.help.tips.header"), 1)
+    createText(parent, i18n("koi.help.tips.description"), 1)
     parent:createDivider().widthProportional = 1.0
 
     -- hanafuda abstruct
@@ -645,7 +647,6 @@ function this.CreateRule(e)
 
     -- todo gambling (explain before game beginning)
     -- todo house rules
-    -- hint, tips
 
     -- more info
     parent:createDivider().widthProportional = 1.0

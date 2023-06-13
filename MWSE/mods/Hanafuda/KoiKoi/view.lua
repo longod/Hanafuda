@@ -159,8 +159,6 @@ local function PutDeck(parent, deck)
         ui.CreateDeckTooltip(deck)
     end)
 
-    -- todo if empty it is invisible
-
     return image
 end
 
@@ -730,6 +728,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
+    -- automatic layout does not center them, but this is not a major problem.
     local g0 = gameMenu:findChild(uiid.boardGroundRow0)
     local g1 = gameMenu:findChild(uiid.boardGroundRow1)
     local c0 = PutCard(g0, cardId0, true, true)
@@ -1407,8 +1406,9 @@ end
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param cardId integer
+---@param emptyDeck boolean
 ---@param skipAnimation boolean
-function View.Draw(self, service, player, cardId, skipAnimation)
+function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
     -- TODO not skipAnimation
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
@@ -1416,6 +1416,10 @@ function View.Draw(self, service, player, cardId, skipAnimation)
     local drawn = gameMenu:findChild(uiid.boardDrawn)
     local element = PutCard(drawn, cardId, false)
     self:RegisterDrawnCardEvent(element, cardId, service) -- only player?
+    if emptyDeck then
+        local pile = gameMenu:findChild(uiid.boardPile)
+        pile.visible = false
+    end
     gameMenu:updateLayout()
     sound.Play(sound.se.pickCard)
 

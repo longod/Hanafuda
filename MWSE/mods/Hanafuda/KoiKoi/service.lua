@@ -401,7 +401,7 @@ function Service.OnEnterFrame(self, e)
                 local draw = self:DrawCard()
                 assert(draw)
                 self:RequestPhase(phase.drawCardWait) -- wait for view
-                self.view:Draw(self, self.game.current, draw, self.skipAnimation)
+                self.view:Draw(self, self.game.current, draw, self.game:EmptyDeck(), self.skipAnimation)
             else
                 -- draw? prepare for view
                 self:RequestPhase(phase.matchDrawCard)

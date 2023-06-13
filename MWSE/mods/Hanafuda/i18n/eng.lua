@@ -115,6 +115,10 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
 3. This is repeated alternately, with the player's turns swapped.
 4. When a combo is created with the captured cards, the player decides whether to continue (Koi-Koi) to create better combos or win the round (Shobu).
 5. The player with the highest total points wins At the end of the game.]],
+    ["koi.help.tips.header"] = "Tips",
+    ["koi.help.tips.description"] =
+[[It is to make the combo faster than the opponent and at the same time prevent the opponent from making the combo.
+Also, aim for a high score by calling Koi-Koi.]],
     ["koi.help.summary.header"] = "Koi-Koi",
     ["koi.help.summary.description"] =
 [[Koi-koi is a popular game played with Hanafuda cards in Akavir.

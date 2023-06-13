@@ -1,5 +1,4 @@
 --- tamrielic (english) strings for partial localization
--- todo exsits in tamriel
 local this = {
     -- hanafuda card suit (month)
     ["hanafuda.card.suit_01"] = "Morning Star",
