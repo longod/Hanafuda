@@ -349,7 +349,7 @@ function this.GetRefusedReasonText(reason, name)
     if key then
         return i18n(key, {name = name})
     end
-    return nil
+    return nil -- or fallback text
 end
 
 

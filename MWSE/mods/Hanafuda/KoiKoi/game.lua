@@ -329,7 +329,14 @@ end
 
 ---@param self KoiKoi
 function KoiKoi.CheckEnd(self)
-    return table.empty(self.deck)
+    -- ends when both players hand empty
+    for _, p in pairs(self.pools) do
+        if table.size(p.hand) > 0 then
+            return false
+        end
+    end
+    return true
+    -- return table.size(self.deck) == 0 -- or empty deck
 end
 
 ---@param self KoiKoi

@@ -173,9 +173,9 @@ The phrase 'Shobu' roughly means 'The game is won'.]],
     ["koi.help.rule.round.scoring.description"] =
 [[The player who declares 'Shobu' and wins is awarded points according to combinations. The winning player becomes the dealer and goes to the next round.
 Depending on the house rules, the multiplier are determined by the number of times 'Koi-Koi' is declared or base points, which is then multiplied.]],
-    ["koi.help.rule.round.emptyDeck.header"] = "Deck is Empty",
+    ["koi.help.rule.round.emptyDeck.header"] = "Both Players' Hands are Empty",
     ["koi.help.rule.round.emptyDeck.description"] =
-[[If the deck is empty at the end of the turn, the round ends in a tie.
+[[If both players run out of cards in their hands at the end of the turn, the round ends in a tie.
 Depending on the house rules, either the dealer or the player scores points, or the dealer and the player are swapped to go to the next round.]],
     ["koi.help.rule.end.header"] = "End of Game",
     ["koi.help.rule.end.description"] =
