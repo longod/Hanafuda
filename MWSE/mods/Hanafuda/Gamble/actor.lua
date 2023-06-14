@@ -92,7 +92,7 @@ local function HasServiceMenuByClass(mobile)
         ["apothecary"] = false,
         ["bookseller"] = true,
         ["buoyant armiger"] = false,
-        ["caravaner"] = true,
+        ["caravaner"] = false,
         ["champion"] = false,
         ["clothier"] = false,
         ["commoner"] = false,
@@ -189,10 +189,6 @@ function this.HasServiceMenu(player, opponent)
                     logger:trace("service is not allowd by class")
                     return false
                 end
-                -- if CanBarter(a) then
-                --     return false
-                -- end
-                -- todo faction-member only npc
                 return true
             end,
         [tes3.actorType.player] =
@@ -259,6 +255,77 @@ local function CanPerformServiceByDisposition(player, opponent)
     return opponent.object.disposition >= threshold
 end
 
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileNPC
+---@return boolean
+local function CanPerformServiceByFaction(player, opponent)
+    local faction = opponent.object.faction
+    if faction then
+
+        local factions = {
+            ["ashlanders"] =
+            ---@return boolean
+                function()
+                    return faction.playerJoined
+                end,
+            ["blades"] =
+            ---@return boolean
+                function()
+                    return faction.playerJoined
+                end,
+            ["clan aundae"] =
+            ---@return boolean
+                function()
+                    return player.hasVampirism
+                end,
+            ["clan berne"] =
+            ---@return boolean
+                function()
+                    return player.hasVampirism
+                end,
+            ["clan quarra"] =
+            ---@return boolean
+                function()
+                    return player.hasVampirism
+                end,
+            ["hlaalu"] =
+            ---@return boolean
+                function()
+                    if faction.playerJoined and not faction.playerExpelled then
+                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                    end
+                    return false
+                end,
+            ["morag tong"] =
+            ---@return boolean
+                function()
+                    return faction.playerJoined and not faction.playerExpelled
+                end,
+            ["redoran"] =
+            ---@return boolean
+                function()
+                    if faction.playerJoined and not faction.playerExpelled then
+                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                    end
+                    return false
+                end,
+            ["telvanni"] =
+            ---@return boolean
+                function()
+                    if faction.playerJoined and not faction.playerExpelled then
+                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                    end
+                    return false
+                end,
+        }
+        local id = faction.id:lower()
+        if factions[id] then
+            return factions[id]()
+        end
+    end
+    return true
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@return boolean -- can perform
@@ -300,6 +367,10 @@ function this.CanPerformService(player, opponent)
         ---@return string?
         ---@return boolean?
             function(a)
+                if not CanPerformServiceByFaction(player, a) then
+                    logger:trace("not perform by faction")
+                    return false, "faction", true
+                end
                 if not CanPerformServiceByDisposition(player, a) then
                     logger:trace("not perform by disposition")
                     return false, "disposition", true
@@ -343,6 +414,7 @@ function this.GetRefusedReasonText(reason, name)
         ["isSwimming"] = "gamble.refusedReason.swimming",
         ["weaponDrawn"] = "gamble.refusedReason.combat",
         ["fight"] = "gamble.refusedReason.fight",
+        ["faction"] = "gamble.refusedReason.faction",
         ["disposition"] = "gamble.refusedReason.disposition",
     }
     local key = condition[reason]
@@ -364,11 +436,6 @@ function this.CalculateLucky(mobile)
         value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
         total = total + weight
     end
-    if mobile.actorType == tes3.actorType.creature then
-        ---@cast mobile tes3mobileCreature
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-    end
     value = value / total -- normalize
     return value
 end
@@ -379,17 +446,17 @@ function this.CalculateCheatAbility(mobile)
     local value = 0
     local total = 0
     do
-        local weight = 1
-        value = value + math.remap(mobile.willpower.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 1
-        value = value + math.remap(mobile.agility.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    do
         local weight = 0.5
+        value = value + math.remap(mobile.willpower.current, 0, 150, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 1
+        value = value + math.remap(mobile.agility.current, 0, 150, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 0.25
         value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
         total = total + weight
     end
@@ -419,16 +486,16 @@ function this.CalculateSpotAbility(mobile)
     local total = 0
     do
         local weight = 1
-        value = value + math.remap(mobile.willpower.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 1
-        value = value + math.remap(mobile.intelligence.current, 0, 100, 0, 1) * weight
+        value = value + math.remap(mobile.willpower.current, 0, 150, 0, 1) * weight
         total = total + weight
     end
     do
         local weight = 0.5
+        value = value + math.remap(mobile.intelligence.current, 0, 150, 0, 1) * weight
+        total = total + weight
+    end
+    do
+        local weight = 0.25
         value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
         total = total + weight
     end

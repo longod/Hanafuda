@@ -15,6 +15,7 @@ local this = {
     ["gamble.refusedReason.sneaking"] = "%{name} is sneaking.",
     ["gamble.refusedReason.swimming"] = "%{name} is swimming now.",
     ["gamble.refusedReason.fight"] = "%{name} ready to attack at any moment.",
+    ["gamble.refusedReason.faction"] = "%{name} seems to only play with people they approves of among faction members.",
     ["gamble.refusedReason.disposition"] = "%{name} doesn't seem to feel well about you.",
     -- hanafuda card suit (month)
     ["hanafuda.card.suit_01"] = "Mutsuki",
