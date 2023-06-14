@@ -103,23 +103,25 @@ function this.Simulate(self, p)
             return nil
         end
 
-        if self.meaninglessDiscardChance > 0 and self.meaninglessDiscardChance > math.random() then
-            -- try meaningless discard
-            if table.size(p.pool.hand) > 0 then
-                local id = p.pool.hand[math.random(1, table.size(p.pool.hand))]
-                logger:trace(string.format("meaningless discard selectedCard = %d", id))
-                self.wait = nil
-                return { selectedCard = id, matchedCard = nil } -- discard
-            end
-        end
-
         local hands = {} ---@type integer[]
         local allMatches = {} ---@type integer[][]
+        local discardable = {} ---@type integer[]
         for _, hand in ipairs(p.pool.hand) do
             local matched = Match(hand, p.groundPool)
             if table.size(matched) > 0 then
                 table.insert(hands, hand)
                 table.insert(allMatches, matched)
+            else
+                table.insert(discardable, hand)
+            end
+        end
+        if self.meaninglessDiscardChance > 0 and self.meaninglessDiscardChance > math.random() then
+            -- try meaningless discard
+            if table.size(discardable) > 0 then
+                local id = discardable[math.random(1, table.size(discardable))]
+                logger:trace(string.format("meaningless discard selectedCard = %d", id))
+                self.wait = nil
+                return { selectedCard = id, matchedCard = nil } -- discard
             end
         end
         if table.size(hands) > 0 then

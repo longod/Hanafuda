@@ -156,7 +156,7 @@ do
     unitwind:test("Run Game", function()
         unitwind:expect(function()
             local runner = require("Hanafuda.KoiKoi.runner").new(
-                require("Hanafuda.KoiKoi.brain.randomBrain").new({}),
+                require("Hanafuda.KoiKoi.brain.randomBrain").new({meaninglessDiscardChance=0.3}),
                 require("Hanafuda.KoiKoi.brain.simpleBrain").new()
             )
             while runner:Run() do

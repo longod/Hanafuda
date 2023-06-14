@@ -81,6 +81,12 @@ local function FindCardIdInChildren(element, cardId)
     return nil
 end
 
+---@return boolean
+local function IsGrabbingCard()
+    local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
+    return grab and grab.visible and not grab.disabled
+end
+
 ---@param parent tes3uiElement
 ---@param cardId integer
 ---@param backface boolean
@@ -106,7 +112,9 @@ local function PutCard(parent, cardId, backface, notooltip)
         element:register(tes3.uiEvent.help,
         ---@param e uiEventEventData
         function(e)
-            ui.CreateCardTooltip(cardId, backface)
+            if not IsGrabbingCard() then
+                ui.CreateCardTooltip(cardId, backface)
+            end
         end)
     end
 
@@ -132,7 +140,9 @@ local function FlipCard(element)
     element:unregister(tes3.uiEvent.help)
     element:register(tes3.uiEvent.help,
     function(_)
-        ui.CreateCardTooltip(cardId, false)
+        if not IsGrabbingCard() then
+            ui.CreateCardTooltip(cardId, false)
+        end
     end)
     return element
 end
@@ -156,7 +166,9 @@ local function PutDeck(parent, deck)
     image:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        ui.CreateDeckTooltip(deck)
+        if not IsGrabbingCard() then
+            ui.CreateDeckTooltip(deck)
+        end
     end)
 
     return image
@@ -235,6 +247,8 @@ local function GrabCard(element)
     grab.positionX = x
     grab.positionY = y
 
+    -- TODO lock captureable overlay hints
+
     grab:updateLayout()
     root:updateLayout()
     return true
@@ -253,6 +267,9 @@ local function ReleaseGrabedCard(to)
     local root = to:getTopLevelMenu()
     local moved = grab.children[1]:move({ to = to}) -- currently just one child.
     -- unregister events?
+
+    -- TODO unlock captureable overlay hints
+
     grab:updateLayout()
     root:updateLayout()
     return moved
@@ -993,7 +1010,7 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 local moved0 = CaptureCard(e.source, koi.player.you)
                 local moved1 = CaptureGrabCard(koi.player.you)
                 if moved0 and moved1 then
-                    sound.Play(sound.se.putCard) -- todo
+                    sound.Play(sound.se.putCard)
                 end
                 UnregisterEvents(moved0)
                 UnregisterEvents(moved1)
@@ -1500,8 +1517,10 @@ local function CreateTypeArea(parent, id, type, you)
     area:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        local tooltip = tes3ui.createTooltipMenu()
-        local label = tooltip:createLabel({ text = text })
+        if not IsGrabbingCard() then
+            local tooltip = tes3ui.createTooltipMenu()
+            local label = tooltip:createLabel({ text = text })
+        end
     end)
     return area
 end
@@ -1701,15 +1720,36 @@ function View.CreateInfo(self, parent, service)
     combo.borderAllSides = 0
     rule.borderAllSides = 0
     -- todo exit enabled condition
+    -- todo friendly display disalbe state
     exit:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        self:OnExit(e, service)
+        if not IsGrabbingCard() then
+            self:OnExit(e, service)
+        end
     end)
-    -- fixme disable when grabbing card, but it minor issue
-    cards:register(tes3.uiEvent.mouseClick, ui.CreateCardList)
-    combo:register(tes3.uiEvent.mouseClick, ui.CreateCombinationList)
-    rule:register(tes3.uiEvent.mouseClick, ui.CreateRule)
+    cards:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        if not IsGrabbingCard() then
+            ui.CreateCardList(e)
+        end
+    end)
+    combo:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        if not IsGrabbingCard() then
+            ui.CreateCombinationList(e)
+        end
+    end)
+
+    rule:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        if not IsGrabbingCard() then
+            ui.CreateRule(e)
+        end
+    end)
 
     local header = tes3ui.getPalette(tes3.palette.headerColor)
 
@@ -1802,9 +1842,7 @@ end
 function View.OpenGameMenu(self, id, service)
 
     -- pre-load all resources?
-
-    local viewportWidth, viewportHeight = tes3ui.getViewportSize()
-
+    --local viewportWidth, viewportHeight = tes3ui.getViewportSize()
     -- estiamte center or right pane height
     local baseHeight = math.max(cardLayoutHeight * 4 + (4 * 4) + (8 * 2), cardLayoutHeightSmall * 8 + (48 * 2) )
     local centerWidth = cardLayoutWidth * 9
@@ -1892,14 +1930,18 @@ function View.OpenGameMenu(self, id, service)
     opponentHand:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        local tooltip = tes3ui.createTooltipMenu()
-        local label = tooltip:createLabel({ text = i18n("koi.view.hand.opponent") })
+        if not IsGrabbingCard() then
+            local tooltip = tes3ui.createTooltipMenu()
+            local label = tooltip:createLabel({ text = i18n("koi.view.hand.opponent") })
+        end
     end)
     playerHand:register(tes3.uiEvent.help,
     ---@param e uiEventEventData
     function(e)
-        local tooltip = tes3ui.createTooltipMenu()
-        local label = tooltip:createLabel({ text = i18n("koi.view.hand.player") })
+        if not IsGrabbingCard() then
+            local tooltip = tes3ui.createTooltipMenu()
+            local label = tooltip:createLabel({ text = i18n("koi.view.hand.player") })
+        end
     end)
 
     self:RegisterHandEvent(board:findChild(uiid.opponentHand), service)
@@ -1917,6 +1959,7 @@ function View.OpenGameMenu(self, id, service)
     grabMenu.absolutePosAlignY = nil
     grabMenu.borderAllSides = 0
     grabMenu.paddingAllSides = 0
+    grabMenu.alpha = 0
     grabMenu.autoWidth = true
     grabMenu.autoHeight = true
     grabMenu.disabled = true
