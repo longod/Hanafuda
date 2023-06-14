@@ -56,11 +56,8 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
         selectedIndex = -1
     end
     local items = {} ---@type tes3uiElement[]
-    local alpha = 0.5
-    local selectedColor = tes3ui.getPalette(tes3.palette.activeColor)
-    local disabledColor = tes3ui.getPalette(tes3.palette.disabledColor)
-
-    -- todo use tes3uiTextSelect widget
+    local alpha = 0.2
+    local selectedBgColor = tes3ui.getPalette(tes3.palette.activeColor)
 
     ---@param p tes3uiElement
     local function createItem(p, text)
@@ -68,13 +65,14 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
         bg.widthProportional = 1
         bg.autoWidth = true
         bg.autoHeight = true
-        bg.color = selectedColor
+        bg.color = selectedBgColor
         bg.alpha = 0
         bg.paddingAllSides = 2
         local label = bg:createTextSelect({ text = text })
         table.insert(items, label)
         local index = table.size(items)
         if index == selectedIndex then
+            label.widget.state = tes3.uiState.active
             bg.alpha = alpha
         end
         if not enables or enables[index] then
@@ -83,10 +81,12 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
             function(e)
                 for i, item in ipairs(items) do
                     if not item.disabled then
+                        item.widget.state = tes3.uiState.normal
                         item.parent.alpha = 0
                     end
                 end
                 e.source.alpha = alpha
+                items[index].widget.state = tes3.uiState.active
                 selectedIndex = index
                 e.source:getTopLevelMenu():updateLayout()
                 if selectedIndexChanged then
@@ -99,10 +99,12 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
             function(e)
                 for i, item in ipairs(items) do
                     if not item.disabled then
+                        item.widget.state = tes3.uiState.normal
                         item.parent.alpha = 0
                     end
                 end
                 e.source.parent.alpha = alpha
+                e.source.widget.state = tes3.uiState.active
                 selectedIndex = index
                 e.source:getTopLevelMenu():updateLayout()
                 if selectedIndexChanged then
@@ -112,7 +114,7 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
         else
             bg.disabled = true
             label.disabled = true
-            label.color = disabledColor
+            label.widget.state = tes3.uiState.disabled
         end
     end
 

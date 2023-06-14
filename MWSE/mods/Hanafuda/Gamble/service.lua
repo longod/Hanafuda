@@ -185,8 +185,10 @@ local function UpdateVisibility(e, player, opponent)
                 b.visible = true
                 if act.CanPerformService(player, opponent) then
                     b.widget.state = tes3.uiState.normal
+                    b.disabled = false
                 else
                     b.widget.state = tes3.uiState.disabled
+                    b.disabled = true
                 end
                 e.source:updateLayout() -- endless calling?
                 logger:trace("UpdateVisibility")
@@ -215,6 +217,7 @@ local function AddGamblingMenu(menu, player, opponent)
 
     if not act.CanPerformService(player, opponent) then
         serviceButton.widget.state = tes3.uiState.disabled
+        serviceButton.disabled = true
     else
     serviceButton:register(tes3.uiEvent.mouseClick,
         ---@param _ uiEventEventData
@@ -233,7 +236,7 @@ local function AddGamblingMenu(menu, player, opponent)
     serviceButton:register(tes3.uiEvent.help,
         ---@param e uiEventEventData
         function(e)
-            if e.source.widget.state == tes3.uiState.disabled then
+            if e.source.disabled then
                 -- show reason
                 -- or cache to use setProperty reason
                 local condition, reason, byOpponent = act.CanPerformService(player, opponent)
