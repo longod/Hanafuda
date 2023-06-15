@@ -369,7 +369,7 @@ function Service.OnEnterFrame(self, e)
                 -- if no brain
                 -- tes3.messageBox("match in your hand or discard")
                 -- self:RequestPhase(phase.matchCardWait)
-                self.view:ThinkMatchingHand(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
+                self.view:ThinkMatchingHand(self.game.current, e.delta);
             end
         end,
         [phase.matchCardFlip] = function()
@@ -438,7 +438,7 @@ function Service.OnEnterFrame(self, e)
                 -- if no brain
                 -- tes3.messageBox("draw card and match it or discard")
                 -- self:RequestPhase(phase.matchDrawCardWait)
-                self.view:ThinkMatchingDrawn(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta)
+                self.view:ThinkMatchingDrawn(self.game.current, e.delta)
             end
         end,
         [phase.matchDrawCardWait] = function()
@@ -461,7 +461,7 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.checkComboWait] = function()
             -- wait for pc calling
-            self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
+            self.view:ThinkCalling(self.game.current, e.delta);
         end,
         [phase.calling] = function()
             local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp)
@@ -471,7 +471,7 @@ function Service.OnEnterFrame(self, e)
                 local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)
                 self.view:ShowCalling(self.game.current, self, command.calling, basePoint * multiplier)
             else
-                self.view:ThinkCalling(self.game.current, self.game.brains[self.game.current] ~= nil, e.delta);
+                self.view:ThinkCalling(self.game.current, e.delta);
             end
         end,
         [phase.callingWait] = function()

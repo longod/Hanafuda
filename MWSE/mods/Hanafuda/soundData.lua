@@ -66,6 +66,8 @@ this.soundGenData = {
     [this.voice.finish] = { gen = tes3.soundGenType.roar },
     [this.voice.loseRound] = { gen = tes3.soundGenType.scream },
     [this.voice.winGame] = { gen = tes3.soundGenType.roar },
+    [this.voice.think] = { gen = tes3.soundGenType.moan },
+    [this.voice.remind] = { gen = tes3.soundGenType.roar },
 }
 
 -- todo there are placeholder

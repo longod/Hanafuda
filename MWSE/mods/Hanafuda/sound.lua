@@ -14,6 +14,30 @@ this.music = soundData.music
 
 -- todo need driver menu for testing audio
 
+---@param t table
+---@param excluding integer?
+---@return integer?
+local function GetRandomIndex(t, excluding)
+    if t then
+        local size = table.size(t)
+        if size > 1 then
+            -- If excluding is specified, the excluding index is considered the last index. So the total number is one less.
+            local newsize = size
+            if excluding ~= nil then
+                newsize = newsize - 1
+            end
+            local index = math.random(newsize)
+            if index == excluding then
+                index = size
+            end
+            return index
+        elseif size == 1 then
+            return 1
+        end
+    end
+    return nil
+end
+
 ---@param id SoundEffectId
 function this.Play(id)
     local data = soundData.soundData[id]
@@ -44,42 +68,65 @@ end
 ---@param id VoiceId
 ---@param race string
 ---@param female boolean
-local function PlayVoice(id, race, female)
+---@param disposition number? Mutual disposition
+---@param excluding integer?
+---@return integer?
+local function PlayVoice(id, race, female, disposition, excluding)
     if not tes3.onMainMenu() then
         local r = soundData.voiceData[string.lower(race)]
         if not r then
-            return
+            return nil
         end
         local s = r[female and "f" or "m"]
         if not s then
-            return
+            return nil
         end
         local voice = s[id]
-        if voice and table.size(voice) > 0 then
-            local path = table.choice(voice) ---@type string
-            --path = path:gsub("/", "\\")
-            logger:trace("Voice %d %s", id, path)
-            -- local path = GenerateVoicePath(race, female) .. file
+        local index = GetRandomIndex(voice, excluding)
+        if index ~= nil then
+            local path = voice[index]
+            logger:trace("Voice %d : %d %s", id, index, path)
             tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+            return index
         end
     end
+    return nil
 end
 
 ---@param id VoiceId
 ---@param objectId string
 ---@param special {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+---@param disposition number? Mutual disposition
+---@param excluding integer?
 ---@return integer?
-local function PlaySpecialVoice(id, objectId, special)
+local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
     if special then
         local sp = special[objectId]
         if sp then
             local voice = sp[id]
-            if voice and table.size(voice) > 0 then
-                local path, k = table.choice(voice)
-                logger:trace("Special Voice %d %s : %d %s", id, objectId, k, path)
+            local index = GetRandomIndex(voice, excluding)
+            if index ~= nil then
+                local path = voice[index]
+                logger:trace("Special Voice %d %s : %d %s", id, objectId, index, path)
                 tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
-                return k
+                return index
             end
+        end
+    end
+    return nil
+end
+
+---comments
+---@param id VoiceId
+---@param creatureId string?
+---@return nil
+local function PlaySoundGenerator(id, creatureId)
+    local data = soundData.soundGenData[id]
+    if creatureId and data then
+        local gen = tes3.getSoundGenerator(creatureId, data.gen)
+        if gen and gen.sound then
+            gen.sound:play()
+            return nil -- There is only one voice assigned.
         end
     end
     return nil
@@ -87,60 +134,60 @@ end
 
 ---@param id VoiceId
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
+---@param disposition number? Mutual disposition
+---@param excluding integer?
 ---@return integer? -- random choice index
-function this.PlayVoice(id, mobile)
+---@return boolean? -- special
+function this.PlayVoice(id, mobile, disposition, excluding)
     if not tes3.onMainMenu() and mobile then
         logger:trace("PlayVoice %d %s", id, mobile.object.baseObject.id)
 
         local types = {
             [tes3.actorType.creature] =
             ---@param m tes3mobileCreature
+            ---@return integer? -- random choice index
+            ---@return boolean? -- special
             function(m)
                 if not config.audio.npcVoice then
-                    return
+                    return nil, nil
                 end
-                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures)
+                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures, disposition, excluding)
                 if sp ~= nil then
-                    return sp
+                    return sp, true
                 end
-
-                local soundCreature = m.object.baseObject
-                local data = soundData.soundGenData[id]
-                if soundCreature and data then
-                    local gen = tes3.getSoundGenerator(soundCreature.id, data.gen)
-                    if gen and gen.sound then
-                        gen.sound:play(nil, 1)
-                        return nil -- There is only one voice assigned.
-                    end
-                end
-                return nil
+                -- nil
+                return PlaySoundGenerator(id, m.object.baseObject.id), false
             end,
             [tes3.actorType.npc] =
             ---@param m tes3mobileNPC
+            ---@return integer? -- random choice index
+            ---@return boolean? -- special
             function(m)
                 if not config.audio.npcVoice then
-                    return nil
+                    return nil, nil
                 end
-                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs)
+                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs, disposition, excluding)
                 if sp ~= nil then
-                    return sp
+                    return sp, true
                 end
-                return PlayVoice(id, m.object.race.id, m.object.female)
+                return PlayVoice(id, m.object.race.id, m.object.female, disposition, excluding), false
             end,
             [tes3.actorType.player] =
             ---@param m tes3mobilePlayer
+            ---@return integer? -- random choice index
+            ---@return boolean? -- special
             function(m)
                 if not config.audio.playerVoice then
-                    return nil
+                    return nil, nil
                 end
-                return PlayVoice(id, m.object.race.id, m.object.female)
+                return PlayVoice(id, m.object.race.id, m.object.female, disposition, excluding), false
             end,
         }
         if types[mobile.actorType] then
             return types[mobile.actorType](mobile)
         end
     end
-    return nil
+    return nil, nil
 end
 
 ---@param id MusicId
@@ -150,5 +197,21 @@ function this.PlayMusic(id)
         tes3.streamMusic({ path = soundData.musicData[id].path })
     end
 end
+
+
+
+
+--- debugging
+function this.CreateSoundPlayer()
+    local menuid = "Hanafuda.SoundPlayer"
+    local menu = tes3ui.findMenu(menuid)
+    if menu then
+        menu:destroy()
+    end
+    menu = tes3ui.createMenu({ id = menuid, fixedFrame = true })
+
+    menu:updateLayout()
+end
+
 
 return this

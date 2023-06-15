@@ -20,10 +20,18 @@ local disabledCardColor = { 0.3, 0.3, 0.3 }
 
 local cardProperty = "Hanafuda:CardId"
 
+---@class KoiKoi.View.Voice
+---@field latest { KoiKoi.Player : {VoiceId : integer} }
+---@field timer number
+---@field interval number
+---@field chance number
+
 
 ---@class KoiKoi.View
 ---@field names { KoiKoi.Player : string }
 ---@field mobile { KoiKoi.Player : tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? }
+---@field disposition number?
+---@field voices KoiKoi.View.Voice
 ---@field testShowDialog fun(e:keyDownEventData)?
 ---@field testCapture fun(e:keyDownEventData)?
 local View = {}
@@ -40,6 +48,23 @@ end
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@return number?
+local function GetDispotision(player, opponent)
+    if not player or not opponent then
+        return nil
+    end
+    if player.actorType == tes3.actorType.player and opponent.actorType == tes3.actorType.npc then
+        return opponent.object.disposition
+    elseif opponent.actorType == tes3.actorType.player and player.actorType == tes3.actorType.npc then
+        return player.object.disposition -- swapped case
+    end
+    return nil
+end
+
+-- todo It may be better to adjust the width of the ground cards as well as the captured cards
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@return KoiKoi.View
 function View.new(player, opponent)
     --@type KoiKoi.UI
@@ -52,6 +77,15 @@ function View.new(player, opponent)
             [koi.player.you] = player,
             [koi.player.opponent] = opponent,
         },
+        disposition = GetDispotision(player, opponent),
+        voices = {
+            latest = { [koi.player.you] = {},
+                [koi.player.opponent] = {},
+            },
+            timer = 0,
+            chance = 0,
+            interval = 0,
+        }
     }
     setmetatable(instance, { __index = View })
     return instance
@@ -363,8 +397,6 @@ local function CaptureGrabCard(player)
     return moved
 end
 
--- fixme Only notification without direct transition is desirable.
-
 ---comment
 ---@param element tes3uiElement?
 local function UnregisterEvents(element)
@@ -374,6 +406,14 @@ local function UnregisterEvents(element)
     element:unregister(tes3.uiEvent.mouseOver)
     element:unregister(tes3.uiEvent.mouseLeave)
     element:unregister(tes3.uiEvent.mouseClick)
+end
+
+---@param self KoiKoi.View
+---@param id VoiceId
+---@param player KoiKoi.Player
+function View.PlayVoice(self, id, player)
+    -- It is possible that the special voice and the fallback normal voice indexes are mixed up, but I don't care.
+    self.voices.latest[player][id] = sound.PlayVoice(id, self.mobile[player], self.disposition, self.voices.latest[player][id])
 end
 
 ---@param self KoiKoi.View
@@ -393,7 +433,7 @@ function View.ShowResult(self, service, player, points)
             header = i18n("koi.view.loseGame", {name = name})
             sound.PlayMusic(sound.music.lose)
         end
-        sound.PlayVoice(sound.voice.winGame, self.mobile[player])
+        self:PlayVoice(sound.voice.winGame, player)
     end
 
     local message = i18n("koi.view.gameResult", { name = self.names[koi.player.you], count = points[koi.player.you]}) .. "\n" ..
@@ -456,7 +496,7 @@ end
 function View.ShowWin(self, player, service)
     local name = self.names[player]
     tes3.messageBox(i18n("koi.view.winRound", {name = name}))
-    sound.PlayVoice(sound.voice.loseRound, self.mobile[koi.GetOpponent(player)]) -- ovrelap previous voice?
+    self:PlayVoice(sound.voice.loseRound, koi.GetOpponent(player))
     service:NotifyRoundFinished()
 end
 
@@ -480,66 +520,59 @@ function View.ShowCalling(self, player, service, calling, point)
         end,
     })
     if calling == koi.calling.koikoi then
-        sound.PlayVoice(sound.voice.continue, self.mobile[player])
+        self:PlayVoice(sound.voice.continue, player)
     elseif calling == koi.calling.shobu then
-        sound.PlayVoice(sound.voice.finish, self.mobile[player])
-    end
-end
-
-
-local timer = 0
-
----@param self KoiKoi.View
----@param player KoiKoi.Player
----@param isAI boolean
----@param deltaTime number
-function View.ThinkMatchingHand(self, player, isAI, deltaTime)
-    -- todo idle reactions
-    timer = timer + deltaTime
-    if timer > 30 then
-        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
-        if p == player then
-            sound.PlayVoice(sound.voice.think, self.mobile[player])
-        else
-            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
-        end
-        timer = 0
-    end
-end
----@param self KoiKoi.View
----@param player KoiKoi.Player
----@param isAI boolean
----@param deltaTime number
-function View.ThinkMatchingDrawn(self, player, isAI, deltaTime)
-    -- todo idle reactions
-    timer = timer + deltaTime
-    if timer > 30 then
-        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
-        if p == player then
-            sound.PlayVoice(sound.voice.think, self.mobile[player])
-        else
-            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
-        end
-        timer = 0
+        self:PlayVoice(sound.voice.finish, player)
     end
 end
 
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
----@param isAI boolean
 ---@param deltaTime number
-function View.ThinkCalling(self, player, isAI, deltaTime)
-    -- todo idle reactions
-    timer = timer + deltaTime
-    if timer > 10 then
-        local p = math.random() > 0.7 and koi.player.you or koi.player.opponent
-        if p == player then
-            sound.PlayVoice(sound.voice.think, self.mobile[player])
+---@param minInterval integer
+---@param maxInterval integer
+---@param frequency number
+---@param playerRatio number
+function View.IdleReaction(self, player, deltaTime, minInterval, maxInterval, frequency, playerRatio)
+    self.voices.timer = self.voices.timer + deltaTime
+    if self.voices.timer > self.voices.interval then
+        local r = math.random()
+        if self.voices.chance > r then
+            if math.random() < playerRatio then
+                self:PlayVoice(sound.voice.think, player)
+            else
+                self:PlayVoice(sound.voice.remind, koi.GetOpponent(player))
+            end
+            self.voices.chance = 0
         else
-            sound.PlayVoice(sound.voice.remind, self.mobile[koi.GetOpponent(player)])
+            self.voices.chance = self.voices.chance + (self.voices.interval / frequency) -- usually speak once at this time.
         end
-        timer = 0
+        self.voices.interval = math.random(minInterval, maxInterval) -- fluctuating
+        self.voices.timer = 0
     end
+end
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param deltaTime number
+function View.ThinkMatchingHand(self, player, deltaTime)
+    -- it would like to have a larger ratio on the thinking side,
+    -- but player should spend more time thinking than the AI.
+    self:IdleReaction(player, deltaTime, 6, 15, 60, 0.5) -- thoughtful
+end
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param deltaTime number
+function View.ThinkMatchingDrawn(self, player, deltaTime)
+    self:IdleReaction(player, deltaTime, 4, 10, 60, 0.3) -- hurry
+end
+
+---@param self KoiKoi.View
+---@param player KoiKoi.Player
+---@param deltaTime number
+function View.ThinkCalling(self, player, deltaTime)
+    self:IdleReaction(player, deltaTime, 4, 8, 30, 0.7) -- fast pace
 end
 
 --- custom block has max width. and it excluding frame size...
@@ -600,7 +633,7 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
                 -- todo condition, if deck 0 is disable
                 text = i18n("koi.koikoi"),
                 callback = function()
-                    sound.PlayVoice(sound.voice.continue, self.mobile[player])
+                    self:PlayVoice(sound.voice.continue, player)
                     if service then
                         service:NotifyKoiKoi()
                     end
@@ -613,7 +646,7 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
             {
                 text = i18n("koi.shobu"),
                 callback = function()
-                    sound.PlayVoice(sound.voice.finish, self.mobile[player])
+                    self:PlayVoice(sound.voice.finish, player)
                     if service then
                         service:NotifyShobu()
                     end
@@ -1248,8 +1281,8 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
         end
         sound.Play(sound.se.putCard)
     end
-    if not tie then
-        sound.PlayVoice(sound.voice.remind, self.mobile[winner]) -- todo more better voice
+    if winner ~= nil then
+        self:PlayVoice(sound.voice.remind, winner) -- todo more better voice
     end
 
     tes3ui.showMessageMenu({
@@ -1357,7 +1390,7 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     local moved0 = CaptureCard(selected, player)
     local moved1 = CaptureCard(matched, player)
     if moved0 and moved1 then
-        sound.Play(sound.se.putCard) -- todo
+        sound.Play(sound.se.putCard)
     end
     UnregisterEvents(moved0)
     UnregisterEvents(moved1)
