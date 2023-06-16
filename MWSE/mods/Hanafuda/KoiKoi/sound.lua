@@ -198,8 +198,71 @@ function this.PlayMusic(id)
     end
 end
 
+---@param id string?
+---@param parent tes3uiElement
+---@param texts string[]
+---@param selectedIndexChanged fun(selectedIndex:integer)?
+---@param initialIndex integer?
+---@return tes3uiElement
+---@return tes3uiElement[]
+---@return integer
+local function CreateListBox(id, parent, texts, selectedIndexChanged, initialIndex)
+    local pane = parent:createVerticalScrollPane({ id = id })
+    -- pane.widthProportional = 1
+    -- pane.heightProportional = nil
+    -- pane.autoWidth = true
+    -- pane.autoHeight = true
+    -- pane.flowDirection = tes3.flowDirection.topToBottom
+    -- pane.paddingAllSides = 2
+    -- -- outer
+    -- pane.children[1].widthProportional = 1
+    -- pane.children[1].heightProportional = nil
+    -- pane.children[1].autoWidth = true
+    -- pane.children[1].autoHeight = true
+    local content = pane:getContentElement()
+    -- content.widthProportional = 1
+    -- content.heightProportional = nil
+    -- content.autoWidth = true
+    -- content.autoHeight = false
+    -- content.height = 22 * 5
 
+    local selectedIndex = initialIndex or -1
+    local items = {} ---@type tes3uiElement[]
 
+    ---@param p tes3uiElement
+    local function createItem(p, text)
+        local label = p:createTextSelect({ text = text })
+        table.insert(items, label)
+        local index = table.size(items)
+        if index == selectedIndex then
+            label.widget.state = tes3.uiState.active
+        end
+        label:register(tes3.uiEvent.mouseClick,
+        ---@param e uiEventEventData
+        function(e)
+            -- if selectedIndex == index then
+            --     return
+            -- end
+            selectedIndex = index
+            for i, item in ipairs(items) do
+                if not item.disabled then
+                    item.widget.state = tes3.uiState.normal
+                end
+            end
+            e.source.widget.state = tes3.uiState.active
+            e.source:getTopLevelMenu():updateLayout()
+            if selectedIndexChanged then
+                selectedIndexChanged(selectedIndex)
+            end
+        end)
+    end
+
+    for _, value in ipairs(texts) do
+        createItem(content, value)
+    end
+
+    return pane, items, selectedIndex
+end
 
 --- debugging
 function this.CreateSoundPlayer()
@@ -207,10 +270,303 @@ function this.CreateSoundPlayer()
     local menu = tes3ui.findMenu(menuid)
     if menu then
         menu:destroy()
+        return
     end
+
+    local params = {
+        npc = {},
+        creature = {},
+        spnpc = {},
+        spcreature = {},
+    }
+
     menu = tes3ui.createMenu({ id = menuid, fixedFrame = true })
+    menu.autoWidth = true
+    menu.autoHeight = true
+    menu.minWidth = 500
+    menu.minHeight = 400
+    menu.flowDirection = tes3.flowDirection.topToBottom
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.autoWidth = true
+    root.autoHeight = true
+    root.flowDirection = tes3.flowDirection.topToBottom
+    local header = root:createBlock()
+    header.widthProportional = 1
+    header.autoWidth = true
+    header.autoHeight = true
+    header.flowDirection = tes3.flowDirection.leftToRight
+
+    local lheader = header:createBlock()
+    lheader.autoWidth = true
+    lheader.autoHeight = true
+    lheader.flowDirection = tes3.flowDirection.leftToRight
+    local rheader = header:createBlock()
+    rheader.widthProportional = 1
+    rheader.autoWidth = true
+    rheader.autoHeight = true
+    rheader.flowDirection = tes3.flowDirection.leftToRight
+    rheader.childAlignX = 1
+    local play = rheader:createButton({text ="Random Play"})
+
+    ---@param path string
+    local function PlayDebugVoice(path)
+        if not tes3.onMainMenu() then
+            tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+        end
+        tes3.messageBox("'%s'", path)
+    end
+
+    local listid = "voicelist"
+    play:register(tes3.uiEvent.mouseClick, function(e)
+        local list = menu:findChild(listid)
+        if list and list.getContentElement then
+            local content = list:getContentElement()
+            if content and content.children then
+                local choice = table.choice(content.children) ---@type tes3uiElement
+                -- or property
+                PlayDebugVoice(choice.text)
+            end
+        end
+     end)
+
+    ---@param element tes3uiElement
+    ---@param text string
+    ---@return tes3uiElement
+    local function CreateSelection(element, text)
+        local b = element:createTextSelect({ text = text })
+        b.borderRight = 4
+        b.paddingAllSides = 2
+        return b
+    end
+
+    local parent = root:createBlock()
+    parent.widthProportional = 1
+    parent.heightProportional = 1
+    parent.autoWidth = true
+    parent.autoHeight = true
+    parent.flowDirection = tes3.flowDirection.leftToRight
+
+    ---@param e tes3uiElement
+    local function ActiveRadio(e)
+        for _, child in ipairs(e.parent.children) do
+            child.widget.state = tes3.uiState.normal
+        end
+        e.widget.state = tes3.uiState.active
+        e:getTopLevelMenu():updateLayout()
+    end
+
+    ---@param e uiEventEventData
+    ---@param index integer
+    local function LoadMenu(e, index)
+        ActiveRadio(e.source)
+        parent:destroyChildren()
+
+        local layout = {
+            [1] = function()
+
+                local left = parent:createBlock()
+                left.widthProportional = 1
+                left.heightProportional = 1
+                left.autoWidth = true
+                left.autoHeight = true
+                left.flowDirection = tes3.flowDirection.topToBottom
+                local right = parent:createBlock()
+                right.widthProportional = 1
+                right.heightProportional = 1
+                right.autoWidth = true
+                right.autoHeight = true
+                right.flowDirection = tes3.flowDirection.topToBottom
+
+                local voice = soundData.voiceData
+                local function UpdateList()
+                    if params.npc.race == nil or params.npc.gender == nil or params.npc.voiceId == nil then
+                        return
+                    end
+                    local list = voice[params.npc.race][params.npc.gender][this.voice[params.npc.voiceId]]
+                    if not list then
+                        return
+                    end
+
+                    right:destroyChildren()
+                    local path = CreateListBox(listid, right, list, function (selectedIndex)
+                        PlayDebugVoice(list[selectedIndex])
+                    end)
+                    right:getTopLevelMenu():updateLayout()
+                    ---@diagnostic disable-next-line: param-type-mismatch
+                    path.widget:contentsChanged()
+                end
+
+                local races = table.keys(voice, true)
+                local raceIndex = params.npc.race and table.find(races, params.npc.race) or nil
+                local race = CreateListBox(nil, left, races , function(selectedIndex)
+                    params.npc.race = races[selectedIndex]
+                    UpdateList()
+                end, raceIndex)
+                local gender = left:createBlock()
+                gender.widthProportional = 1
+                gender.autoWidth = true
+                gender.autoHeight = true
+                gender.flowDirection = tes3.flowDirection.leftToRight
+                local ids = table.keys(this.voice, true)
+                local idIndex = params.npc.race and table.find(ids, params.npc.voiceId) or nil
+                local voiceid = CreateListBox(nil, left, ids, function (selectedIndex)
+                    params.npc.voiceId = ids[selectedIndex]
+                    UpdateList()
+                end, idIndex )
+
+                ---@param e tes3uiElement
+                ---@param female boolean
+                local function SetGender(e, female)
+                    ActiveRadio(e)
+                    params.npc.gender = female and "f" or "m"
+                    UpdateList()
+                end
+                local m = CreateSelection(gender, "Male")
+                m:register(tes3.uiEvent.mouseClick,
+                function(e)
+                    SetGender(e.source, false)
+                end)
+                local f = CreateSelection(gender, "Female")
+                f:register(tes3.uiEvent.mouseClick,
+                function(e)
+                    SetGender(e.source, true)
+                end)
+                if params.npc.gender ~= nil then
+                    if params.npc.gender == "m" then
+                        ActiveRadio(m)
+                    else
+                        ActiveRadio(f)
+                    end
+                end
+
+                UpdateList()
+
+                return { race, voiceid }
+            end,
+            [2] = function()
+            end,
+            [3] = function()
+            end,
+            [4] = function()
+            end,
+        }
+        local panes = layout[index]()
+        parent:getTopLevelMenu():updateLayout()
+        if panes then
+            for index, value in ipairs(panes) do
+                ---@diagnostic disable-next-line: param-type-mismatch
+                value.widget:contentsChanged()
+            end
+        end
+    end
+
+    CreateSelection(lheader, "NPC"):register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        LoadMenu(e, 1)
+    end)
+    CreateSelection(lheader, "Creature"):register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        LoadMenu(e, 2)
+    end)
+    CreateSelection(lheader, "SP NPC"):register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        LoadMenu(e, 3)
+    end)
+    CreateSelection(lheader, "SP Creature"):register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        LoadMenu(e, 4)
+    end)
+
+
+--[[
+    local left = parent:createBlock()
+    left.widthProportional = 1
+    left.heightProportional = 1
+    left.autoWidth = true
+    left.autoHeight = true
+    left.flowDirection = tes3.flowDirection.topToBottom
+
+
+    local right = parent:createBlock()
+    right.widthProportional = 1
+    right.heightProportional = 1
+    right.autoWidth = true
+    right.autoHeight = true
+    right.flowDirection = tes3.flowDirection.topToBottom
+
+    local voice = soundData.voiceData
+    local race = CreateListBox(left, table.keys(voice, true))
+    local gender = left:createBlock()
+    gender.widthProportional = 1
+    gender.autoWidth = true
+    gender.autoHeight = true
+    gender.flowDirection = tes3.flowDirection.leftToRight
+    b = gender:createTextSelect({text = "Male"})
+    b.borderRight = 4
+    b.paddingAllSides = 2
+    b = gender:createTextSelect({text = "Female"})
+    b.borderRight = 4
+    b.paddingAllSides = 2
+    local voiceid = CreateListBox(left, table.keys(this.voice, true))
+
+    local path = CreateListBox(right, voice["argonian"]["f"][this.voice.remind])
+
+]]
+
+    -- local pane = parent:createVerticalScrollPane()
+    -- pane.widthProportional = nil
+    -- pane.heightProportional = nil
+    -- pane.autoWidth = true
+    -- pane.autoHeight = true
+    -- pane.children[1].widthProportional = nil
+    -- pane.children[1].heightProportional = nil
+    -- pane.children[1].autoWidth = true
+    -- pane.children[1].autoHeight = true
+    -- pane.children[1].children[1].widthProportional = nil
+    -- pane.children[1].children[1].heightProportional = nil
+    -- pane.children[1].children[1].autoWidth = true
+    -- pane.children[1].children[1].autoHeight = false
+    -- pane.children[1].children[1].height = 22 * 4
+    -- local content = pane:getContentElement()
+    -- content:createTextSelect({text="dark elf"})
+    -- content:createTextSelect({text="high elf"})
+    -- local gender = parent:createBlock()
+    -- gender.widthProportional = 1
+    -- gender.autoWidth = true
+    -- gender.autoHeight = true
+    -- gender.flowDirection = tes3.flowDirection.leftToRight
+    -- gender:createButton({text = "Male"})
+    -- gender:createButton({text = "Female"})
+
+    -- pane = parent:createVerticalScrollPane()
+    -- pane.widthProportional = nil
+    -- pane.heightProportional = nil
+    -- pane.autoWidth = true
+    -- pane.autoHeight = true
+    -- pane.children[1].widthProportional = nil
+    -- pane.children[1].heightProportional = nil
+    -- pane.children[1].autoWidth = true
+    -- pane.children[1].autoHeight = true
+    -- pane.children[1].children[1].widthProportional = nil
+    -- pane.children[1].children[1].heightProportional = nil
+    -- pane.children[1].children[1].autoWidth = true
+    -- pane.children[1].children[1].autoHeight = false
+    -- pane.children[1].children[1].height = 22 * 4
+    -- content = pane:getContentElement()
+    -- content:createTextSelect({text="contine"})
+    -- content:createTextSelect({text="finish"})
+
 
     menu:updateLayout()
+    -- race.widget:contentsChanged()
+    -- voiceid.widget:contentsChanged()
+    -- path.widget:contentsChanged()
 end
 
 

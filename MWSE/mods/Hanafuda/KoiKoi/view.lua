@@ -695,7 +695,6 @@ function View.ShowCombo(self, player, service, combo, basePoint, multiplier)
 
     local name = self.names[player]
 
-    -- todo show multipiled score
     tes3ui.showMessageMenu({
         header = i18n("koi.view.callingHeader", {name = name}),
         message = i18n("koi.view.callingConfirmMessage", {name = name, count = total, base = basePoint, mult = multiplier}),

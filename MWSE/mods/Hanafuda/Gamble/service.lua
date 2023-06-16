@@ -191,7 +191,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
             end
             if winner ~= nil and odds > 0 then
                 local expected, actual, insufficient = TradeGold(player, opponent, pp, op, odds, false)
-                -- TODO Use insufficient for dispositions, debt, etc.
+                -- TODO Use insufficient for debt, etc.
                 logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
                 if expected > 0 then
                     if insufficient == 0 then

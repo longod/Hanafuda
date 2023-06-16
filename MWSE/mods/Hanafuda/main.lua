@@ -45,6 +45,19 @@ local function OnInitialized(_)
             end
             require("Hanafuda.Gamble.ui").CreateBettingMenu(123456, {0, 1, 2}, {true, true, false}, 3 * config.koikoi.round)
         end, { filter = tes3.scanCode.x })
+        -- test
+        event.register(tes3.event.keyDown,
+        ---@param e keyDownEventData
+        function(e)
+            local mod = e.isAltDown or e.isControlDown or e.isShiftDown or e.isSuperDown
+            if mod then
+                return
+            end
+            -- sound player
+            require("Hanafuda.KoiKoi.sound").CreateSoundPlayer()
+        end, { filter = tes3.scanCode.v })
+
+        -- TODO add run game multi times on runner
     end
 
     require("Hanafuda.Gamble.service")

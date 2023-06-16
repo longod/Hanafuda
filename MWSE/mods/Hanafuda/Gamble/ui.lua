@@ -42,6 +42,8 @@ end
 ---@param enables boolean[]?
 ---@param selectedIndexChanged fun(selectedIndex:integer)?
 ---@param initialIndex integer?
+---@return integer
+---@return tes3uiElement[]
 local function CreateListBox(parent, texts, enables, selectedIndexChanged, initialIndex)
     local frame = parent:createThinBorder()
     frame.widthProportional = 1
@@ -79,6 +81,7 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
             bg:register(tes3.uiEvent.mouseClick,
             ---@param e uiEventEventData
             function(e)
+                selectedIndex = index
                 for i, item in ipairs(items) do
                     if not item.disabled then
                         item.widget.state = tes3.uiState.normal
@@ -87,7 +90,6 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
                 end
                 e.source.alpha = alpha
                 items[index].widget.state = tes3.uiState.active
-                selectedIndex = index
                 e.source:getTopLevelMenu():updateLayout()
                 if selectedIndexChanged then
                     selectedIndexChanged(selectedIndex)
@@ -97,6 +99,7 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
             label:register(tes3.uiEvent.mouseClick,
             ---@param e uiEventEventData
             function(e)
+                selectedIndex = index
                 for i, item in ipairs(items) do
                     if not item.disabled then
                         item.widget.state = tes3.uiState.normal
@@ -105,7 +108,6 @@ local function CreateListBox(parent, texts, enables, selectedIndexChanged, initi
                 end
                 e.source.parent.alpha = alpha
                 e.source.widget.state = tes3.uiState.active
-                selectedIndex = index
                 e.source:getTopLevelMenu():updateLayout()
                 if selectedIndexChanged then
                     selectedIndexChanged(selectedIndex)
