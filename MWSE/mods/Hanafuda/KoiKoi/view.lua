@@ -624,13 +624,16 @@ end
 ---@param multiplier integer
 function View.ShowCallingDialog(self, player, service, combo, basePoint, multiplier)
     local total = basePoint * multiplier
+    local empty = false
+    if service then
+        empty = table.size(service:GetPlayerHand(player)) == 0
+    end
 
     tes3ui.showMessageMenu({
         header = i18n("koi.view.callingHeader", { name = self.names[player]}),
         message = i18n("koi.view.callingMessage" , {count = total, base = basePoint, mult = multiplier}),
         buttons = {
             {
-                -- todo condition, if deck 0 is disable
                 text = i18n("koi.koikoi"),
                 callback = function()
                     self:PlayVoice(sound.voice.continue, player)
@@ -641,6 +644,9 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
                 tooltip = function()
                     local tooltip = tes3ui.createTooltipMenu()
                     tooltip:createLabel({ text = i18n("koi.view.koiTooltip") })
+                end,
+                enableRequirements = function (_)
+                    return not empty
                 end
             },
             {
@@ -1327,7 +1333,6 @@ end
 ---@param selectedCard integer
 ---@param skipAnimation boolean
 function View.Flip(self, service, player, selectedCard, skipAnimation)
-    -- TODO not skipAnimation
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
 
@@ -1355,7 +1360,6 @@ end
 ---@param drawn boolean
 ---@param skipAnimation boolean
 function View.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
-    -- TODO not skipAnimation
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
 
@@ -1414,7 +1418,6 @@ end
 ---@param drawn boolean
 ---@param skipAnimation boolean
 function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
-    -- TODO not skipAnimation
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)

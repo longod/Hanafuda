@@ -156,6 +156,10 @@ function this.Call(self, p)
         return nil
     end
 
+    if table.size(p.pool.hand) == 0 then -- avoid tie
+        return { calling = koi.calling.shobu }
+    end
+
     local k = math.random() < self.koikoiChance
     logger:trace(k and "koikoi" or "shobu")
     return { calling = k and koi.calling.koikoi or koi.calling.shobu }

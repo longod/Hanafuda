@@ -614,6 +614,12 @@ function Service.Exit(self, giveup)
     return false
 end
 
+---@param self KoiKoi.Service
+---@param player KoiKoi.Player
+---@return integer[]
+function Service.GetPlayerHand(self, player)
+    return self.game.pools[player].hand
+end
 
 ---@param self KoiKoi.Service
 ---@param selectedCardId integer
