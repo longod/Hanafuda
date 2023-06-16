@@ -1462,7 +1462,6 @@ end
 ---@param emptyDeck boolean
 ---@param skipAnimation boolean
 function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
-    -- TODO not skipAnimation
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
@@ -1755,8 +1754,6 @@ function View.CreateInfo(self, parent, service)
     cards.borderAllSides = 0
     combo.borderAllSides = 0
     rule.borderAllSides = 0
-    -- todo exit enabled condition
-    -- todo friendly display disalbe state
     exit:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)

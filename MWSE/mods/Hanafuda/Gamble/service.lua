@@ -106,6 +106,45 @@ local function TradeGold(player, npc, playerPoint, opponentPoint, unitPrice, all
     return 0, 0, 0
 end
 
+---@param expected integer
+---@param actual integer
+---@param insufficient integer
+---@param odds integer
+---@return integer
+local function CalculateDispositionByInsufficient(expected, actual, insufficient, odds)
+    if insufficient == 0 or expected == 0 or odds == 0 then
+        return 0
+    end
+    -- The more insufficient money and the higher the odds, the more likely it is to change.
+    local ratio = (insufficient / expected) -- relative
+    -- ratio = insufficient * 0.3 -- absolute
+    local delta = ratio * odds * 0.2
+    delta = math.ceil(delta)
+    if insufficient < 0 then -- sign, after ceil for negative value behaviour
+        delta = -delta
+     end
+     return delta
+end
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return boolean
+local function ChangeDisposition(player, opponent, disposition)
+    if not disposition then
+        return false
+    end
+    if player.actorType == tes3.actorType.player and opponent.actorType == tes3.actorType.npc then
+        opponent.object.baseDisposition = math.clamp(opponent.object.baseDisposition + disposition, 0, 100)
+        logger:debug("disposition changed %d", disposition)
+        return true
+    elseif opponent.actorType == tes3.actorType.player and player.actorType == tes3.actorType.npc then
+        player.object.baseDisposition = math.clamp(player.object.baseDisposition + disposition, 0, 100)
+        logger:debug("disposition changed %d", disposition)
+        return true
+    end
+    return false
+end
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param odds integer
@@ -159,12 +198,14 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
                         tes3.messageBox(i18n("gamble.collected", {actual = actual}))
                     else
                         tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
+                        ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
                     end
                 elseif expected < 0 then
                     if insufficient == 0 then
                         tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
                     else
                         tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
+                        ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
                     end
                 end
             end

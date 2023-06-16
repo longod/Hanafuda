@@ -212,7 +212,6 @@ end
 ---@return { [KoiKoi.LuckyHands] : integer }?
 ---@return integer
 function KoiKoi.CheckLuckyHands(self, player)
-    -- TODO in testing
     local lh = combination.CalculateLuckyHands(self.pools[player].hand, self.settings.houseRule)
     local p = 0
     if lh then
