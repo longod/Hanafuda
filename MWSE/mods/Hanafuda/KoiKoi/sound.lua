@@ -6,7 +6,7 @@ local config = require("Hanafuda.config")
 ---@class Sound
 local this = {}
 
-local soundData = require("Hanafuda.soundData")
+local soundData = require("Hanafuda.KoiKoi.soundData")
 
 this.se = soundData.se
 this.voice = soundData.voice

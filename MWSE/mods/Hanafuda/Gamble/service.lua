@@ -3,7 +3,7 @@ local this = {}
 
 local logger = require("Hanafuda.logger")
 local act = require("Hanafuda.Gamble.actor")
-local uiid = require("Hanafuda.uiid")
+local uiid = require("Hanafuda.Gamble.uiid")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")

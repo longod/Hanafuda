@@ -30,12 +30,5 @@ local this = {
     boardGroundRow1 = tes3ui.registerID("Board.GroundRow1"),
     round = tes3ui.registerID("Board.Round"),
     turn = tes3ui.registerID("Board.Turn"),
-    -- dialog
-	menuDialog = tes3ui.registerID("MenuDialog"),
-    menuDialogDivider = tes3ui.registerID("MenuDialog_divider"),
-    menuDialogServiceKoiKoi = tes3ui.registerID("MenuDialog_service_Hanafuda_KoiKoi"),
-    -- gambling
-    gambleMenu = tes3ui.registerID("KoiKoi.Gamble"),
-
 }
 return this

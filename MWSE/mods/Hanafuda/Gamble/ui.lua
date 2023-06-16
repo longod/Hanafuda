@@ -1,6 +1,6 @@
 local this = {}
 
-local uiid = require("Hanafuda.uiid")
+local uiid = require("Hanafuda.Gamble.uiid")
 local logger = require("Hanafuda.logger")
 local i18n = mwse.loadTranslations("Hanafuda")
 
