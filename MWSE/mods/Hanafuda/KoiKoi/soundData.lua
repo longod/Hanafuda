@@ -307,16 +307,32 @@ this.voiceData = {
                 "vo\\h\\m\\Hlo_HM085.mp3", --	I suppose I could spare a moment or two.
             },
             [this.voice.finish] = {
+                "vo\\h\\m\\Atk_HM001.mp3",	--	This will be the end of you!
+                "vo\\h\\m\\Atk_HM002.mp3",	--	Your moment is at an end!
+                "vo\\h\\m\\Atk_HM004.mp3",	--	Beg for mercy, snowman!
+                "vo\\h\\m\\Atk_HM005.mp3",	--	You haven't a chance against me!
+                "vo\\h\\m\\Atk_HM006.mp3",	--	Your suffering will be great!
+                "vo\\h\\m\\Atk_HM008.mp3",	--	You're defeated, give up.
+                "vo\\h\\m\\Atk_HM011.mp3",	--	It's over for you!
+                "vo\\h\\m\\Atk_HM012.mp3",	--	Embrace your demise!
+                "vo\\h\\m\\Atk_HM013.mp3",	--	You'll soon be nothing more than a bad memory!
+                "vo\\h\\m\\Atk_HM014.mp3",	--	I shall enjoy watching you take your last breath.
+                "vo\\h\\m\\Atk_HM015.mp3",	--	Your end is here!
                 "vo\\h\\m\\Hlo_HM092.mp3", --	Hail.
             },
             [this.voice.loseRound] = {
+                "vo\\h\\m\\Fle_HM003.mp3",	--	I give up! Let me live!
             },
             [this.voice.winGame] = {
+                "vo\\h\\m\\Fle_HM004.mp3",	--	You had your chance!
                 "vo\\h\\m\\Hlo_HM134.mp3", --	An honor to be sure.
                 "vo\\h\\m\\Hlo_HM135.mp3", --	How delightful! Welcome.
             },
             [this.voice.think] = {
-                "vo\\h\\m\\Hlo_HM109.mp3", --	Well, what have we here? Interesting.
+                "vo\\h\\m\\Hlo_HM000a.mp3", --	What?!
+                "vo\\h\\m\\Hlo_HM000b.mp3", --	Humph!
+                "vo\\h\\m\\Hlo_HM000c.mp3", --	Humph!
+                "vo\\h\\m\\Hlo_HM109.mp3",  --	Well, what have we here? Interesting.
                 "vo\\h\\m\\Hlo_HM111.mp3", --	This is unexpected, but not unwelcome. Please go ahead.
             },
             [this.voice.remind] = {

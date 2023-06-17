@@ -4,6 +4,7 @@ local sound = require("Hanafuda.KoiKoi.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local ui = require("Hanafuda.KoiKoi.ui")
+local assetPackage = require("Hanafuda.cardAsset")
 local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
 
@@ -32,6 +33,8 @@ local cardProperty = "Hanafuda:CardId"
 ---@field mobile { KoiKoi.Player : tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? }
 ---@field disposition number?
 ---@field voices KoiKoi.View.Voice
+---@field asset Hanafuda.CardAssetPackage
+---@field cardBackAsset CardAsset
 ---@field testShowDialog fun(e:keyDownEventData)?
 ---@field testCapture fun(e:keyDownEventData)?
 local View = {}
@@ -65,8 +68,10 @@ end
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer?
+---@param cardStyle string?
+---@param cardBackStyle string?
 ---@return KoiKoi.View
-function View.new(player, opponent)
+function View.new(player, opponent, cardStyle, cardBackStyle)
     --@type KoiKoi.UI
     local instance = {
         names = {
@@ -85,7 +90,8 @@ function View.new(player, opponent)
             timer = 0,
             chance = 0,
             interval = 0,
-        }
+        },
+        asset = assetPackage.new(cardStyle, cardBackStyle)
     }
     setmetatable(instance, { __index = View })
     return instance
@@ -121,13 +127,14 @@ local function IsGrabbingCard()
     return grab and grab.visible and not grab.disabled
 end
 
+---@param self KoiKoi.View
 ---@param parent tes3uiElement
 ---@param cardId integer
 ---@param backface boolean
 ---@param notooltip boolean?
 ---@return tes3uiElement
-local function PutCard(parent, cardId, backface, notooltip)
-    local asset = backface and card.GetCardBackAsset() or card.GetCardAsset(cardId)
+function View.PutCard(self, parent, cardId, backface, notooltip)
+    local asset = backface and self.asset:GetBackAsset() or self.asset:GetAsset(cardId)
 
     local element = parent:createBlock() -- drop shadow better
     element.autoWidth = true
@@ -147,7 +154,7 @@ local function PutCard(parent, cardId, backface, notooltip)
         ---@param e uiEventEventData
         function(e)
             if not IsGrabbingCard() then
-                ui.CreateCardTooltip(cardId, backface)
+                ui.CreateCardTooltip(cardId, self.asset, backface)
             end
         end)
     end
@@ -155,13 +162,14 @@ local function PutCard(parent, cardId, backface, notooltip)
     return element
 end
 
+---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@return tes3uiElement
-local function FlipCard(element)
+function View.FlipCard(self, element)
     -- or query id to service
     local cardId = GetCardId(element)
     assert(cardId)
-    local asset = card.GetCardAsset(cardId) -- only reveal
+    local asset = self.asset:GetAsset(cardId) -- only reveal
 
     element:destroyChildren()
 
@@ -175,17 +183,18 @@ local function FlipCard(element)
     element:register(tes3.uiEvent.help,
     function(_)
         if not IsGrabbingCard() then
-            ui.CreateCardTooltip(cardId, false)
+            ui.CreateCardTooltip(cardId, self.asset, false)
         end
     end)
     return element
 end
 
+---@param self KoiKoi.View
 ---@param parent tes3uiElement
 ---@param deck integer[]
 ---@return tes3uiElement
-local function PutDeck(parent, deck)
-    local asset = card.GetCardBackAsset()
+function View.PutDeck(self, parent, deck)
+    local asset = self.asset:GetBackAsset()
     local element = parent:createBlock()
     element.autoWidth = true
     element.autoHeight = true
@@ -606,12 +615,13 @@ local function CreateTightCombinationList(parent, combo)
     parent:createDivider().widthProportional = 1.0
 end
 
+---@param self KoiKoi.View
 ---@param parent tes3uiElement
 ---@param combo { [KoiKoi.CombinationType] : integer }
-local function CreateSummaryCombinationList(parent, combo)
+function View.CreateSummaryCombinationList(self, parent, combo)
     -- todo curent combination cards on tooltip, need card IDs
     for _, value in ipairs(table.keys(combo, true)) do
-        ui.CreateCombinationView(parent, value, combo[value], nil, nil, true)
+        ui.CreateCombinationView(parent, self.asset, value, combo[value], nil, nil, true)
     end
 end
 
@@ -678,7 +688,7 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
     assert(gameMenu)
     local parent = gameMenu:findChild(blockId[player])
     parent:destroyChildren()
-    CreateSummaryCombinationList(parent, combo)
+    self:CreateSummaryCombinationList(parent, combo)
     gameMenu:updateLayout()
 end
 
@@ -723,7 +733,7 @@ function View.ShowCombo(self, player, service, combo, basePoint, multiplier)
     assert(gameMenu)
     local parent = gameMenu:findChild(blockId[player])
     parent:destroyChildren()
-    CreateSummaryCombinationList(parent, combo)
+    self:CreateSummaryCombinationList(parent, combo)
     gameMenu:updateLayout()
 
 end
@@ -786,8 +796,8 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
     -- automatic layout does not center them, but this is not a major problem.
     local g0 = gameMenu:findChild(uiid.boardGroundRow0)
     local g1 = gameMenu:findChild(uiid.boardGroundRow1)
-    local c0 = PutCard(g0, cardId0, true, true)
-    local c1 = PutCard(g1, cardId1, true, true)
+    local c0 = self:PutCard(g0, cardId0, true, true)
+    local c1 = self:PutCard(g1, cardId1, true, true)
     c0:register(tes3.uiEvent.help,
     function(_)
         local tooltip = tes3ui.createTooltipMenu()
@@ -802,8 +812,8 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
     ---@param e uiEventEventData
     function(e)
         -- Good with weights and animations, but hard without coroutine
-        FlipCard(c0)
-        FlipCard(c1)
+        self:FlipCard(c0)
+        self:FlipCard(c1)
         UnregisterEvents(c0)
         UnregisterEvents(c1)
         -- no tooltips after flipped
@@ -818,8 +828,8 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
     ---@param e uiEventEventData
     function(e)
         -- Good with weights and animations, but hard without coroutine
-        FlipCard(c0)
-        FlipCard(c1)
+        self:FlipCard(c0)
+        self:FlipCard(c1)
         UnregisterEvents(c0)
         UnregisterEvents(c1)
         -- no tooltips after flipped
@@ -877,7 +887,7 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
                     block.maxWidth = maxWidth
                 end
                 local scale = 1
-                local asset = card.GetCardAsset(cardId)
+                local asset = self.asset:GetAsset(cardId)
                 local ref = card.GetCardData(cardId)
                 local b = block:createBlock()
                 b.borderAllSides = 2
@@ -894,7 +904,7 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
                 image.flowDirection = tes3.flowDirection.topToBottom
                 b:register(tes3.uiEvent.help,
                     function(_)
-                        ui.CreateCardTooltip(cardId, false)
+                        ui.CreateCardTooltip(cardId, self.asset, false)
                     end)
                 local t = block:createBlock()
                 t.borderAllSides = 2
@@ -1128,7 +1138,7 @@ function View.RegisterDeckEvent(self, element, service)
             local cardId = service:DrawCard()
             if cardId then
                 local drawn = e.source:getTopLevelMenu():findChild(uiid.boardDrawn)
-                local element = PutCard(drawn, cardId, false)
+                local element = self:PutCard(drawn, cardId, false)
                 self:RegisterDrawnCardEvent(element, cardId, service)
                 e.source:getTopLevelMenu():updateLayout()
                 sound.Play(sound.se.pickCard)
@@ -1182,7 +1192,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                 --logger:trace(i)
                 local view = childHand
                 local cardId = pools[child].hand[i]
-                local e = PutCard(view, cardId, not back)
+                local e = self:PutCard(view, cardId, not back)
                 if child == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
@@ -1195,7 +1205,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
             for i = start, (start + (initialDealEach-1)) do
                 local cardId = groundPools[i]
                 local view = (i % 2 == 0) and g1 or g0
-                local e = PutCard(view, cardId, false)
+                local e = self:PutCard(view, cardId, false)
                 self:RegisterGroundCardEvent(e, cardId, service)
                 if not skipAnimation then
                     gameMenu:updateLayout()
@@ -1206,7 +1216,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
             for i = start, (start + (initialDealEach-1)) do
                 local view = parentHand
                 local cardId = pools[parent].hand[i]
-                local e = PutCard(view, cardId, back)
+                local e = self:PutCard(view, cardId, back)
                 if parent == koi.player.you then -- workaround
                     self:RegisterHandCardEvent(e, cardId, service)
                 end
@@ -1229,7 +1239,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
         assert(gameMenu)
         local pile = gameMenu:findChild(uiid.boardPile)
-        local e = PutDeck(pile, deck)
+        local e = self:PutDeck(pile, deck)
         self:RegisterDeckEvent(e, service)
         gameMenu:updateLayout()
         sound.Play(sound.se.putDeck)
@@ -1248,7 +1258,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
                     assert(gameMenu)
                     local pile = gameMenu:findChild(uiid.boardPile)
-                    local e = PutDeck(pile, deck)
+                    local e = self:PutDeck(pile, deck)
                     self:RegisterDeckEvent(e, service)
                     gameMenu:updateLayout()
                     sound.Play(sound.se.putDeck)
@@ -1280,7 +1290,7 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
         local oh = gameMenu:findChild(uiid.opponentHand)
         if oh.children then
             for _, child in ipairs(oh.children) do
-                FlipCard(child)
+                self:FlipCard(child)
             end
             gameMenu:updateLayout()
         end
@@ -1342,7 +1352,7 @@ function View.Flip(self, service, player, selectedCard, skipAnimation)
     local hand = gameMenu:findChild(handId[player])
     local selected = FindCardIdInChildren(hand, selectedCard)
     if selected then
-        FlipCard(selected)
+        self:FlipCard(selected)
         sound.Play(sound.se.pickCard) -- todo
     else
         logger:error("%u does not contain in %u", selectedCard, player)
@@ -1433,7 +1443,7 @@ function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
         local hand = gameMenu:findChild(handId[player])
         selected = FindCardIdInChildren(hand, selectedCard)
         if player == koi.player.opponent and selected then -- fixme set property?
-            FlipCard(selected)
+            self:FlipCard(selected)
         end
     end
     if not selected then
@@ -1465,7 +1475,7 @@ function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local drawn = gameMenu:findChild(uiid.boardDrawn)
-    local element = PutCard(drawn, cardId, false)
+    local element = self:PutCard(drawn, cardId, false)
     self:RegisterDrawnCardEvent(element, cardId, service) -- only player?
     if emptyDeck then
         local pile = gameMenu:findChild(uiid.boardPile)
@@ -1764,14 +1774,14 @@ function View.CreateInfo(self, parent, service)
     ---@param e uiEventEventData
     function(e)
         if not IsGrabbingCard() then
-            ui.CreateCardList(e)
+            ui.CreateCardList(e, self.asset)
         end
     end)
     combo:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
         if not IsGrabbingCard() then
-            ui.CreateCombinationList(e)
+            ui.CreateCombinationList(e, self.asset)
         end
     end)
 
@@ -2025,14 +2035,17 @@ function View.Initialize(self, service)
         self.testCapture = function(_)
             local m = tes3ui.findMenu(uiid.gameMenu)
             assert(m)
-            CaptureCard(PutCard(m, 4, false), koi.player.opponent)
+            CaptureCard(self:PutCard(m, 4, false), koi.player.opponent)
             m:updateLayout()
         end
         event.register(tes3.event.keyDown, self.testCapture, {filter = tes3.scanCode.z} )
     end
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-    assert(not gameMenu)
+    if gameMenu then
+        logger:warn("view is still remaining")
+        gameMenu:destroy()
+    end
     gameMenu = self:OpenGameMenu(uiid.gameMenu, service)
     tes3ui.enterMenuMode(gameMenu.id)
 end

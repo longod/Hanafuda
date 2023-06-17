@@ -36,7 +36,6 @@ do
         unitwind:expect(card.GetCardWidth() > 0).toBe(true)
         unitwind:expect(card.GetCardHeight() > 0).toBe(true)
         unitwind:expect(cardData.cardCount > 0).toBe(true)
-        unitwind:expect(table.size(cardData.cardAssets)).toBe(cardData.cardCount)
         unitwind:expect(table.size(cardData.cardText)).toBe(cardData.cardCount)
     end)
 
@@ -72,12 +71,13 @@ do
             unitwind:expect(cardId).toBe(i)
             if cardId then
                 unitwind:expect(card.GetCardData(cardId)).NOT.toBe(nil)
-                unitwind:expect(card.GetCardAsset(cardId)).NOT.toBe(nil)
             end
         end
         local cardId = card.DealCard(deck)
         unitwind:expect(cardId).toBe(nil)
     end)
+
+    -- todo asset test
 
     unitwind:finish()
 end

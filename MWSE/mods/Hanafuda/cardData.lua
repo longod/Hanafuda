@@ -1,5 +1,6 @@
 -- define card data, user non configuable.
 local i18n = mwse.loadTranslations("Hanafuda")
+local logger = require("Hanafuda.logger")
 
 local this = {}
 --- month
@@ -57,15 +58,13 @@ this.cardHeight = math.ceil( 53 * 2 ) ---@type number
 ---@class CardAsset
 ---@field path string
 
--- TODO Allow switching of art for each game.
--- directory layout, naming rule, search filesystem
-
-local cardDir = "Textures/Hanafuda/card/"
+local dataFiles = "Data Files\\"
+local cardDir = "Textures\\Hanafuda\\card\\"
 local defaultCardArt = "worn"
-local defaultCardDir = cardDir .. defaultCardArt .. "/"
+local defaultCardDir = cardDir .. defaultCardArt .. "\\"
 
 ---@type CardAsset[]
-this.cardAssets = {
+local cardAssets = {
     { path = defaultCardDir .. "01-1.dds" },
     { path = defaultCardDir .. "01-2.dds" },
     { path = defaultCardDir .. "01-3.dds" },
@@ -117,7 +116,88 @@ this.cardAssets = {
 }
 
 ---@type CardAsset
-this.cardBackAsset = { path = defaultCardDir .. "back.dds" }
+local cardBackAsset = { path = defaultCardDir .. "back.dds" }
+
+---@return string[]
+function this.SearchCardAssetStyle()
+    local styles = {} ---@type string[]
+    local dir = dataFiles .. cardDir
+    logger:debug("search styles in '%s'", dir )
+    for path in lfs.dir(dir) do
+        if not path:startswith(".") then -- '.', '..' and hidden files
+            if lfs.directoryexists(dir .. path) then
+                logger:info("found card style: " .. path)
+                table.insert(styles, path)
+            end
+        end
+    end
+    return styles
+end
+
+---@param pathWithoutExtension string
+---@return string?
+local function TextureFileExists(pathWithoutExtension)
+    local ext = {
+        ".dds",
+        ".tga",
+        ".bmp",
+    }
+    for _, e in ipairs(ext) do
+        local path = pathWithoutExtension .. e
+        if lfs.fileexists(path) then -- perhaps its pretty overhead
+            return e
+        end
+    end
+    return nil
+end
+---@param style string?
+---@return CardAsset[]
+function this.BuildCardAsset(style)
+    local assets = table.deepcopy(cardAssets) -- fallback
+    if not style then
+        return assets
+    end
+    local styleDir = cardDir .. style  .. "\\"
+    local dir = dataFiles .. styleDir
+    logger:debug("search files in '%s'", dir )
+    for m=1, 12 do
+        for i=1, 4 do
+            local index = (m - 1) * 4 + i
+            local path = string.format("%02u-%u", m, i)
+            local ext = TextureFileExists(dir .. path)
+            if ext then
+                assets[index] = { path = styleDir.. path .. ext }
+                logger:trace("card %d: %s", index, assets[index].path )
+            else
+                logger:warn("no exists card %d: %s", index, dir .. path )
+            end
+        end
+    end
+    return assets
+end
+
+---@param style string?
+---@return CardAsset
+function this.BuildCardBackAsset(style)
+    local assets = table.deepcopy(cardBackAsset) -- fallback
+    if not style then
+        return assets
+    end
+    local styleDir = cardDir .. style  .. "\\"
+    local dir = dataFiles .. styleDir
+    logger:debug("search files in '%s'", dir )
+    local path = "back"
+    local ext = TextureFileExists(dir .. path)
+    if ext then
+        assets = { path = styleDir.. path .. ext }
+        logger:trace("card back: %s", assets.path)
+    else
+        logger:warn("no exists card back: %s", dir .. path )
+    end
+    return assets
+end
+-- BuildCardAsset("new")
+-- BuildCardBackAsset("new")
 
 -- this.cardBackAsset = { path = "Textures/Tx_fabric_tapestry_04.dds" }
 -- this.cardBackAsset = { path = "Textures/Tx_ashl_banner_01.dds" }

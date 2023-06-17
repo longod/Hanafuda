@@ -208,23 +208,7 @@ end
 ---@return integer
 local function CreateListBox(id, parent, texts, selectedIndexChanged, initialIndex)
     local pane = parent:createVerticalScrollPane({ id = id })
-    -- pane.widthProportional = 1
-    -- pane.heightProportional = nil
-    -- pane.autoWidth = true
-    -- pane.autoHeight = true
-    -- pane.flowDirection = tes3.flowDirection.topToBottom
-    -- pane.paddingAllSides = 2
-    -- -- outer
-    -- pane.children[1].widthProportional = 1
-    -- pane.children[1].heightProportional = nil
-    -- pane.children[1].autoWidth = true
-    -- pane.children[1].autoHeight = true
     local content = pane:getContentElement()
-    -- content.widthProportional = 1
-    -- content.heightProportional = nil
-    -- content.autoWidth = true
-    -- content.autoHeight = false
-    -- content.height = 22 * 5
 
     local selectedIndex = initialIndex or -1
     local items = {} ---@type tes3uiElement[]
@@ -270,11 +254,16 @@ function this.CreateSoundPlayer()
     local menu = tes3ui.findMenu(menuid)
     if menu then
         menu:destroy()
+        tes3ui.leaveMenuMode()
         return
     end
 
     local params = {
-        npc = {},
+        npc = {
+            race = "dark elf",
+            gender = "m",
+            voiceId = "continue",
+        },
         creature = {},
         spnpc = {},
         spcreature = {},
@@ -283,7 +272,7 @@ function this.CreateSoundPlayer()
     menu = tes3ui.createMenu({ id = menuid, fixedFrame = true })
     menu.autoWidth = true
     menu.autoHeight = true
-    menu.minWidth = 500
+    menu.minWidth = 560
     menu.minHeight = 400
     menu.flowDirection = tes3.flowDirection.topToBottom
     local root = menu:createBlock()
@@ -336,8 +325,8 @@ function this.CreateSoundPlayer()
     ---@return tes3uiElement
     local function CreateSelection(element, text)
         local b = element:createTextSelect({ text = text })
-        b.borderRight = 4
-        b.paddingAllSides = 2
+        b.borderAllSides = 4
+        b.borderRight = 8
         return b
     end
 
@@ -357,10 +346,10 @@ function this.CreateSoundPlayer()
         e:getTopLevelMenu():updateLayout()
     end
 
-    ---@param e uiEventEventData
+    ---@param e tes3uiElement
     ---@param index integer
     local function LoadMenu(e, index)
-        ActiveRadio(e.source)
+        ActiveRadio(e)
         parent:destroyChildren()
 
         local layout = {
@@ -462,111 +451,32 @@ function this.CreateSoundPlayer()
         end
     end
 
-    CreateSelection(lheader, "NPC"):register(tes3.uiEvent.mouseClick,
+    local button = CreateSelection(lheader, "NPC")
+    button:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        LoadMenu(e, 1)
+        LoadMenu(e.source, 1)
     end)
     CreateSelection(lheader, "Creature"):register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        LoadMenu(e, 2)
+        LoadMenu(e.source, 2)
     end)
     CreateSelection(lheader, "SP NPC"):register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        LoadMenu(e, 3)
+        LoadMenu(e.source, 3)
     end)
     CreateSelection(lheader, "SP Creature"):register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        LoadMenu(e, 4)
+        LoadMenu(e.source, 4)
     end)
-
-
---[[
-    local left = parent:createBlock()
-    left.widthProportional = 1
-    left.heightProportional = 1
-    left.autoWidth = true
-    left.autoHeight = true
-    left.flowDirection = tes3.flowDirection.topToBottom
-
-
-    local right = parent:createBlock()
-    right.widthProportional = 1
-    right.heightProportional = 1
-    right.autoWidth = true
-    right.autoHeight = true
-    right.flowDirection = tes3.flowDirection.topToBottom
-
-    local voice = soundData.voiceData
-    local race = CreateListBox(left, table.keys(voice, true))
-    local gender = left:createBlock()
-    gender.widthProportional = 1
-    gender.autoWidth = true
-    gender.autoHeight = true
-    gender.flowDirection = tes3.flowDirection.leftToRight
-    b = gender:createTextSelect({text = "Male"})
-    b.borderRight = 4
-    b.paddingAllSides = 2
-    b = gender:createTextSelect({text = "Female"})
-    b.borderRight = 4
-    b.paddingAllSides = 2
-    local voiceid = CreateListBox(left, table.keys(this.voice, true))
-
-    local path = CreateListBox(right, voice["argonian"]["f"][this.voice.remind])
-
-]]
-
-    -- local pane = parent:createVerticalScrollPane()
-    -- pane.widthProportional = nil
-    -- pane.heightProportional = nil
-    -- pane.autoWidth = true
-    -- pane.autoHeight = true
-    -- pane.children[1].widthProportional = nil
-    -- pane.children[1].heightProportional = nil
-    -- pane.children[1].autoWidth = true
-    -- pane.children[1].autoHeight = true
-    -- pane.children[1].children[1].widthProportional = nil
-    -- pane.children[1].children[1].heightProportional = nil
-    -- pane.children[1].children[1].autoWidth = true
-    -- pane.children[1].children[1].autoHeight = false
-    -- pane.children[1].children[1].height = 22 * 4
-    -- local content = pane:getContentElement()
-    -- content:createTextSelect({text="dark elf"})
-    -- content:createTextSelect({text="high elf"})
-    -- local gender = parent:createBlock()
-    -- gender.widthProportional = 1
-    -- gender.autoWidth = true
-    -- gender.autoHeight = true
-    -- gender.flowDirection = tes3.flowDirection.leftToRight
-    -- gender:createButton({text = "Male"})
-    -- gender:createButton({text = "Female"})
-
-    -- pane = parent:createVerticalScrollPane()
-    -- pane.widthProportional = nil
-    -- pane.heightProportional = nil
-    -- pane.autoWidth = true
-    -- pane.autoHeight = true
-    -- pane.children[1].widthProportional = nil
-    -- pane.children[1].heightProportional = nil
-    -- pane.children[1].autoWidth = true
-    -- pane.children[1].autoHeight = true
-    -- pane.children[1].children[1].widthProportional = nil
-    -- pane.children[1].children[1].heightProportional = nil
-    -- pane.children[1].children[1].autoWidth = true
-    -- pane.children[1].children[1].autoHeight = false
-    -- pane.children[1].children[1].height = 22 * 4
-    -- content = pane:getContentElement()
-    -- content:createTextSelect({text="contine"})
-    -- content:createTextSelect({text="finish"})
-
+    LoadMenu(button, 1)
 
     menu:updateLayout()
-    -- race.widget:contentsChanged()
-    -- voiceid.widget:contentsChanged()
-    -- path.widget:contentsChanged()
+    tes3ui.enterMenuMode(menuid)
+
 end
 
 

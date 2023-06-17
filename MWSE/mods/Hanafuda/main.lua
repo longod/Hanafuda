@@ -23,7 +23,7 @@ local function OnInitialized(_)
                         require("Hanafuda.KoiKoi.brain.randomBrain").new({ waitHand = { s = 1, e = 3}, waitDrawn = { s = 1, e = 2}, waitCalling = { s = 2, e = 5 } }),
                         nil
                     ),
-                    require("Hanafuda.KoiKoi.view").new(),
+                    require("Hanafuda.KoiKoi.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
                     function()
                         if service then
                             service:Destory()

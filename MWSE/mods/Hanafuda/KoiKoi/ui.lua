@@ -30,13 +30,14 @@ assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
 
 ---@param parent tes3uiElement
+---@param asset Hanafuda.CardAssetPackage
 ---@param combination KoiKoi.CombinationType
 ---@param actualPoint integer?
 ---@param maxWidth integer?
 ---@param cardScale number?
 ---@param summary boolean?
 ---@return tes3uiElement
-function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, cardScale, summary)
+function this.CreateCombinationView(parent, asset, combination, actualPoint, maxWidth, cardScale, summary)
     --local indent = 0
     local block = parent:createBlock()
     block.flowDirection = tes3.flowDirection.topToBottom
@@ -62,14 +63,14 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
         -- pattern.borderLeft = indent * 2
 
         for index, cardId in ipairs(cardIds) do
-            local asset = card.GetCardAsset(cardId)
+            local a = asset:GetAsset(cardId)
             local b = pattern:createBlock()
             b.borderAllSides = 0
             b.autoWidth = true
             b.autoHeight = true
             b.flowDirection = tes3.flowDirection.topToBottom
             b.childAlignX = 0.5
-            local image = b:createImage({ path = asset.path })
+            local image = b:createImage({ path = a.path })
             image.width = card.GetCardWidth() * scale
             image.height = card.GetCardHeight() * scale
             image.scaleMode = true
@@ -78,7 +79,7 @@ function this.CreateCombinationView(parent, combination, actualPoint, maxWidth, 
             image.flowDirection = tes3.flowDirection.topToBottom
             b:register(tes3.uiEvent.help,
                 function(_)
-                    this.CreateCardTooltip(cardId, false)
+                    this.CreateCardTooltip(cardId, asset, false)
                 end)
         end
         return pattern
@@ -335,7 +336,8 @@ function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
 end
 
 ---@param e uiEventEventData
-function this.CreateCardList(e)
+---@param asset Hanafuda.CardAssetPackage
+function this.CreateCardList(e, asset)
     local menu = tes3ui.findMenu(uiid.helpCardListMenu)
     if menu then
         -- can be forecround focusing?
@@ -434,19 +436,19 @@ function this.CreateCardList(e)
             local cards = card.Find({ suit = i, type = j, findAll = true }) --[[@as integer[]?]]
             if cards then
                 for _, cardId in ipairs(cards) do
-                    local asset = card.GetCardAsset(cardId)
+                    local a = asset:GetAsset(cardId)
                     local b = col:createBlock()
                     b.autoWidth = true
                     b.autoHeight = true
                     b.paddingAllSides = 0
                     b.paddingRight = padding
-                    local image = b:createImage({ path = asset.path })
+                    local image = b:createImage({ path = a.path })
                     image.width = card.GetCardWidth() * scale
                     image.height = card.GetCardHeight() * scale
                     image.scaleMode = true
                     b:register(tes3.uiEvent.help,
                         function(_)
-                            this.CreateCardTooltip(cardId, false)
+                            this.CreateCardTooltip(cardId, asset, false)
                         end)
                 end
             end
@@ -471,7 +473,8 @@ function this.CreateCardList(e)
 end
 
 ---@param e uiEventEventData
-function this.CreateCombinationList(e)
+---@param asset Hanafuda.CardAssetPackage
+function this.CreateCombinationList(e, asset)
     local menu = tes3ui.findMenu(uiid.helpComboListMenu)
     if menu then
         -- can be forecround focusing?
@@ -508,7 +511,7 @@ function this.CreateCombinationList(e)
     label.borderTop = 6
     label.borderBottom = 6
     for _, value in ipairs(table.values(koi.combination, true)) do
-        this.CreateCombinationView(parent, value)
+        this.CreateCombinationView(parent, asset, value)
         parent:createDivider().widthProportional = 1.0
     end
 
@@ -672,9 +675,10 @@ function this.CreateRule(e)
 end
 
 ---@param cardId integer
+---@param asset Hanafuda.CardAssetPackage
 ---@param backface boolean
 ---@return tes3uiElement?
-function this.CreateCardTooltip(cardId, backface)
+function this.CreateCardTooltip(cardId, asset, backface)
     local tooltip = tes3ui.createTooltipMenu()
     if backface then
         -- It would be better if it could be replaced with a person's name. but it not make sence to receive in args.
@@ -686,8 +690,8 @@ function this.CreateCardTooltip(cardId, backface)
         local name = tooltip:createLabel({ text = card.GetCardText(cardId).name })
         name.color = headerColor
         if config.tooltipImage then -- Unfortunately, displaying the image impairs gameplay.
-            local asset = card.GetCardAsset(cardId)
-            local thumb = tooltip:createImage({ path = asset.path })
+            local a = asset:GetAsset(cardId)
+            local thumb = tooltip:createImage({ path = a.path })
             thumb.width = card.GetCardWidth() * 1.5
             thumb.height = card.GetCardHeight() * 1.5
             thumb.scaleMode = true

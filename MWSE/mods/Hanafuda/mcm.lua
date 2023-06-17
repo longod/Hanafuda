@@ -27,6 +27,59 @@ local function OnModConfigReady(e)
     })
     local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
 
+    --- first letter to upper case
+    ---@param s string
+    ---@return string
+    ---@return integer
+    local function FirstToUpper(s)
+        return s:gsub("^%l", string.upper)
+    end
+
+    local styles = require("Hanafuda.cardData").SearchCardAssetStyle()
+    local styleTable = {}
+    local styleBackTable = {}
+     -- possible removed
+     local findStyle = false
+     local findBackStyle = false
+    for _, value in ipairs(styles) do
+        local item = {label = FirstToUpper(value), value = value}
+        table.insert(styleTable, item)
+        table.insert(styleBackTable, item)
+
+        if not findStyle and value == config.cardStyle then
+            findStyle = true
+        end
+        if not findBackStyle and value == config.cardBackStyle then
+            findBackStyle = true
+        end
+    end
+    -- Add configed item for compatibility if it is missing.
+    if not findStyle then
+        table.insert(styleTable, {label = FirstToUpper(config.cardStyle), value = config.cardStyle})
+    end
+    if not findBackStyle then
+        table.insert(styleBackTable, {label = FirstToUpper(config.cardBackStyle), value = config.cardBackStyle})
+    end
+    hanafuda:createDropdown({
+        label = i18n("mcm.hanafuda.cardStyle.label"),
+        description = i18n("mcm.hanafuda.cardStyle.description") .. "\n\n" .. i18n("mcm.default") .. FirstToUpper(defaults.cardStyle),
+        options = styleTable,
+        variable = mwse.mcm.createTableVariable({
+            id = "cardStyle",
+            table = config,
+        }),
+    })
+    hanafuda:createDropdown({
+        label = i18n("mcm.hanafuda.cardBackStyle.label"),
+        description = i18n("mcm.hanafuda.cardBackStyle.description") .. "\n\n" .. i18n("mcm.default") .. FirstToUpper(defaults.cardBackStyle),
+        options = styleBackTable,
+        variable = mwse.mcm.createTableVariable({
+            id = "cardBackStyle",
+            table = config,
+        }),
+    })
+
+
     local languageTable = {
         { label = i18n("mcm.hanafuda.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
         { label = i18n("mcm.hanafuda.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },

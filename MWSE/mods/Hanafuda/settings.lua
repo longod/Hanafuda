@@ -13,7 +13,8 @@ this.cardLanguage = {
 ---@class Config
 local defaultConfig = {
     enable = true,
-    -- language?
+    cardStyle = "worn",
+    cardBackStyle = "worn",
     cardLanguage = this.cardLanguage.tamrielic,
     tooltipImage = false,
     -- game speed x1.0 for wait time

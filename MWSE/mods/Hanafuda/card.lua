@@ -117,17 +117,6 @@ function this.GetCardPoint(cardId)
     return cardPoint[cardId]
 end
 
----@param cardId integer
----@return CardAsset
-function this.GetCardAsset(cardId)
-    return data.cardAssets[cardId]
-end
-
----@return CardAsset
-function this.GetCardBackAsset()
-    return data.cardBackAsset
-end
-
 -- contain CardAsset for any asset types?
 ---@return number
 function this.GetCardWidth()

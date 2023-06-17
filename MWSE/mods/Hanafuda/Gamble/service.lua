@@ -165,7 +165,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
 
     service = require("Hanafuda.KoiKoi.service").new(
         require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil),
-        require("Hanafuda.KoiKoi.view").new(player, opponent),
+        require("Hanafuda.KoiKoi.view").new(player, opponent, config.cardStyle, config.cardBackStyle),
 
         ---@param params KoiKoi.ExitStatus
         function(params)
