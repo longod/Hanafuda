@@ -37,6 +37,10 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
   - Engine uses D3D9, so do not add DXT10 header.
   - Mipmaps can be either. If there are generated, it can be reused when playing on 3D is supported.
 
+### Localization
+- See MWSE [Mod Translations](https://mwse.github.io/MWSE/guides/mod-translations/) for basic instructions
+- Apart from the game's locale, the terms are replaced with the original language by config. Please keep the original language and replacement code.
+
 ## TODO
 - See [Project page](https://github.com/longod/Hanafuda/projects?query=is%3Aopen)
 
