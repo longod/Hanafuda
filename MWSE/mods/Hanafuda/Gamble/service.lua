@@ -17,7 +17,7 @@ local oddsList = {
     25,
     100,
 }
-local penaltyPointPerRound = 3 -- per round
+local penaltyPointPerRound = 5 -- per round
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -37,7 +37,6 @@ local function CalculateBettingSettings(player, opponent, conf)
     end
     return playerGold, enables
 end
-
 
 --- This is popular in hanafuda gambling, where money is transferred according to difference scores and unit price.
 --- NPCs in morrowind have little or no money. It may be more obvious to deal with a unique currency. or other gambling, debt system.
@@ -159,7 +158,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
         koikoiChance = greedy, -- temp
         meaninglessDiscardChance = (1 - gamble) * 0.3, -- temp
         waitHand = { s = 1, e = 4 },
-        waitDrawn = { s = 1, e = 2 },
+        waitDrawn = { s = 0.5, e = 1.5 },
         waitCalling = { s = 2, e = 4 },
     })
 

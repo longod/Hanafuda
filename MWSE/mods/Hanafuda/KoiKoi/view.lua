@@ -580,7 +580,8 @@ end
 ---@param player KoiKoi.Player
 ---@param deltaTime number
 function View.ThinkCalling(self, player, deltaTime)
-    self:IdleReaction(player, deltaTime, 4, 8, 30, 0.7) -- fast pace
+    -- todo Easy to be covered with calling, so adjustment required.
+    self:IdleReaction(player, deltaTime, 4, 8, 40, 0.7) -- fast pace
 end
 
 --- custom block has max width. and it excluding frame size...
