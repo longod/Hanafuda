@@ -2,6 +2,7 @@
 local this = {}
 local logger = require("Hanafuda.logger")
 local special = require("Hanafuda.Gamble.special")
+local settings = require("Hanafuda.Gamble.settings")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -239,7 +240,7 @@ end
 ---@param opponent tes3mobileCreature|tes3mobileNPC
 ---@return boolean
 local function CanPerformServiceByFight(player, opponent)
-    local baseFight = 70
+    local baseFight = settings.fightThreshold.base
     local threshold = baseFight
     -- todo Varying thresholds based on faction and other affinities with the player.
     return opponent.fight <= threshold
@@ -249,7 +250,7 @@ end
 ---@param opponent tes3mobileNPC
 ---@return boolean
 local function CanPerformServiceByDisposition(player, opponent)
-    local baseDisposition = 30
+    local baseDisposition = settings.dispositionThreshold.base
     local threshold = baseDisposition
     -- todo Varying thresholds based on faction and other affinities with the player.
     return opponent.object.disposition >= threshold
@@ -424,149 +425,69 @@ function this.GetRefusedReasonText(reason, name)
     return nil -- or fallback text
 end
 
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param ability Gamble.Ability
+---@return number
+function this.CalculateAbility(mobile, ability)
+    local value = 0
+    local total = 0
+    if ability.attributes then
+        local attributes = mobile.attributes
+        for _, a in ipairs(ability.attributes) do
+            local v = math.remap(attributes[a.attribute + 1].current, a.current.min, a.current.max, a.out.min, a.out.max)
+            value = value + v * a.weight
+            total = total + a.weight
+        end
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        -- no skill
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        if ability.skills then
+            local skills = mobile.skills
+            for _, s in ipairs(ability.skills) do
+                local v = math.remap(skills[s.skill + 1].current, s.current.min, s.current.max, s.out.min, s.out.max)
+                value = value + v * s.weight
+                total = total + s.weight
+            end
+        end
+    end
+    if total > 0 then
+        value = value / total -- normalize
+        value = math.clamp(value, 0, 1)
+    end
+    return value
+end
 
 -- fate
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateLucky(mobile)
-    local value = 0
-    local total = 0
-    do
-        local weight = 1.0
-        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    value = value / total -- normalize
-    return value
+    return this.CalculateAbility(mobile, settings.luckyAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateCheatAbility(mobile)
-    local value = 0
-    local total = 0
-    do
-        local weight = 0.5
-        value = value + math.remap(mobile.willpower.current, 0, 150, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 1
-        value = value + math.remap(mobile.agility.current, 0, 150, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 0.25
-        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    if mobile.actorType == tes3.actorType.creature then
-        ---@cast mobile tes3mobileCreature
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-        do
-            local weight = 1
-            value = value + math.remap(mobile.sneak.current, 0, 100, 0, 1) * weight
-            total = total + weight
-        end
-        do
-            local weight = 1
-            value = value + math.remap(mobile.speechcraft.current, 0, 100, 0, 1) * weight
-            total = total + weight
-        end
-    end
-    value = value / total -- normalize
-    return value
+    return this.CalculateAbility(mobile, settings.cheatAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateSpotAbility(mobile)
-    local value = 0
-    local total = 0
-    do
-        local weight = 1
-        value = value + math.remap(mobile.willpower.current, 0, 150, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 0.5
-        value = value + math.remap(mobile.intelligence.current, 0, 150, 0, 1) * weight
-        total = total + weight
-    end
-    do
-        local weight = 0.25
-        value = value + math.remap(mobile.luck.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    if mobile.actorType == tes3.actorType.creature then
-        ---@cast mobile tes3mobileCreature
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-        local weight = 1
-        value = value + math.remap(mobile.security.current, 0, 100, 0, 1) * weight
-        total = total + weight
-    end
-    value = value / total -- normalize
-    return value
+    return this.CalculateAbility(mobile, settings.spotAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateGreedy(mobile)
-    local value = 0
-    local total = 0
-    do
-        local weight = 1
-        value = value + math.remap(mobile.willpower.current, 0, 100, 1, 0.1) * weight
-        total = total + weight
-    end
-    if mobile.actorType == tes3.actorType.creature then
-        -- no skill
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-        local weight = 1
-        value = value + math.remap(mobile.mercantile.current, 0, 100, 0.1, 1) * weight
-        total = total + weight
-    end
-    value = value / total -- normalize
-    return value
+    return this.CalculateAbility(mobile, settings.greedyAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateGambleAbility(mobile)
-    local value = 0
-    local total = 0
-    do
-        local weight = 1
-        local v = math.remap(mobile.willpower.current, 30, 150, 0, 1)
-        value = value + v * weight
-        total = total + weight
-    end
-    do
-        local weight = 1
-        local v = math.remap(mobile.intelligence.current, 30, 150, 0, 1)
-        value = value + v * weight
-        total = total + weight
-    end
-    do
-        local weight = 0.5
-        local v = math.remap(mobile.luck.current, 0, 100, 0, 1)
-        value = value + v * weight
-        total = total + weight
-    end
-    if mobile.actorType == tes3.actorType.creature then
-        -- no skill
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-        local weight = 1
-        local v = math.remap(mobile.mercantile.current, 0, 100, 0, 1)
-        value = value + v * weight
-        total = total + weight
-    end
-    value = value / total -- normalize
-    return value
+    return this.CalculateAbility(mobile, settings.gambleAbility)
 end
 
 return this

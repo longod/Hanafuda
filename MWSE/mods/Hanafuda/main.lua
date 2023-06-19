@@ -20,7 +20,7 @@ local function OnInitialized(_)
                 service = require("Hanafuda.KoiKoi.service").new(
                     require("Hanafuda.KoiKoi.game").new(
                         require("Hanafuda.config").koikoi,
-                        require("Hanafuda.KoiKoi.brain.randomBrain").new({ waitHand = { s = 1, e = 3}, waitDrawn = { s = 1, e = 2}, waitCalling = { s = 2, e = 5 } }),
+                        require("Hanafuda.KoiKoi.brain.randomBrain").new({ koikoiChance = 0.3, meaninglessDiscardChance = 0.1, waitHand = { s = 1, e = 4}, waitDrawn = { s = 0.5, e = 1.5}, waitCalling = { s = 2, e = 4 } }),
                         nil
                     ),
                     require("Hanafuda.KoiKoi.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
@@ -70,6 +70,7 @@ dofile("Hanafuda/mcm.lua")
 if config.development.unittest then
     dofile("Hanafuda/test.lua")
     dofile("Hanafuda/KoiKoi/test.lua")
+    dofile("Hanafuda/Gamble/test.lua")
 end
 
 --- HACK Since the annotation are not defined in MWSE, this is to supress the warning caused by this.

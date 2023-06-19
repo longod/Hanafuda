@@ -6,18 +6,10 @@ local act = require("Hanafuda.Gamble.actor")
 local uiid = require("Hanafuda.Gamble.uiid")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local config = require("Hanafuda.config")
+local settings = require("Hanafuda.Gamble.settings")
 local i18n = mwse.loadTranslations("Hanafuda")
 
 local service ---@type KoiKoi.Service?
-
-local oddsList = {
-    0, -- free
-    1,
-    5,
-    25,
-    100,
-}
-local penaltyPointPerRound = 5 -- per round
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
@@ -28,9 +20,9 @@ local function CalculateBettingSettings(player, opponent, conf)
     local opponentGold = act.GetActorGold(opponent)
     -- Allow odds if there is some amount of payment on both sides.
     local gold = math.min(playerGold, opponentGold)
-    local metric = math.ceil(gold / (penaltyPointPerRound * conf.round)) -- average points per round... no evidence!
+    local metric = math.ceil(gold / (settings.penaltyPointPerRound * conf.round)) -- average points per round... no evidence!
     local enables = {}
-    for _, value in ipairs(oddsList) do
+    for _, value in ipairs(settings.oddsList) do
         local enable = value <= metric
         logger:trace("odds %d <= %d " .. tostring(enable), value, metric)
         table.insert(enables, enable)
@@ -117,7 +109,7 @@ local function CalculateDispositionByInsufficient(expected, actual, insufficient
     -- The more insufficient money and the higher the odds, the more likely it is to change.
     local ratio = (insufficient / expected) -- relative
     -- ratio = insufficient * 0.3 -- absolute
-    local delta = ratio * odds * 0.2
+    local delta = ratio * odds * settings.dispositionByInsufficientCoefficient
     delta = math.ceil(delta)
     if insufficient < 0 then -- sign, after ceil for negative value behaviour
         delta = -delta
@@ -262,10 +254,9 @@ local function AddGamblingMenu(menu, player, opponent)
     serviceButton:register(tes3.uiEvent.mouseClick,
         ---@param _ uiEventEventData
         function(_)
-            local config = require("Hanafuda.config")
             local gold, enables = CalculateBettingSettings(player, opponent, config.koikoi)
-            local penaltyPayout = penaltyPointPerRound * config.koikoi.round
-            require("Hanafuda.Gamble.ui").CreateBettingMenu(gold, oddsList, enables, penaltyPayout,
+            local penaltyPayout = settings.penaltyPointPerRound * config.koikoi.round
+            require("Hanafuda.Gamble.ui").CreateBettingMenu(gold, settings.oddsList, enables, penaltyPayout,
             ---@param odds integer
             function(odds)
                 LaunchKoiKoi(player, opponent, odds, penaltyPayout)

@@ -789,6 +789,7 @@ this.voiceData = {
                 "vo\\h\\f\\Hlo_HF040.mp3",	--	Identify yourself.
                 "vo\\h\\f\\Hlo_HF056.mp3",	--	Identify yourself.
                 "vo\\h\\f\\Hlo_HF110.mp3",	--	All right, I'm intrigued. Go ahead.
+                "vo\\h\\f\\Hlo_HF111.mp3",	--	This is unexpected, but not unwelcome. Please go ahead.
             },
             [this.voice.finish] = {
                 "vo\\h\\f\\Atk_HF011.mp3",	--	It's over for you!
@@ -822,7 +823,6 @@ this.voiceData = {
                 "vo\\h\\f\\Hlo_HF000e.mp3",	--	Get out of here!
                 "vo\\h\\f\\Hlo_HF019.mp3",	--	I sense great hostility -- mine.
                 "vo\\h\\f\\Hlo_HF027.mp3",	--	You again. How tiresome.
-                "vo\\h\\f\\Hlo_HF111.mp3",	--	This is unexpected, but not unwelcome. Please go ahead.
                 "vo\\h\\f\\Idl_HF001.mp3",	--	The indignity of it all.
             },
             [this.voice.winGame] = {
@@ -868,6 +868,7 @@ this.voiceData = {
                 "vo\\h\\m\\Hlo_HM040.mp3",	--	Identify yourself.
                 "vo\\h\\m\\Hlo_HM056.mp3",	--	Identify yourself.
                 "vo\\h\\m\\Hlo_HM110.mp3",	--	All right, I'm intrigued. Go ahead.
+                "vo\\h\\m\\Hlo_HM111.mp3",	--	This is unexpected, but not unwelcome. Please go ahead.
             },
             [this.voice.finish] = {
                 "vo\\h\\m\\Atk_HM002.mp3",	--	Your moment is at an end!
@@ -909,7 +910,6 @@ this.voiceData = {
                 "vo\\h\\m\\Hlo_HM000e.mp3",	--	Get out of here!
                 "vo\\h\\m\\Hlo_HM019.mp3",	--	I sense great hostility -- mine.
                 "vo\\h\\m\\Hlo_HM027.mp3",	--	You again. How tiresome.
-                "vo\\h\\m\\Hlo_HM111.mp3",	--	This is unexpected, but not unwelcome. Please go ahead.
             },
             [this.voice.winGame] = {
                 "vo\\h\\m\\Hlo_HM001.mp3",	--	I haven't any time for you now.
