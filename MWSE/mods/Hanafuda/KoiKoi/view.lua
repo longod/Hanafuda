@@ -33,7 +33,7 @@ local cardProperty = "Hanafuda:CardId"
 ---@field mobile { KoiKoi.Player : tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? }
 ---@field disposition number?
 ---@field voices KoiKoi.View.Voice
----@field asset Hanafuda.CardAssetPackage
+---@field asset CardAssetPackage
 ---@field cardBackAsset CardAsset
 ---@field testShowDialog fun(e:keyDownEventData)?
 ---@field testCapture fun(e:keyDownEventData)?
@@ -128,7 +128,7 @@ local function IsGrabbingCard()
 end
 
 ---@param parent tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param cardId integer
 ---@param backface boolean
 ---@param notooltip boolean?
@@ -163,7 +163,7 @@ local function PutCard(parent, asset, cardId, backface, notooltip)
 end
 
 ---@param element tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@return tes3uiElement
 local function FlipCard(element, asset)
     -- or query id to service
@@ -190,7 +190,7 @@ local function FlipCard(element, asset)
 end
 
 ---@param parent tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param deck integer[]
 ---@return tes3uiElement
 local function PutDeck(parent, asset, deck)
@@ -417,7 +417,7 @@ local function UnregisterEvents(element)
 end
 
 ---@param self KoiKoi.View
----@param id VoiceId
+---@param id KoiKoi.VoiceId
 ---@param player KoiKoi.Player
 function View.PlayVoice(self, id, player)
     -- It is possible that the special voice and the fallback normal voice indexes are mixed up, but I don't care.
@@ -604,7 +604,7 @@ local function ComputeParentMaxWidth(parent)
 end
 
 ---@param parent tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param combo { [KoiKoi.CombinationType] : integer }
 local function CreateTightCombinationList(parent, asset, combo)
     -- todo curent combination cards on tooltip, need card IDs
@@ -617,9 +617,9 @@ local function CreateTightCombinationList(parent, asset, combo)
 end
 
 ---@param parent tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param combo { [KoiKoi.CombinationType] : integer }
-local function CreateSummaryCombinationList(parent, asset,combo)
+local function CreateSummaryCombinationList(parent, asset, combo)
     -- todo curent combination cards on tooltip, need card IDs
     for _, value in ipairs(table.keys(combo, true)) do
         ui.CreateCombinationView(parent, asset, value, combo[value], nil, nil, true)

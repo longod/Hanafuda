@@ -4,7 +4,7 @@ description = "Play Koi-Koi with Hanafuda in Morrowind."
 homepage = "https://github.com/longod/Hanafuda"
 repository = "https://github.com/longod/Hanafuda"
 authors = ["longod"]
-version = "0.0.0"
+version = "1.0.0"
 
 [tools.mwse]
 lua-mod = "Hanafuda"

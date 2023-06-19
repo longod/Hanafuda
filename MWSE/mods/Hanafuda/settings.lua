@@ -44,7 +44,8 @@ local defaultConfig = {
 }
 
 this.configPath = "Hanafuda"
-this.modName = "Hanafuda: Akaviri Playing Cards"
+this.metadata = toml.loadFile("Data Files\\Hanafuda-metadata.toml") ---@type MWSE.Metadata?
+this.modName = this.metadata.package.name
 local config = nil ---@type Config
 
 ---@return Config

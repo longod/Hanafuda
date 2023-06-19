@@ -46,9 +46,6 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
 #### AI (Brain)
 - TODO
 
-#### Sound
-- TODO
-
 ### Gamble
 - `Hanafuda/Gamble` provides the means to launch Koi-Koi from the world of morrowind.
   - Add the service menu to the dialog menu.
@@ -69,6 +66,8 @@ I hope you can do it together.
 ## Future Work
 - Advanced Gambling
 - Skill Module (optional)
+- Cheat and Spot
+- Card movement animation system
 - Playing on 3D
 - Generalize as a card or board game such as framework
 - Other game rules using Hanafuda

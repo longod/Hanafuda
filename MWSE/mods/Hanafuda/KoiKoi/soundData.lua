@@ -1,13 +1,13 @@
 local this = {}
 
----@enum SoundEffectId
+---@enum KoiKoi.SoundEffectId
 this.se = {
     dealCard = 1,
     putDeck = 2,
     pickCard = 3,
     putCard = 4,
 }
----@enum VoiceId
+---@enum KoiKoi.VoiceId
 this.voice = {
     continue = 1,  -- koi-koi
     finish = 2,    -- shobu
@@ -17,28 +17,28 @@ this.voice = {
     remind = 6,
 }
 
----@enum MusicId
+---@enum KoiKoi.MusicId
 this.music = {
     win = 1,
     lose = 2,
 }
 
----@class MusicData
+---@class KoiKoi.MusicData
 ---@field path string
 
 -- I'd like to treat it as an SE, but so far I can't.
----@type {[MusicId] : MusicData}
+---@type {[KoiKoi.MusicId] : KoiKoi.MusicData}
 this.musicData = {
     [this.music.win] = { path = "Special/MW_Triumph.mp3" },
     [this.music.lose] = { path = "Special/MW_Death.mp3" },
 }
 
----@class SoundData
+---@class KoiKoi.SoundData
 ---@field soundPath string?
 ---@field sound string? fallback
 ---@field volume number? normalzied value
 
----@type {[SoundEffectId] : SoundData}
+---@type {[KoiKoi.SoundEffectId] : KoiKoi.SoundData}
 this.soundData = {
     -- ["1"] = { sound ="",soundPath = "Fx/inter/menu1.wav" },
     -- ["2"] = { sound ="",soundPath = "Fx/inter/menu2.wav" },
@@ -57,10 +57,10 @@ this.soundData = {
     [this.se.putCard] = { sound = "book page2" },
 }
 
----@class SoundGenData
+---@class KoiKoi.SoundGenData
 ---@field gen tes3.soundGenType
 
----@type {[VoiceId] : SoundGenData}
+---@type {[KoiKoi.VoiceId] : KoiKoi.SoundGenData}
 this.soundGenData = {
     [this.voice.continue] = { gen = tes3.soundGenType.moan },
     [this.voice.finish] = { gen = tes3.soundGenType.roar },
@@ -70,13 +70,12 @@ this.soundGenData = {
     [this.voice.remind] = { gen = tes3.soundGenType.roar },
 }
 
--- TODO validate race and gender from path
 -- TODO It would be nice to be able to assign unused assets. This is only for assets that are referenced by esm.
 -- Structures that can distinguish the gender, race, outlander, etc. of the other party are complex and are avoided.
 -- Maybe we should have 2 levels, depending on disposition.
 -- Thieves (Thf_) and crime alerts could be useful if the cheat feature could be.
 -- Servants (Srv_) have been excluded because they may have a different tone of speech even if it is textually appropriate.
----@type {[string] : {[string]: {[VoiceId] : string[] } } } race, sex, VoiceId, file excluding directory
+---@type {[string] : {[string]: {[KoiKoi.VoiceId] : string[] } } } race, sex, VoiceId, file excluding directory
 this.voiceData = {
     ["argonian"] = {
         ["f"] = {
@@ -2100,12 +2099,12 @@ this.voiceData = {
 }
 
 -- special
----@type {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+---@type {[string] : {[KoiKoi.VoiceId] : string[]}} id, VoiceId, file excluding directory
 this.npcs = {
 }
 
 -- special
----@type {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+---@type {[string] : {[KoiKoi.VoiceId] : string[]}} id, VoiceId, file excluding directory
 this.creatures = {
     ["dagoth_ur_1"] = {
         [this.voice.continue] = {

@@ -3,7 +3,7 @@ local card = require("Hanafuda.card")
 local logger = require("Hanafuda.logger")
 
 ---@class KoiKoi.Runner
----@field game KoiKoi
+---@field game KoiKoi.Game
 ---@field state integer
 ---@field round integer
 ---@field drawnCard integer?

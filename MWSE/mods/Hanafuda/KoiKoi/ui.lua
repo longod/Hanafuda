@@ -30,7 +30,7 @@ assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
 
 ---@param parent tes3uiElement
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param combination KoiKoi.CombinationType
 ---@param actualPoint integer?
 ---@param maxWidth integer?
@@ -336,7 +336,7 @@ function this.CreateLuckyHandsView(parent, luckyHands, actualPoint, maxWidth)
 end
 
 ---@param e uiEventEventData
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 function this.CreateCardList(e, asset)
     local menu = tes3ui.findMenu(uiid.helpCardListMenu)
     if menu then
@@ -473,7 +473,7 @@ function this.CreateCardList(e, asset)
 end
 
 ---@param e uiEventEventData
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 function this.CreateCombinationList(e, asset)
     local menu = tes3ui.findMenu(uiid.helpComboListMenu)
     if menu then
@@ -648,7 +648,6 @@ function this.CreateRule(e)
     createHeader(parent, i18n("koi.help.rule.end.header"), 2)
     createText(parent, i18n("koi.help.rule.end.description"), 2)
 
-    -- todo gambling (explain before game beginning)
     -- todo house rules
 
     -- more info
@@ -675,7 +674,7 @@ function this.CreateRule(e)
 end
 
 ---@param cardId integer
----@param asset Hanafuda.CardAssetPackage
+---@param asset CardAssetPackage
 ---@param backface boolean
 ---@return tes3uiElement?
 function this.CreateCardTooltip(cardId, asset, backface)

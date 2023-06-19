@@ -63,6 +63,7 @@ local npcs = {
     ["fargoth"] = true,
     ["nelos onmar"] = true,
     ["baladas demnevanni"] = true,
+    -- TODO tweak
 }
 
 -- A unique name, with a stand-alone page in uesp. Not yet investigated if it is conversable.
@@ -168,6 +169,7 @@ local creatures = {
     ["dremora_lord_khash_uni"] = false,
     ---- bloodmoon
     ["draugr_aesliip"] = true,
+    -- TODO tweak
 }
 
 ---@param mobile tes3mobileNPC

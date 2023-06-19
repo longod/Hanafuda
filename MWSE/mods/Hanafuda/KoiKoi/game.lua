@@ -16,7 +16,7 @@ local houseRule = require("Hanafuda.KoiKoi.houseRule")
 ---@field [CardType] integer[]
 
 --- ruleset aka model
----@class KoiKoi
+---@class KoiKoi.Game
 ---@field parent KoiKoi.Player means dealer + alpha
 ---@field current KoiKoi.Player
 ---@field round integer
@@ -35,7 +35,7 @@ local KoiKoi = {}
 
 -- todo random seed or random object
 
----@type KoiKoi
+---@type KoiKoi.Game
 local defaults = {
     parent = koi.player.you,
     current = koi.player.you,
@@ -92,9 +92,9 @@ ValidateSettings(defaults.settings)
 ---@param settings Config.KoiKoi
 ---@param opponentBrain KoiKoi.IBrain?
 ---@param playerBrain KoiKoi.IBrain?
----@return KoiKoi
+---@return KoiKoi.Game
 function KoiKoi.new(settings, opponentBrain, playerBrain)
-    ---@type KoiKoi
+    ---@type KoiKoi.Game
     local instance = table.deepcopy(defaults)
     instance.settings.houseRule = table.deepcopy(settings.houseRule) -- do not change in game
     instance.settings.round = settings.round
@@ -108,14 +108,14 @@ end
 -- event base or command base
 -- important split view and logic for replacing visualize using MVC or like as
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param brain KoiKoi.IBrain?
 ---@param player KoiKoi.Player
 function KoiKoi.SetBrains(self, brain, player)
     self.brains[player] = brain
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 function KoiKoi.Initialize(self)
     self.deck = card.CreateDeck()
     self.deck = card.ShuffleDeck(self.deck)
@@ -133,7 +133,7 @@ end
 -- The choice of the parents of the Hanafuda is flawed.
 -- In the case of the same month, it is determined by card point, but there are cases where both players pick chaff. You must keep drawing cards until it is resolved.
 -- That is boring in a video game, so limit the cards to avoid such a situation.
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param num integer
 ---@return integer[]
 function KoiKoi.ChoiceDecidingParentCards(self, num)
@@ -157,7 +157,7 @@ end
 
 
 -- Better to be able to choose between two cut cards to decide.
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param selectedCardId integer
 function KoiKoi.DecideParent(self, selectedCardId)
 
@@ -178,7 +178,7 @@ function KoiKoi.DecideParent(self, selectedCardId)
     logger:debug("Parent is ".. tostring(self.parent))
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 function KoiKoi.SetCurrentPlayer(self, player)
     self.current = player
@@ -207,7 +207,7 @@ function KoiKoi.DealInitialCards(self)
     assert(table.size(second) == initialCards)
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return { [KoiKoi.LuckyHands] : integer }?
 ---@return integer
@@ -224,13 +224,13 @@ function KoiKoi.CheckLuckyHands(self, player)
     return lh, p
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@return integer?
 function KoiKoi.DrawCard(self)
     return card.DealCard(self.deck)
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param drawnCardId integer?
 ---@param deltaTime number
@@ -255,7 +255,7 @@ function KoiKoi.Simulate(self, player, drawnCardId, deltaTime, timestamp)
     return nil
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param combination { [KoiKoi.CombinationType] : integer }
 ---@param deltaTime number
@@ -281,14 +281,14 @@ function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
     return nil
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@return KoiKoi.Player
 function KoiKoi.SwapPlayer(self)
     self:SetCurrentPlayer(koi.GetOpponent(self.current))
     return self.current
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param cardId integer
 ---@param targetId integer
 ---@return boolean
@@ -297,7 +297,7 @@ function KoiKoi.CanMatch(self, cardId, targetId)
     return koi.CanMatchSuit(cardId, targetId)
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param cardId integer
 ---@return boolean
 function KoiKoi.CanDiscard(self, cardId)
@@ -310,7 +310,7 @@ function KoiKoi.CanDiscard(self, cardId)
 end
 
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
@@ -326,7 +326,7 @@ function KoiKoi.CheckCombination(self, player)
     return nil
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 function KoiKoi.CheckEnd(self)
     -- ends when both players hand empty
     for _, p in pairs(self.pools) do
@@ -338,7 +338,7 @@ function KoiKoi.CheckEnd(self)
     -- return table.size(self.deck) == 0 -- or empty deck
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param cardId integer?
 ---@param ground boolean -- todo smartway
@@ -363,7 +363,7 @@ function KoiKoi.Capture(self, player, cardId, ground, drawn)
     return false
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param cardId integer?
 ---@param drawn boolean -- todo smartway
@@ -382,7 +382,7 @@ function KoiKoi.Discard(self, player, cardId, drawn)
     return false
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param cardId integer?
 ---@return boolean
@@ -394,20 +394,20 @@ function KoiKoi.HasCard(self, player, cardId)
     return false
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@return boolean
 function KoiKoi.EmptyDeck(self)
     return table.size(self.deck) == 0 -- use empty better
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return boolean
 function KoiKoi.EmptyHand(self, player)
     return table.size(self.pools[player].hand) == 0 -- use empty better
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return integer
 function KoiKoi.AddKoiKoiCount(self, player)
@@ -415,7 +415,7 @@ function KoiKoi.AddKoiKoiCount(self, player)
     return self.calls[player]
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return integer basePoint
 ---@return integer multiplier
@@ -445,7 +445,7 @@ function KoiKoi.CalculateRoundPoint(self, player)
     return point, mult
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 function KoiKoi.SetRoundWinner(self, player)
     local point, mult = self:CalculateRoundPoint(player)
@@ -453,7 +453,7 @@ function KoiKoi.SetRoundWinner(self, player)
     self.parent = player
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param points integer
 function KoiKoi.SetRoundWinnerByLuckyHands(self, player, points)
@@ -461,7 +461,7 @@ function KoiKoi.SetRoundWinnerByLuckyHands(self, player, points)
     self.parent = player
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@return boolean
 function KoiKoi.NextRound(self)
     if self.round < self.settings.round then
@@ -472,7 +472,7 @@ function KoiKoi.NextRound(self)
     return false
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@return KoiKoi.Player? -- nil is draw
 function KoiKoi.GetGameWinner(self)
     local a = self.points[koi.player.you]
@@ -490,7 +490,7 @@ function KoiKoi.GetGameWinner(self)
     return winner
 end
 
----@param self KoiKoi
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return boolean
 function KoiKoi.HasBrain(self, player)

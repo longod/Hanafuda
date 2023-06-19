@@ -49,7 +49,7 @@ local phase = {
 ---@class KoiKoi.Service
 ---@field phase KoiKoi.Phase
 ---@field phaseNext KoiKoi.Phase
----@field game KoiKoi
+---@field game KoiKoi.Game
 ---@field view KoiKoi.View
 ---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
@@ -64,7 +64,7 @@ local Service = {}
 -- todo debug: hold key skip to deside parent
 -- fixed deciding and more debugging function
 
----@param game KoiKoi
+---@param game KoiKoi.Game
 ---@param view KoiKoi.View
 ---@param onExit fun(params : KoiKoi.ExitStatus)?
 ---@return KoiKoi.Service

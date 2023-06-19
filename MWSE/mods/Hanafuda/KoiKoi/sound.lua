@@ -3,7 +3,7 @@
 local logger = require("Hanafuda.logger")
 local config = require("Hanafuda.config")
 
----@class Sound
+---@class KoiKoi.Sound
 local this = {}
 
 local soundData = require("Hanafuda.KoiKoi.soundData")
@@ -38,7 +38,7 @@ local function GetRandomIndex(t, excluding)
     return nil
 end
 
----@param id SoundEffectId
+---@param id KoiKoi.SoundEffectId
 function this.Play(id)
     local data = soundData.soundData[id]
     -- todo mixchannel fader
@@ -65,7 +65,7 @@ function this.Play(id)
 end
 
 -- The dialogue corresponding to the opponent's race is not taken into account.
----@param id VoiceId
+---@param id KoiKoi.VoiceId
 ---@param race string
 ---@param female boolean
 ---@param disposition number? Mutual disposition
@@ -93,9 +93,9 @@ local function PlayVoice(id, race, female, disposition, excluding)
     return nil
 end
 
----@param id VoiceId
+---@param id KoiKoi.VoiceId
 ---@param objectId string
----@param special {[string] : {[VoiceId] : string[]}} id, VoiceId, file excluding directory
+---@param special {[string] : {[KoiKoi.VoiceId] : string[]}} id, VoiceId, file excluding directory
 ---@param disposition number? Mutual disposition
 ---@param excluding integer?
 ---@return integer?
@@ -117,7 +117,7 @@ local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
 end
 
 ---comments
----@param id VoiceId
+---@param id KoiKoi.VoiceId
 ---@param creatureId string?
 ---@return nil
 local function PlaySoundGenerator(id, creatureId)
@@ -132,7 +132,7 @@ local function PlaySoundGenerator(id, creatureId)
     return nil
 end
 
----@param id VoiceId
+---@param id KoiKoi.VoiceId
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
 ---@param disposition number? Mutual disposition
 ---@param excluding integer?
@@ -190,7 +190,7 @@ function this.PlayVoice(id, mobile, disposition, excluding)
     return nil, nil
 end
 
----@param id MusicId
+---@param id KoiKoi.MusicId
 function this.PlayMusic(id)
     local data = soundData.musicData[id]
     if data and data.path then

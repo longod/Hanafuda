@@ -166,3 +166,33 @@ do
 
     unitwind:finish()
 end
+
+do
+    local unitwind = require("unitwind").new({
+        enabled = true,
+        highlight = false,
+    })
+    unitwind:start("Koi-Koi Sound Test")
+
+    unitwind:test("General NPC Voice Valid Path", function()
+        local soundData = require("Hanafuda.KoiKoi.soundData")
+        for race, genders in pairs(soundData.voiceData) do
+            local r = string.sub(race, 1, 1)
+            local dir1 = "vo\\" .. r .. "\\"
+            for gender, voices in pairs(genders) do
+                local dir = dir1 .. gender .. "\\"
+                for voiceId, paths in pairs(voices) do
+                    for index, path in ipairs(paths) do
+                        local valid = path:lower():startswith(dir)
+                        if not valid then
+                            logger:warn("invalid voice path %s, %s, %d, %d, '%s'", race, gender, voiceId, index, path)
+                        end
+                        unitwind:expect(valid).toBe(true)
+                    end
+                end
+            end
+        end
+    end)
+
+    unitwind:finish()
+end
