@@ -38,6 +38,10 @@ function this.Next(self, next)
     return self.state
 end
 
+---@param self KoiKoi.Runner
+function this.Reset(self)
+    self.state = 0
+end
 
 ---@param self KoiKoi.Runner
 function this.Run(self)
@@ -188,6 +192,179 @@ function this.Run(self)
     logger:debug("Finished")
     -- todo output statics. brain, winner, turn, point, combo, koikoi count, etc...
     return false
+end
+
+function this.Runner()
+    local menuid = "Hanafuda.KoiKoi.Runner"
+    local menu = tes3ui.findMenu(menuid)
+    if menu then
+        menu:destroy()
+        tes3ui.leaveMenuMode()
+        return
+    end
+
+    local params = {
+        iteration = 1,
+        epoch = 1,
+        p1 = { index = 1 },
+        p2 = { index = 1 },
+    }
+
+    menu = tes3ui.createMenu({ id = menuid, fixedFrame = true })
+    menu.autoWidth = true
+    menu.autoHeight = true
+    menu.minWidth = 560
+    menu.minHeight = 400
+    menu.flowDirection = tes3.flowDirection.topToBottom
+    local root = menu:createBlock()
+    root.widthProportional = 1
+    root.heightProportional = 1
+    root.autoWidth = true
+    root.autoHeight = true
+    root.flowDirection = tes3.flowDirection.topToBottom
+
+    local header = root:createBlock()
+    header.widthProportional = 1
+    header.autoWidth = true
+    header.autoHeight = true
+    header.flowDirection = tes3.flowDirection.leftToRight
+
+    header:createLabel({ text = "iteration: " }).borderRight = 6
+    local iterationInput = header:createTextInput({ text = "1", numeric = true, placeholderText = "iteration" })
+    iterationInput.widthProportional = 1
+    iterationInput:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        tes3ui.acquireTextInput(e.source)
+    end)
+    header:createLabel({ text = "epoch: "}).borderRight = 6
+    local epochInput = header:createTextInput({ text = "1", numeric = true, placeholderText = "epoch" })
+    epochInput.widthProportional = 1
+    epochInput:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        tes3ui.acquireTextInput(e.source)
+    end)
+
+    root:createDivider().widthProportional = 1
+
+    local parent = root:createBlock()
+    parent.widthProportional = 1
+    parent.heightProportional = 1
+    parent.autoWidth = true
+    parent.autoHeight = true
+    parent.flowDirection = tes3.flowDirection.topToBottom
+
+    local p1 = parent:createBlock()
+    p1.widthProportional = 1
+    p1.heightProportional = 1
+    p1.autoWidth = true
+    p1.autoHeight = true
+    p1.flowDirection = tes3.flowDirection.topToBottom
+    local p2 = parent:createBlock()
+    p2.widthProportional = 1
+    p2.heightProportional = 1
+    p2.autoWidth = true
+    p2.autoHeight = true
+    p2.flowDirection = tes3.flowDirection.topToBottom
+
+    local dir = "Data Files\\MWSE\\mods\\Hanafuda\\KoiKoi\\brain\\"
+    local relative = "Hanafuda.KoiKoi.brain."
+    local brains = {}
+    for file in lfs.dir(dir) do
+        if not file:startswith(".") and file:endswith(".lua") and file ~= "brain.lua" then
+            local lua = file:sub(1, file:len() - 4)
+            logger:trace(relative .. lua)
+            table.insert(brains, lua)
+        end
+    end
+
+    local ui = require("Hanafuda.KoiKoi.ui")
+
+    local pane1 = ui.CreateSimpleListBox(nil, p1, brains, function (selectedIndex)
+        params.p1.index = selectedIndex
+    end, params.p1.index)
+    local pane2 = ui.CreateSimpleListBox(nil, p2, brains, function (selectedIndex)
+        params.p2.index = selectedIndex
+    end, params.p2.index)
+    -- todo parameters settings ui
+
+    local footer = parent:createBlock()
+    footer.widthProportional = 1
+    -- parent.heightProportional = 1
+    footer.autoWidth = true
+    footer.autoHeight = true
+    footer.flowDirection = tes3.flowDirection.leftToRight
+    local run = footer:createButton({ text = "Run"})
+    local cancel = footer:createButton({ text = "Cancel"})
+    local cancellation = false
+    cancel:register(tes3.uiEvent.mouseClick, function ()
+        cancellation = true
+    end)
+
+    run:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function (e)
+        e.source.disabled = true
+        menu:updateLayout()
+
+        cancellation = false
+        local it = tonumber(iterationInput.text)
+        params.iteration = it and math.max(math.ceil(it), 0) or 1
+        local ep = tonumber(epochInput.text)
+        params.epoch = ep and math.max(math.ceil(ep), 0) or 1
+
+        ---@param runner KoiKoi.Runner
+        ---@param iteration integer
+        ---@param epoch integer
+        local function Run(runner, iteration, epoch)
+            runner:Reset()
+            while runner:Run() do
+            end
+            -- gather result
+        end
+
+        local epoch = 1
+        timer.start({
+            type = timer.real,
+            ---@param callbackData mwseTimerCallbackData
+            callback = function(callbackData)
+                if cancellation then
+                    callbackData.timer:cancel()
+                    logger:debug("cancel")
+                    e.source.disabled = false
+                    menu:updateLayout()
+                    return
+                end
+                logger:debug("epoch %d", epoch)
+                -- todo use xpcall
+                -- todo need factory or abstraction parameters
+                local runner = this.new(
+                    require(relative .. brains[params.p1.index]).new({}),
+                    require(relative .. brains[params.p2.index]).new({})
+                )
+                for iteration = 1, params.iteration do
+                    Run(runner, iteration, epoch)
+                end
+                if epoch >= params.epoch then
+                    e.source.disabled = false
+                    menu:updateLayout()
+                end
+                epoch = epoch + 1
+            end,
+            iterations = params.epoch,
+            duration = 0.1, -- hmm
+            persist = false,
+        })
+
+    end)
+
+
+    menu:updateLayout()
+    pane1.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+    pane2.widget:contentsChanged() ---@diagnostic disable-line: param-type-mismatch
+    tes3ui.enterMenuMode(menuid)
+
 end
 
 return this

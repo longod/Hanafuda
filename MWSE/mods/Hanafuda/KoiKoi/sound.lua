@@ -198,55 +198,6 @@ function this.PlayMusic(id)
     end
 end
 
----@param id string?
----@param parent tes3uiElement
----@param texts string[]
----@param selectedIndexChanged fun(selectedIndex:integer)?
----@param initialIndex integer?
----@return tes3uiElement
----@return tes3uiElement[]
----@return integer
-local function CreateListBox(id, parent, texts, selectedIndexChanged, initialIndex)
-    local pane = parent:createVerticalScrollPane({ id = id })
-    local content = pane:getContentElement()
-
-    local selectedIndex = initialIndex or -1
-    local items = {} ---@type tes3uiElement[]
-
-    ---@param p tes3uiElement
-    local function createItem(p, text)
-        local label = p:createTextSelect({ text = text })
-        table.insert(items, label)
-        local index = table.size(items)
-        if index == selectedIndex then
-            label.widget.state = tes3.uiState.active
-        end
-        label:register(tes3.uiEvent.mouseClick,
-        ---@param e uiEventEventData
-        function(e)
-            -- if selectedIndex == index then
-            --     return
-            -- end
-            selectedIndex = index
-            for i, item in ipairs(items) do
-                if not item.disabled then
-                    item.widget.state = tes3.uiState.normal
-                end
-            end
-            e.source.widget.state = tes3.uiState.active
-            e.source:getTopLevelMenu():updateLayout()
-            if selectedIndexChanged then
-                selectedIndexChanged(selectedIndex)
-            end
-        end)
-    end
-
-    for _, value in ipairs(texts) do
-        createItem(content, value)
-    end
-
-    return pane, items, selectedIndex
-end
 
 --- debugging
 function this.CreateSoundPlayer()
@@ -346,6 +297,8 @@ function this.CreateSoundPlayer()
         e:getTopLevelMenu():updateLayout()
     end
 
+    local ui = require("Hanafuda.KoiKoi.ui")
+
     ---@param e tes3uiElement
     ---@param index integer
     local function LoadMenu(e, index)
@@ -379,7 +332,7 @@ function this.CreateSoundPlayer()
                     end
 
                     right:destroyChildren()
-                    local path = CreateListBox(listid, right, list, function (selectedIndex)
+                    local path = ui.CreateSimpleListBox(listid, right, list, function (selectedIndex)
                         PlayDebugVoice(list[selectedIndex])
                     end)
                     right:getTopLevelMenu():updateLayout()
@@ -389,7 +342,7 @@ function this.CreateSoundPlayer()
 
                 local races = table.keys(voice, true)
                 local raceIndex = params.npc.race and table.find(races, params.npc.race) or nil
-                local race = CreateListBox(nil, left, races , function(selectedIndex)
+                local race = ui.CreateSimpleListBox(nil, left, races , function(selectedIndex)
                     params.npc.race = races[selectedIndex]
                     UpdateList()
                 end, raceIndex)
@@ -400,7 +353,7 @@ function this.CreateSoundPlayer()
                 gender.flowDirection = tes3.flowDirection.leftToRight
                 local ids = table.keys(this.voice, true)
                 local idIndex = params.npc.race and table.find(ids, params.npc.voiceId) or nil
-                local voiceid = CreateListBox(nil, left, ids, function (selectedIndex)
+                local voiceid = ui.CreateSimpleListBox(nil, left, ids, function (selectedIndex)
                     params.npc.voiceId = ids[selectedIndex]
                     UpdateList()
                 end, idIndex )

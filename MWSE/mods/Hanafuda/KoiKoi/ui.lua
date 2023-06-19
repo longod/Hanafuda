@@ -713,4 +713,55 @@ function this.CreateDeckTooltip(deck)
     return tooltip
 end
 
+---@param id string?
+---@param parent tes3uiElement
+---@param texts string[]
+---@param selectedIndexChanged fun(selectedIndex:integer)?
+---@param initialIndex integer?
+---@return tes3uiElement
+---@return tes3uiElement[]
+---@return integer
+function this.CreateSimpleListBox(id, parent, texts, selectedIndexChanged, initialIndex)
+    local pane = parent:createVerticalScrollPane({ id = id })
+    local content = pane:getContentElement()
+
+    local selectedIndex = initialIndex or -1
+    local items = {} ---@type tes3uiElement[]
+
+    ---@param p tes3uiElement
+    local function createItem(p, text)
+        local label = p:createTextSelect({ text = text })
+        table.insert(items, label)
+        local index = table.size(items)
+        if index == selectedIndex then
+            label.widget.state = tes3.uiState.active
+        end
+        label:register(tes3.uiEvent.mouseClick,
+        ---@param e uiEventEventData
+        function(e)
+            -- if selectedIndex == index then
+            --     return
+            -- end
+            selectedIndex = index
+            for i, item in ipairs(items) do
+                if not item.disabled then
+                    item.widget.state = tes3.uiState.normal
+                end
+            end
+            e.source.widget.state = tes3.uiState.active
+            e.source:getTopLevelMenu():updateLayout()
+            if selectedIndexChanged then
+                selectedIndexChanged(selectedIndex)
+            end
+        end)
+    end
+
+    for _, value in ipairs(texts) do
+        createItem(content, value)
+    end
+
+    return pane, items, selectedIndex
+end
+
+
 return this

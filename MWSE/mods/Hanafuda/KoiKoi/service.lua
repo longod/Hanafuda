@@ -601,7 +601,7 @@ end
 ---@return boolean
 function Service.Exit(self, giveup)
     local winner = self.game:GetGameWinner()
-    logger:debug("Exit Koi-Koi" .. tostring(winner))
+    logger:debug("Exit Koi-Koi " .. tostring(winner))
 
     -- callback or event trigger?
     if self.onExit then
