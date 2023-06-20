@@ -5,11 +5,11 @@ local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})
 
 local koi = require("Hanafuda.KoiKoi.koikoi")
-local logger = require("Hanafuda.logger")
 
+---@param params table?
 ---@return KoiKoi.SimpleBrain
-function this.new()
-    local instance = brain.new()
+function this.new(params)
+    local instance = brain.new(params)
     ---@cast instance KoiKoi.SimpleBrain
     setmetatable(instance, { __index = this })
     return instance
@@ -28,27 +28,27 @@ function this.Simulate(self, p)
     if p.drawnCard then
         for _, id in ipairs(p.groundPool) do
             if koi.CanMatchSuit(p.drawnCard, id) then
-                logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, id))
+                self.logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, id))
                 return { selectedCard = p.drawnCard, matchedCard = id }
             end
         end
-        logger:trace(string.format("discard drawnCard = %d", p.drawnCard))
+        self.logger:trace(string.format("discard drawnCard = %d", p.drawnCard))
         return { selectedCard = p.drawnCard, matchedCard = nil } -- discard
     else
         for _, hand in ipairs(p.pool.hand) do
             for _, id in ipairs(p.groundPool) do
                 if koi.CanMatchSuit(hand, id) then
-                    logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
+                    self.logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
                     return { selectedCard = hand, matchedCard = id }
                 end
             end
         end
         if table.size(p.pool.hand) > 0 then
-            logger:trace(string.format("discard selectedCard = %d", p.pool.hand[1]))
+            self.logger:trace(string.format("discard selectedCard = %d", p.pool.hand[1]))
             return { selectedCard = p.pool.hand[1], matchedCard = nil } -- discard
         end
     end
-    logger:trace("no hand, no drawn")
+    self.logger:trace("no hand, no drawn")
     return { selectedCard = nil, matchedCard = nil } -- skip
 end
 
@@ -57,7 +57,7 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
-    logger:trace("always shobu")
+    self.logger:trace("always shobu")
     return { calling = koi.calling.shobu }
 end
 

@@ -1,4 +1,3 @@
-local logger = require("Hanafuda.logger")
 local card = require("Hanafuda.card")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local combination = require("Hanafuda.KoiKoi.combination")
@@ -30,6 +29,7 @@ local houseRule = require("Hanafuda.KoiKoi.houseRule")
 ---@field calls { KoiKoi.Player : integer }
 ---@field decidingParentCardId integer?
 ---@field decidingParent integer[] card deck
+---@field logger mwseLogger
 local KoiKoi = {}
 
 
@@ -92,12 +92,14 @@ ValidateSettings(defaults.settings)
 ---@param settings Config.KoiKoi
 ---@param opponentBrain KoiKoi.IBrain?
 ---@param playerBrain KoiKoi.IBrain?
+---@param logger mwseLogger?
 ---@return KoiKoi.Game
-function KoiKoi.new(settings, opponentBrain, playerBrain)
+function KoiKoi.new(settings, opponentBrain, playerBrain, logger)
     ---@type KoiKoi.Game
     local instance = table.deepcopy(defaults)
     instance.settings.houseRule = table.deepcopy(settings.houseRule) -- do not change in game
     instance.settings.round = settings.round
+    instance.logger = logger or require("Hanafuda.logger")
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
     instance:SetBrains(opponentBrain, koi.player.opponent)
@@ -175,7 +177,7 @@ function KoiKoi.DecideParent(self, selectedCardId)
     self.parent = selectedCardId == most and koi.player.you or koi.player.opponent
     --self.parent = leftRight and koi.player.you or koi.player.opponent -- fixed
     self.current = self.parent
-    logger:debug("Parent is ".. tostring(self.parent))
+    self.logger:debug("Parent is ".. tostring(self.parent))
 end
 
 ---@param self KoiKoi.Game
@@ -212,14 +214,14 @@ end
 ---@return { [KoiKoi.LuckyHands] : integer }?
 ---@return integer
 function KoiKoi.CheckLuckyHands(self, player)
-    local lh = combination.CalculateLuckyHands(self.pools[player].hand, self.settings.houseRule)
+    local lh = combination.CalculateLuckyHands(self.pools[player].hand, self.settings.houseRule, self.logger)
     local p = 0
     if lh then
         for key, value in pairs(lh) do
             p = p + value
         end
     else
-        logger:debug("%d is no lucky hands", player)
+        self.logger:debug("%d is no lucky hands", player)
     end
     return lh, p
 end
@@ -315,11 +317,11 @@ end
 ---@return { [KoiKoi.CombinationType] : integer }?
 function KoiKoi.CheckCombination(self, player)
     local pool = self.pools[player]
-    local combo = combination.Calculate(pool, self.settings.houseRule)
+    local combo = combination.Calculate(pool, self.settings.houseRule, self.logger)
     local latest = self.combinations[player]
-    local diff = combination.Different(combo, latest)
+    local diff = combination.Different(combo, latest, self.logger)
     if diff then
-        logger:debug("%d Update new combos", player)
+        self.logger:debug("%d Update new combos", player)
         self.combinations[player] = combo
         return combo
     end
@@ -348,13 +350,13 @@ function KoiKoi.Capture(self, player, cardId, ground, drawn)
         local pool = self.pools[player]
         table.insert(pool[card.GetCardData(cardId).type], cardId)
         if ground then
-            logger:trace("captured then removeing from ground ".. tostring(cardId))
-            logger:trace(table.concat(self.groundPool, ", "))
+            self.logger:trace("captured then removeing from ground ".. tostring(cardId))
+            self.logger:trace(table.concat(self.groundPool, ", "))
             local removed = table.removevalue(self.groundPool, cardId)
             assert(removed)
         elseif not drawn then
-            logger:trace("captured then removeing from hand ".. tostring(cardId))
-            logger:trace(table.concat(pool.hand, ", "))
+            self.logger:trace("captured then removeing from hand ".. tostring(cardId))
+            self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
             assert(removed)
         end
@@ -371,8 +373,8 @@ function KoiKoi.Discard(self, player, cardId, drawn)
     if cardId then
         if not drawn then
             local pool = self.pools[player]
-            logger:trace("removeing ".. tostring(cardId))
-            logger:trace(table.concat(pool.hand, ", "))
+            self.logger:trace("removeing ".. tostring(cardId))
+            self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
             assert(removed)
         end
@@ -466,7 +468,7 @@ end
 function KoiKoi.NextRound(self)
     if self.round < self.settings.round then
         self.round = self.round + 1
-        logger:debug("go to next round %d", self.round)
+        self.logger:debug("go to next round %d", self.round)
         return true
     end
     return false
@@ -485,8 +487,8 @@ function KoiKoi.GetGameWinner(self)
             winner = koi.player.opponent
         end
     end
-    logger:debug("score player %d, opponent %d", a, b)
-    logger:debug("winner " .. tostring(winner))
+    self.logger:debug("score player %d, opponent %d", a, b)
+    self.logger:debug("winner " .. tostring(winner))
     return winner
 end
 

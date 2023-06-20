@@ -857,8 +857,8 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
     local unselectedId = selectedId == cardId0 and cardId1 or cardId0
 
     tes3ui.showMessageMenu({
-        header = i18n("koi.view.informParentHeader", { name = self.names[parent] }),
-        message = i18n("koi.view.informParentMessage"),
+        header = i18n("koi.view.informParentHeader", { name = self.names[parent], parent = i18n("koi.view.parent") }),
+        message = i18n("koi.view.informParentMessage", { parent = i18n("koi.view.parent") }),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],

@@ -1,28 +1,31 @@
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
-local logger = require("Hanafuda.logger")
 
 ---@class KoiKoi.Runner
 ---@field game KoiKoi.Game
 ---@field state integer
 ---@field round integer
 ---@field drawnCard integer?
+---@field logger mwseLogger
 local this = {}
 
 ---@param opponentBrain KoiKoi.IBrain
 ---@param playerBrain KoiKoi.IBrain
+---@param logger mwseLogger?
 ---@return KoiKoi.Runner
-function this.new(opponentBrain, playerBrain)
+function this.new(opponentBrain, playerBrain, logger)
     --@type KoiKoi.Runner
     local instance = {
         game = require("Hanafuda.KoiKoi.game").new(
             require("Hanafuda.config").koikoi,
             opponentBrain,
-            playerBrain
+            playerBrain,
+            logger
         ),
         state = 0,
         round = 1,
         drawnCard = nil,
+        logger = logger or require("Hanafuda.logger"),
     }
     setmetatable(instance, { __index = this })
     return instance
@@ -47,7 +50,7 @@ end
 function this.Run(self)
     local func = {
         [0] = function ()
-            logger:debug("Run")
+            self.logger:debug("Run")
             self.game:Initialize()
             local choices = self.game:ChoiceDecidingParentCards(2)
             self.game:DecideParent(choices[1])
@@ -83,7 +86,7 @@ function this.Run(self)
                 if command.selectedCard and command.matchedCard then
                     -- match
                     if not koi.CanMatchSuit(command.selectedCard, command.matchedCard) then
-                        logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
+                        self.logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
                     end
                     self.game:Capture(self.game.current, command.selectedCard, false, false)
                     self.game:Capture(self.game.current, command.matchedCard, true, false)
@@ -91,14 +94,14 @@ function this.Run(self)
                     -- discard
                     for _, cardId in ipairs(self.game.groundPool) do
                         if koi.CanMatchSuit(command.selectedCard, cardId) then
-                            logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
+                            self.logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
                         end
                     end
                     self.game:Discard(self.game.current, command.selectedCard, false)
                 else
                     -- skip
                     if table.size(self.game.pools[self.game.current].hand) > 0 then
-                        logger:error("wrong command, must be choice card in hand")
+                        self.logger:error("wrong command, must be choice card in hand")
                     end
                 end
                 self:Next()
@@ -116,7 +119,7 @@ function this.Run(self)
                 if command.selectedCard and command.matchedCard then
                     -- match
                     if not koi.CanMatchSuit(command.selectedCard, command.matchedCard) then
-                        logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
+                        self.logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
                     end
                     self.game:Capture(self.game.current, command.selectedCard, false, true)
                     self.game:Capture(self.game.current, command.matchedCard, true, true)
@@ -124,16 +127,16 @@ function this.Run(self)
                     -- discard
                     for _, cardId in ipairs(self.game.groundPool) do
                         if koi.CanMatchSuit(command.selectedCard, cardId) then
-                            logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
+                            self.logger:error("wrong discarding %d, it can match %d", command.selectedCard, cardId)
                         end
                     end
                     self.game:Discard(self.game.current, command.selectedCard, true)
                 else
                     -- skip
                     if self.drawnCard then
-                        logger:error("wrong command, must be matching or discard %d", self.drawnCard)
+                        self.logger:error("wrong command, must be matching or discard %d", self.drawnCard)
                     else
-                        logger:error("wrong drawnCard is nil")
+                        self.logger:error("wrong drawnCard is nil")
                     end
                 end
                 self.drawnCard = nil
@@ -160,7 +163,7 @@ function this.Run(self)
                 end
             else
                 -- no comb
-                logger:error("wrong state")
+                self.logger:error("wrong state")
                 self:Next()
             end
         end,
@@ -189,7 +192,7 @@ function this.Run(self)
         func[self.state]()
         return true
     end
-    logger:debug("Finished")
+    self.logger:debug("Finished")
     -- todo output statics. brain, winner, turn, point, combo, koikoi count, etc...
     return false
 end
@@ -202,8 +205,10 @@ function this.Runner()
         tes3ui.leaveMenuMode()
         return
     end
+    local logger = require("Hanafuda.logger")
 
     local params = {
+        batch = 1,
         iteration = 1,
         epoch = 1,
         p1 = { index = 1 },
@@ -324,6 +329,11 @@ function this.Runner()
             -- gather result
         end
 
+        local log = require("logging.logger").new({
+            name = "Hanafuda.Runner",
+            logLevel = "DEBUG",
+        })
+
         local epoch = 1
         timer.start({
             type = timer.real,
@@ -331,17 +341,18 @@ function this.Runner()
             callback = function(callbackData)
                 if cancellation then
                     callbackData.timer:cancel()
-                    logger:debug("cancel")
+                    log:debug("cancel")
                     e.source.disabled = false
                     menu:updateLayout()
                     return
                 end
-                logger:debug("epoch %d", epoch)
+                log:debug("epoch %d", epoch)
                 -- todo use xpcall
                 -- todo need factory or abstraction parameters
                 local runner = this.new(
-                    require(relative .. brains[params.p1.index]).new({}),
-                    require(relative .. brains[params.p2.index]).new({})
+                    require(relative .. brains[params.p1.index]).new({logger = log}),
+                    require(relative .. brains[params.p2.index]).new({logger = log}),
+                    log
                 )
                 for iteration = 1, params.iteration do
                     Run(runner, iteration, epoch)

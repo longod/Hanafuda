@@ -99,7 +99,5 @@ local this = {
     -- koikoi view
     ["koi.view.parent"] = "Oya",
     ["koi.view.child"] = "Ko",
-    ["koi.view.informParentHeader"] = "%{name} is Oya",
-    ["koi.view.informParentMessage"] = "Oya is the dealer and is the first to play.",
 }
 return this

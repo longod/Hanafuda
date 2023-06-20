@@ -23,14 +23,15 @@
 ---@field e number end
 
 ---@class KoiKoi.IBrain
+---@field logger mwseLogger
 local this = {}
-local logger = require("Hanafuda.logger")
 
----@param data table?
+---@param data table? -- todo class
 ---@return KoiKoi.IBrain
 function this.new(data)
     ---@type KoiKoi.IBrain
     local instance = data and table.copy(data) or {}
+    instance.logger = instance.logger or require("Hanafuda.logger")
     setmetatable(instance, { __index = this })
     return instance
 end
@@ -38,7 +39,7 @@ end
 --- reset state
 ---@param self KoiKoi.IBrain
 function this.Reset(self)
-    logger:trace("IBrain:Reset")
+    self.logger:trace("IBrain:Reset")
 end
 
 --- simulate on every frame
@@ -46,7 +47,7 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.MatchCommand?
 function this.Simulate(self, p)
-    logger:trace("IBrain:Simulate")
+    self.logger:trace("IBrain:Simulate")
 end
 
 --- Call koikoi or shobu
@@ -54,7 +55,7 @@ end
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
-    logger:trace("IBrain:Call")
+    self.logger:trace("IBrain:Call")
 end
 
 return this

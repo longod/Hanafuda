@@ -1,5 +1,4 @@
 local card = require("Hanafuda.card")
-local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 
 ---@class KoiKoi.Combination
@@ -29,8 +28,10 @@ assert(blueRibbon and table.size(blueRibbon) == 3)
 -- or {combotype = N, point = M} can be accessed ipairs
 ---@param captured { [CardType] : integer[] }
 ---@param houseRule Config.KoiKoi.HouseRule
+---@param logger mwseLogger?
 ---@return { [KoiKoi.CombinationType] : integer }?
-function this.Calculate(captured, houseRule)
+function this.Calculate(captured, houseRule, logger)
+    logger = logger or require("Hanafuda.logger")
     local combo = {}
     local hasCurtain = false
     local hasMoon = false
@@ -129,8 +130,10 @@ end
 
 ---@param current { [KoiKoi.CombinationType] : integer }?
 ---@param prev { [KoiKoi.CombinationType] : integer }?
+---@param logger mwseLogger?
 ---@return { [KoiKoi.CombinationType] : integer }?
-function this.Different(current, prev)
+function this.Different(current, prev, logger)
+    logger = logger or require("Hanafuda.logger")
     if not prev or not current then
         return current
     end
@@ -150,8 +153,10 @@ end
 
 ---@param hand integer[]
 ---@param houseRule Config.KoiKoi.HouseRule
+---@param logger mwseLogger?
 ---@return { [KoiKoi.LuckyHands] : integer }?
-function this.CalculateLuckyHands(hand, houseRule)
+function this.CalculateLuckyHands(hand, houseRule, logger)
+    logger = logger or require("Hanafuda.logger")
     -- countup same suits
     local suits = {}
     for _, cardId in ipairs(hand) do

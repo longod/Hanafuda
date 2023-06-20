@@ -12,9 +12,9 @@ local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})
 
 local koi = require("Hanafuda.KoiKoi.koikoi")
-local logger = require("Hanafuda.logger")
 
 ---@class KoiKoi.RandomBrain.Params
+---@field logger mwseLogger?
 ---@field koikoiChance number?
 ---@field meaninglessDiscardChance number?
 ---@field waitHand KoiKoi.AI.WaitRange?
@@ -25,6 +25,7 @@ local logger = require("Hanafuda.logger")
 ---@return KoiKoi.RandomBrain
 function this.new(params)
     local instance = brain.new({
+        logger = params.logger,
         koikoiChance = params.koikoiChance ~= nil and params.koikoiChance or 0.3,
         meaninglessDiscardChance = params.meaninglessDiscardChance ~= nil and params.meaninglessDiscardChance or 0,
         waitHand = params.waitHand,
@@ -68,7 +69,7 @@ function this.Wait(self, waitRange, deltaTime)
         if self.wait == nil then
             self.timer = 0
             self.wait = math.random() * (w.e - w.s) + w.s
-            logger:trace(string.format("wait for %f seconds", self.wait))
+            self.logger:trace(string.format("wait for %f seconds", self.wait))
         end
         if self.timer < self.wait then
             self.timer = self.timer + deltaTime
@@ -90,12 +91,12 @@ function this.Simulate(self, p)
         local matched = Match(p.drawnCard, p.groundPool)
         if table.size(matched) > 0 then
             local id = matched[math.random(1, table.size(matched))]
-            logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, id))
+            self.logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, id))
             self.wait = nil
             return { selectedCard = p.drawnCard, matchedCard = id }
         end
         -- discard
-        logger:trace(string.format("discard drawnCard = %d", p.drawnCard))
+        self.logger:trace(string.format("discard drawnCard = %d", p.drawnCard))
         self.wait = nil
         return { selectedCard = p.drawnCard, matchedCard = nil } -- discard
     else
@@ -119,7 +120,7 @@ function this.Simulate(self, p)
             -- try meaningless discard
             if table.size(discardable) > 0 then
                 local id = discardable[math.random(1, table.size(discardable))]
-                logger:trace(string.format("meaningless discard selectedCard = %d", id))
+                self.logger:trace(string.format("meaningless discard selectedCard = %d", id))
                 self.wait = nil
                 return { selectedCard = id, matchedCard = nil } -- discard
             end
@@ -129,7 +130,7 @@ function this.Simulate(self, p)
             local hand = hands[index]
             local matched = allMatches[index]
             local id = matched[math.random(1, table.size(matched))]
-            logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
+            self.logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, id))
             self.wait = nil
             return { selectedCard = hand, matchedCard = id }
         end
@@ -137,12 +138,12 @@ function this.Simulate(self, p)
         -- discard
         if table.size(p.pool.hand) > 0 then
             local id = p.pool.hand[math.random(1, table.size(p.pool.hand))]
-            logger:trace(string.format("discard selectedCard = %d", id))
+            self.logger:trace(string.format("discard selectedCard = %d", id))
             self.wait = nil
             return { selectedCard = id, matchedCard = nil } -- discard
         end
     end
-    logger:trace("no hand, no drawn")
+    self.logger:trace("no hand, no drawn")
     self.wait = nil
     return { selectedCard = nil, matchedCard = nil } -- skip
 end
@@ -161,7 +162,7 @@ function this.Call(self, p)
     end
 
     local k = math.random() < self.koikoiChance
-    logger:trace(k and "koikoi" or "shobu")
+    self.logger:trace(k and "koikoi" or "shobu")
     return { calling = k and koi.calling.koikoi or koi.calling.shobu }
 end
 
