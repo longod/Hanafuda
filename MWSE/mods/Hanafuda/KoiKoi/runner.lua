@@ -234,8 +234,17 @@ function this.Runner()
     header.autoHeight = true
     header.flowDirection = tes3.flowDirection.leftToRight
 
+    header:createLabel({ text = "batch: " }).borderRight = 6
+    local batchInput = header:createTextInput({ text = tostring(params.batch), numeric = true, placeholderText = "batch" })
+    batchInput.widthProportional = 1
+    batchInput:register(tes3.uiEvent.mouseClick,
+    ---@param e uiEventEventData
+    function(e)
+        tes3ui.acquireTextInput(e.source)
+    end)
+
     header:createLabel({ text = "iteration: " }).borderRight = 6
-    local iterationInput = header:createTextInput({ text = "1", numeric = true, placeholderText = "iteration" })
+    local iterationInput = header:createTextInput({ text = tostring(params.iteration), numeric = true, placeholderText = "iteration" })
     iterationInput.widthProportional = 1
     iterationInput:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -243,7 +252,7 @@ function this.Runner()
         tes3ui.acquireTextInput(e.source)
     end)
     header:createLabel({ text = "epoch: "}).borderRight = 6
-    local epochInput = header:createTextInput({ text = "1", numeric = true, placeholderText = "epoch" })
+    local epochInput = header:createTextInput({ text = tostring(params.epoch), numeric = true, placeholderText = "epoch" })
     epochInput.widthProportional = 1
     epochInput:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -314,19 +323,24 @@ function this.Runner()
         menu:updateLayout()
 
         cancellation = false
+
+        local ba = tonumber(batchInput.text)
+        params.batch = ba and math.max(math.ceil(ba), 0) or 1
         local it = tonumber(iterationInput.text)
         params.iteration = it and math.max(math.ceil(it), 0) or 1
         local ep = tonumber(epochInput.text)
         params.epoch = ep and math.max(math.ceil(ep), 0) or 1
 
-        ---@param runner KoiKoi.Runner
+        ---@param batch KoiKoi.Runner[]
         ---@param iteration integer
         ---@param epoch integer
-        local function Run(runner, iteration, epoch)
-            runner:Reset()
-            while runner:Run() do
+        local function Run(batch, iteration, epoch)
+            for _, runner in ipairs(batch) do
+                runner:Reset()
+                while runner:Run() do
+                end
+                -- TODO gather result
             end
-            -- gather result
         end
 
         local log = require("logging.logger").new({
@@ -334,6 +348,7 @@ function this.Runner()
             logLevel = "DEBUG",
         })
 
+        local batch = table.new(params.batch, 0)
         local epoch = 1
         timer.start({
             type = timer.real,
@@ -349,13 +364,16 @@ function this.Runner()
                 log:debug("epoch %d", epoch)
                 -- todo use xpcall
                 -- todo need factory or abstraction parameters
-                local runner = this.new(
-                    require(relative .. brains[params.p1.index]).new({logger = log}),
-                    require(relative .. brains[params.p2.index]).new({logger = log}),
-                    log
-                )
+                table.clear(batch)
+                for i = 1, params.batch do
+                    table.insert(batch, this.new(
+                        require(relative .. brains[params.p1.index]).new({logger = log}),
+                        require(relative .. brains[params.p2.index]).new({logger = log}),
+                        log
+                    ))
+                end
                 for iteration = 1, params.iteration do
-                    Run(runner, iteration, epoch)
+                    Run(batch, iteration, epoch)
                 end
                 if epoch >= params.epoch then
                     e.source.disabled = false
