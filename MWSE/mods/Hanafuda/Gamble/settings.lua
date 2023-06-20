@@ -11,6 +11,8 @@ this.penaltyPointPerRound = 5 -- per round
 
 this.dispositionByInsufficientCoefficient = 0.2
 
+this.factionRankBias = 1
+
 this.fightThreshold = {
     base = 70,
 }

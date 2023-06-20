@@ -293,7 +293,7 @@ local function CanPerformServiceByFaction(player, opponent)
             ---@return boolean
                 function()
                     if faction.playerJoined and not faction.playerExpelled then
-                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                        return (faction.playerRank + settings.factionRankBias) >= opponent.object.baseObject.factionRank
                     end
                     return false
                 end,
@@ -306,7 +306,7 @@ local function CanPerformServiceByFaction(player, opponent)
             ---@return boolean
                 function()
                     if faction.playerJoined and not faction.playerExpelled then
-                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                        return (faction.playerRank + settings.factionRankBias) >= opponent.object.baseObject.factionRank
                     end
                     return false
                 end,
@@ -314,7 +314,7 @@ local function CanPerformServiceByFaction(player, opponent)
             ---@return boolean
                 function()
                     if faction.playerJoined and not faction.playerExpelled then
-                        return faction.playerRank >= opponent.object.baseObject.factionRank
+                        return (faction.playerRank + settings.factionRankBias) >= opponent.object.baseObject.factionRank
                     end
                     return false
                 end,
