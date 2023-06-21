@@ -221,7 +221,7 @@ function KoiKoi.CheckLuckyHands(self, player)
             p = p + value
         end
     else
-        self.logger:debug("%d is no lucky hands", player)
+        self.logger:trace("%d is no lucky hands", player)
     end
     return lh, p
 end

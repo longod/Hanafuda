@@ -19,9 +19,8 @@ local function CalculateBettingSettings(player, opponent, conf)
     local playerGold = act.GetActorGold(player)
     local opponentGold = act.GetActorGold(opponent)
     -- Allow odds if there is some amount of payment on both sides.
-    -- todo consider house rule multipiler
     local gold = math.min(playerGold, opponentGold)
-    local metric = math.ceil(gold / (settings.penaltyPointPerRound * conf.round)) -- average points per round... no evidence!
+    local metric = math.ceil(gold / (settings.penaltyPointPerRound * settings.GetMultiplierFactorByHouseRule(config.koikoi.houseRule.multiplier) * conf.round)) -- average points per round... no evidence!
     local enables = {}
     for _, value in ipairs(settings.oddsList) do
         local enable = value <= metric
@@ -120,8 +119,10 @@ end
 
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param disposition integer
 ---@return boolean
 local function ChangeDisposition(player, opponent, disposition)
+    -- If they are teaming up with a PC like a companion, it seems better not to change their disposition, but how can I detect them?
     if not disposition then
         return false
     end

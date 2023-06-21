@@ -9,6 +9,19 @@ this.oddsList = {
 }
 this.penaltyPointPerRound = 5 -- per round
 
+--- Probability value, since the multiplier applied is likely to result in a larger payment than estimated.
+---@param mult KoiKoi.HouseRule.Multiplier
+---@return number
+function this.GetMultiplierFactorByHouseRule(mult)
+    local hr = require("Hanafuda.KoiKoi.houseRule")
+    local multiplierFactor = {
+        [hr.multiplier.none] = 1,
+        [hr.multiplier.doublePointsOver7] = 1.5,
+        [hr.multiplier.eachTimeKoiKoi] = 2,
+    }
+    return multiplierFactor[mult] or 1
+end
+
 this.dispositionByInsufficientCoefficient = 0.2
 
 this.factionRankBias = 1

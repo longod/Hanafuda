@@ -4,7 +4,7 @@ do
     ---@param value any
     ---@return table
     local function Repeat(num, value)
-        local t = {}
+        local t = table.new(num, 0)
         for i = 1, num do
             -- table -> deepcopy?
             -- function call

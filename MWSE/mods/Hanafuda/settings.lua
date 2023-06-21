@@ -26,6 +26,7 @@ local defaultConfig = {
             multiplier = hr.multiplier.doublePointsOver7,
             flowerViewingSake = true,
             moonViewingSake = true,
+            luckyHands = true,
             -- nov cards rain off, dec cards fog
             -- wild card
         },

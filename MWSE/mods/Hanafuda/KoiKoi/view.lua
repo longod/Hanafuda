@@ -75,8 +75,8 @@ function View.new(player, opponent, cardStyle, cardBackStyle)
     --@type KoiKoi.UI
     local instance = {
         names = {
-            [koi.player.you] = GetActorName(player, i18n("playerDefaultName")),
-            [koi.player.opponent] = GetActorName(opponent, i18n("opponentDefaultName")),
+            [koi.player.you] = GetActorName(player, i18n("koi.view.playerDefaultName")),
+            [koi.player.opponent] = GetActorName(opponent, i18n("koi.view.opponentDefaultName")),
         },
         mobile = {
             [koi.player.you] = player,
@@ -430,7 +430,6 @@ end
 ---@param points { KoiKoi.Player : integer }
 function View.ShowResult(self, service, player, points)
     -- show round histroy?
-    -- todo more rich
     local header = i18n("koi.view.drawGame")
     if player then
         local name = self.names[koi.player.you]
@@ -858,7 +857,7 @@ function View.InformParent(self, parent, service, selectedId, cardId0, cardId1)
 
     tes3ui.showMessageMenu({
         header = i18n("koi.view.informParentHeader", { name = self.names[parent], parent = i18n("koi.view.parent") }),
-        message = i18n("koi.view.informParentMessage", { parent = i18n("koi.view.parent") }),
+        message = i18n("koi.view.informParentMessage", { name = self.names[parent] }),
         buttons = {
             {
                 text = tes3.findGMST(tes3.gmst.sOK).value --[[@as string]],

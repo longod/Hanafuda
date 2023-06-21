@@ -157,6 +157,10 @@ end
 ---@return { [KoiKoi.LuckyHands] : integer }?
 function this.CalculateLuckyHands(hand, houseRule, logger)
     logger = logger or require("Hanafuda.logger")
+    if not houseRule.luckyHands then
+        return nil
+    end
+
     -- countup same suits
     local suits = {}
     for _, cardId in ipairs(hand) do

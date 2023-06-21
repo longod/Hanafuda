@@ -1,7 +1,5 @@
 -- Maybe it would be better to divide the points, etc. into smaller pieces for plural
 local this = {
-    ["playerDefaultName"] = "Outlander",
-    ["opponentDefaultName"] = "Jiub",
     ["gamble.collected"] = "You collected %{actual} gold.",
     ["gamble.collectedInsufficient"] = "You tried to collect %{expected} gold, but were only able to collect %{actual} gold.",
     ["gamble.paid"] = "You paid %{actual} gold.",
@@ -105,7 +103,7 @@ It features a deck of 48 unique cards divided into 12 suits representing the mon
 Hanafuda can be played in various ways with different rulesets and variations.]],
     -- koikoi
     ["koi.service.label"] = "Koi-Koi",
-    ["koi.service.tooltip"] = "Let's play Koi-Koi",
+    ["koi.service.tooltip"] = "Wouldn't mind a few rounds of Koi-Koi?",
     ["koi.service.odds.label"] = "Betting Odds",
     ["koi.service.odds.free"] = "Free",
     ["koi.service.odds.rate"] = "%{count} gold per point",
@@ -182,6 +180,8 @@ Depending on the house rules, either the dealer or the player scores points, or 
     ["koi.help.rule.end.description"] =
 [[The player with the highest total score after repeating the specified number of rounds is the winner of the game.
 The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.]],
+    ["koi.view.playerDefaultName"] = "Outlander",
+    ["koi.view.opponentDefaultName"] = "Jiub",
     ["koi.view.drawGame"] = "Draw Game",
     ["koi.view.winGame"] = "%{name} Wins!",
     ["koi.view.loseGame"] = "%{name} Loses!",
@@ -206,7 +206,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.decideParentMessage"] = "Whoever chooses a suit for the earliest month becomes the dealer.",
     ["koi.view.decideParentTooltip"] = "Choose a card",
     ["koi.view.informParentHeader"] = "%{name} is %{parent}",
-    ["koi.view.informParentMessage"] = "%{parent} deals cards and is the first to play.",
+    ["koi.view.informParentMessage"] = "%{name} deals cards and is the first to play.",
     ["koi.view.informParentPick"] = "%{name} picked:",
     ["koi.view.infoGround"] = "Can't a card match from hand now.",
     ["koi.view.infoPutback"] = "Can't put back this card in hand",
@@ -274,7 +274,13 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     -- mcm
     ["mcm.default"] = "Default: ",
     ["mcm.page.label"] = "Settings",
-    ["mcm.page.description"] = "Let's play Koi-Koi with Hanafuda.",
+    ["mcm.page.description"] =
+[[
+In Tamriel, it is believed that Hanafuda, an exotic playing cards, was introduced during the Second Akaviri Invasion in the Second Era. Initially, the Tribunal prohibited the playing of Hanafuda due to its association with the invading culture. However, despite the ban, it quietly thrived in underground gambling establishments, where it became a popular game among them.
+
+Over time, the power and influence of the Tribunal in Morrowind began to decline. As their grip on society weakened, the rigid restrictions and prohibitions they once enforced lost their effectiveness. As a result, the Tribunal eventually lifted the ban on Hanafuda, acknowledging its role as a form of entertainment.
+
+With this change, Hanafuda gained acceptance and popularity among the population of Morrowind. It became a cherished pastime, enjoyed for its beautiful artwork, strategic gameplay, and the opportunities it provided for social interaction among players.]],
     ["mcm.hanafuda.category"] = "Hanafuda",
     ["mcm.hanafuda.cardStyle.label"] = "Card Front-side Style",
     ["mcm.hanafuda.cardStyle.description"] = "Change the style of the front side of the card.  You can add styles as you like. Please see the documentation for where to add them and the naming conventions.",

@@ -208,7 +208,7 @@ function this.Runner()
     local logger = require("Hanafuda.logger")
 
     local params = {
-        batch = 1,
+        batchSize = 1,
         iteration = 1,
         epoch = 1,
         p1 = { index = 1 },
@@ -235,7 +235,7 @@ function this.Runner()
     header.flowDirection = tes3.flowDirection.leftToRight
 
     header:createLabel({ text = "batch: " }).borderRight = 6
-    local batchInput = header:createTextInput({ text = tostring(params.batch), numeric = true, placeholderText = "batch" })
+    local batchInput = header:createTextInput({ text = tostring(params.batchSize), numeric = true, placeholderText = "batch" })
     batchInput.widthProportional = 1
     batchInput:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
@@ -325,7 +325,7 @@ function this.Runner()
         cancellation = false
 
         local ba = tonumber(batchInput.text)
-        params.batch = ba and math.max(math.ceil(ba), 0) or 1
+        params.batchSize = ba and math.max(math.ceil(ba), 0) or 1
         local it = tonumber(iterationInput.text)
         params.iteration = it and math.max(math.ceil(it), 0) or 1
         local ep = tonumber(epochInput.text)
@@ -343,12 +343,12 @@ function this.Runner()
             end
         end
 
-        local log = require("logging.logger").new({
+        local runlogger = require("logging.logger").new({
             name = "Hanafuda.Runner",
             logLevel = "DEBUG",
         })
 
-        local batch = table.new(params.batch, 0)
+        local batch = table.new(params.batchSize, 0)
         local epoch = 1
         timer.start({
             type = timer.real,
@@ -356,20 +356,21 @@ function this.Runner()
             callback = function(callbackData)
                 if cancellation then
                     callbackData.timer:cancel()
-                    log:debug("cancel")
+                    logger:debug("cancel")
                     e.source.disabled = false
                     menu:updateLayout()
                     return
                 end
-                log:debug("epoch %d", epoch)
+                runlogger:debug("epoch %d", epoch)
                 -- todo use xpcall
                 -- todo need factory or abstraction parameters
+                -- todo custom house rules, no lucky hands
                 table.clear(batch)
-                for i = 1, params.batch do
+                for i = 1, params.batchSize do
                     table.insert(batch, this.new(
-                        require(relative .. brains[params.p1.index]).new({logger = log}),
-                        require(relative .. brains[params.p2.index]).new({logger = log}),
-                        log
+                        require(relative .. brains[params.p1.index]).new({logger = runlogger}),
+                        require(relative .. brains[params.p2.index]).new({logger = runlogger}),
+                        runlogger
                     ))
                 end
                 for iteration = 1, params.iteration do
