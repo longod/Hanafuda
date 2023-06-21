@@ -20,6 +20,7 @@ local defaultConfig = {
     -- game speed x1.0 for wait time
     ---@class Config.KoiKoi
     koikoi = {
+        help = true, -- more help
         round = 3, -- 3, 6, 12, 1 (debug)
         ---@class Config.KoiKoi.HouseRule
         houseRule = {
@@ -47,6 +48,7 @@ local defaultConfig = {
 this.configPath = "Hanafuda"
 this.metadata = toml.loadFile("Data Files\\Hanafuda-metadata.toml") ---@type MWSE.Metadata?
 this.modName = this.metadata.package.name
+this.version = this.metadata.package.version
 local config = nil ---@type Config
 
 ---@return Config

@@ -209,10 +209,10 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.informParentMessage"] = "%{name} deals cards and is the first to play.",
     ["koi.view.informParentPick"] = "%{name} picked:",
     ["koi.view.infoPickHand"] = "Can't match cards from hand now.",
-    ["koi.view.infoWrongMatchHand"] = "This card is matched with the cards placed or discarded, not in hand.",
+    ["koi.view.infoWrongMatchHand"] = "This card is matched with the cards in the ground or discarded, not in hand.",
     ["koi.view.infoPutback"] = "Can't put back this card in hand",
     ["koi.view.infoUnmatchHand"] = "Can't match this card because the suit does not match.",
-    ["koi.view.infoPickGround"] = "Placed cards cannot be directly captured.",
+    ["koi.view.infoPickGround"] = "Cards in the ground cannot be directly captured.",
     ["koi.view.infoDiscard"] = "Can't discard this card. There are cards that can be matched.",
     ["koi.view.infoDraw"] = "Can't draw a card now.",
     ["koi.view.beginTurn"] = "%{name}'s Turn",
@@ -226,7 +226,8 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.comboList"] = "Combos",
     ["koi.view.quickRule"] = "Rule",
     ["koi.view.totalScore"] = "Total Score: ",
-    ["koi.view.roundCombo"] = "Combos in this round:",
+    ["koi.view.help.matchingHand"] = "Now your turn.\nYou choose one card from your hand of the same suit as the card in the ground and capture them.\nOr discard a card not matching the suit with a card in the ground.",
+    ["koi.view.help.matchingDrawn"] = "Now your turn.\nYou turn one card face up from the top of the deck and choose cards of the same suit in the ground to capthre them.\nOr if there is no card of the same suit, you discard it.",
     -- koikoi combo
     ["koi.combo.fiveBrights.name"] = "Five Brights",
     ["koi.combo.fiveBrights.point"] = "%{count} points.",
@@ -277,7 +278,8 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["mcm.default"] = "Default: ",
     ["mcm.page.label"] = "Settings",
     ["mcm.page.description"] =
-[[
+[[%{name} - %{version}
+
 In Tamriel, it is believed that Hanafuda, an exotic playing cards, was introduced during the Second Akaviri Invasion in the Second Era. Initially, the Tribunal prohibited the playing of Hanafuda due to its association with the invading culture. However, despite the ban, it quietly thrived in underground gambling establishments, where it became a popular game among them.
 
 Over time, the power and influence of the Tribunal in Morrowind began to decline. As their grip on society weakened, the rigid restrictions and prohibitions they once enforced lost their effectiveness. As a result, the Tribunal eventually lifted the ban on Hanafuda, acknowledging its role as a form of entertainment.
@@ -295,13 +297,15 @@ With this change, Hanafuda gained acceptance and popularity among the population
     ["mcm.hanafuda.tooltipImage.label"] = "Display card image in tooltip",
     ["mcm.hanafuda.tooltipImage.description"] = "Display large card images in tooltips, but if 'Menu Help Delay' is fast, it disturbs gameplay.",
     ["mcm.koi.category"] = "Koi-Koi",
+    ["mcm.koi.help.label"] = "More Help Messages",
+    ["mcm.koi.help.description"] = "More help messages for beginners during the game.",
     ["mcm.koi.round.label"] = "Number of Rounds",
     ["mcm.koi.round.description"] = "Number of rounds played during one game.",
     ["mcm.koi.houseRule.category"] = "House Rules",
     ["mcm.koi.houseRule.multiplier.label"] = "Score Multiplier",
-    ["mcm.koi.houseRule.multiplier.description"] = "None: No multiplier\nDouble at least 7: The x2 multiplier earned for having a base score of at least 7\nEach time Koi-Koi was called: Multiplier equal to the number of times Koi-Koi was called in this round",
+    ["mcm.koi.houseRule.multiplier.description"] = "None: No multiplier\nDouble with 7 points or more: The x2 multiplier earned for having a base score of at least 7 points\nEach time Koi-Koi was called: Multiplier equal to the number of times Koi-Koi was called in this round",
     ["mcm.koi.houseRule.multiplier.none"] = "None",
-    ["mcm.koi.houseRule.multiplier.doublePointsOver7"] = "Double at least 7",
+    ["mcm.koi.houseRule.multiplier.doublePointsOver7"] = "Double with 7 points or more",
     ["mcm.koi.houseRule.multiplier.eachTimeKoiKoi"] = "Each time Koi-Koi was called",
     ["mcm.koi.houseRule.flowerViewingSake.label"] = "Enable %{name}",
     ["mcm.koi.houseRule.flowerViewingSake.description"] = "%{name} is powerful and often banned.",

@@ -23,7 +23,7 @@ local function OnModConfigReady(e)
 
     local page = template:createSideBarPage({
         label = i18n("mcm.page.label"), -- does not show
-        description = i18n("mcm.page.description")
+        description = i18n("mcm.page.description", { name = settings.modName, version = settings.version })
     })
     local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
 
@@ -102,6 +102,12 @@ local function OnModConfigReady(e)
 
     do
         local koikoi = hanafuda:createCategory(i18n("mcm.koi.category"))
+        koikoi:createYesNoButton({
+            label = i18n("mcm.koi.help.label"),
+            description = i18n("mcm.koi.help.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.koikoi.help),
+            variable = mwse.mcm.createTableVariable({ id = "help", table = config.koikoi })
+        })
+
         local roundTable = {
             { label = "3", value = 3 },
             { label = "6", value = 6 },

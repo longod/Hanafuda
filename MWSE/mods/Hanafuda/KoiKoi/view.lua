@@ -21,6 +21,9 @@ local disabledCardColor = { 0.3, 0.3, 0.3 }
 
 local cardProperty = "Hanafuda:CardId"
 
+local helpReminderFirstTime = 15
+local helpReminderTime = 20
+
 ---@class KoiKoi.View.Voice
 ---@field latest { KoiKoi.Player : {VoiceId : integer} }
 ---@field timer number
@@ -35,6 +38,8 @@ local cardProperty = "Hanafuda:CardId"
 ---@field voices KoiKoi.View.Voice
 ---@field asset CardAssetPackage
 ---@field cardBackAsset CardAsset
+---@field timerMatchingHand number
+---@field timerMatchingDrawn number
 ---@field testShowDialog fun(e:keyDownEventData)?
 ---@field testCapture fun(e:keyDownEventData)?
 local View = {}
@@ -91,7 +96,9 @@ function View.new(player, opponent, cardStyle, cardBackStyle)
             chance = 0,
             interval = 0,
         },
-        asset = assetPackage.new(cardStyle, cardBackStyle)
+        asset = assetPackage.new(cardStyle, cardBackStyle),
+        timerMatchingHand = helpReminderFirstTime,
+        timerMatchingDrawn = helpReminderFirstTime,
     }
     setmetatable(instance, { __index = View })
     return instance
@@ -559,6 +566,7 @@ function View.IdleReaction(self, player, deltaTime, minInterval, maxInterval, fr
     end
 end
 
+
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
 ---@param deltaTime number
@@ -566,6 +574,15 @@ function View.ThinkMatchingHand(self, player, deltaTime)
     -- it would like to have a larger ratio on the thinking side,
     -- but player should spend more time thinking than the AI.
     self:IdleReaction(player, deltaTime, 6, 15, 60, 0.5) -- thoughtful
+
+    if config.koikoi.help and player == koi.player.you then
+        self.timerMatchingDrawn = helpReminderFirstTime
+        self.timerMatchingHand = self.timerMatchingHand + deltaTime
+        if self.timerMatchingHand > helpReminderTime  then
+            self.timerMatchingHand = self.timerMatchingHand - helpReminderTime
+            tes3.messageBox(i18n("koi.view.help.matchingHand"))
+        end
+    end
 end
 
 ---@param self KoiKoi.View
@@ -573,6 +590,15 @@ end
 ---@param deltaTime number
 function View.ThinkMatchingDrawn(self, player, deltaTime)
     self:IdleReaction(player, deltaTime, 4, 10, 60, 0.3) -- hurry
+
+    if config.koikoi.help and player == koi.player.you then
+        self.timerMatchingHand = helpReminderFirstTime
+        self.timerMatchingDrawn = self.timerMatchingDrawn + deltaTime
+        if self.timerMatchingDrawn > helpReminderTime  then
+            self.timerMatchingDrawn = self.timerMatchingDrawn - helpReminderTime
+            tes3.messageBox(i18n("koi.view.help.matchingDrawn"))
+        end
+    end
 end
 
 ---@param self KoiKoi.View
@@ -938,10 +964,6 @@ function View.RegisterHandCardEvent(self, element, cardId, service)
     element:register(tes3.uiEvent.mouseOver,
     ---@param e uiEventEventData
     function(e)
-        -- highlight matching ground cards
-        -- if can then...
-        logger:debug("enter")
-
         if not GetGrabCardId() then -- keep highlight if grabbed
             local root = e.source:getTopLevelMenu()
             local g0 = root:findChild(uiid.boardGroundRow0)
