@@ -940,31 +940,34 @@ function View.RegisterHandCardEvent(self, element, cardId, service)
     function(e)
         -- highlight matching ground cards
         -- if can then...
-        local root = e.source:getTopLevelMenu()
-        local g0 = root:findChild(uiid.boardGroundRow0)
-        local g1 = root:findChild(uiid.boardGroundRow1)
-        HighlightCards(g0, cardId)
-        HighlightCards(g1, cardId)
-        root:updateLayout()
+        logger:debug("enter")
+
+        if not GetGrabCardId() then -- keep highlight if grabbed
+            local root = e.source:getTopLevelMenu()
+            local g0 = root:findChild(uiid.boardGroundRow0)
+            local g1 = root:findChild(uiid.boardGroundRow1)
+            HighlightCards(g0, cardId)
+            HighlightCards(g1, cardId)
+            root:updateLayout()
+        end
     end)
 
     element:register(tes3.uiEvent.mouseLeave,
     ---@param e uiEventEventData
     function(e)
-        -- stop highlight
-        -- if can then...
-        local root = e.source:getTopLevelMenu()
-        local g0 = root:findChild(uiid.boardGroundRow0)
-        local g1 = root:findChild(uiid.boardGroundRow1)
-        ResetHighlightCards(g0)
-        ResetHighlightCards(g1)
-        root:updateLayout()
+        if not GetGrabCardId() then -- keep highlight if grabbed
+            local root = e.source:getTopLevelMenu()
+            local g0 = root:findChild(uiid.boardGroundRow0)
+            local g1 = root:findChild(uiid.boardGroundRow1)
+            ResetHighlightCards(g0)
+            ResetHighlightCards(g1)
+            root:updateLayout()
+        end
     end)
 
     element:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
-        -- keep highlight
         local grabbed = GetGrabCardId()
         if grabbed then
             tes3.messageBox(i18n("koi.view.infoWrongMatchHand"))
