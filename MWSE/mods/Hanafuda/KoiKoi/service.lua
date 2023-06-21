@@ -91,8 +91,7 @@ end
 ---@param targetId integer
 ---@return boolean
 function Service.CanMatch(self, cardId, targetId)
-    -- todo and check phase
-    return self.game:CanMatch(cardId, targetId)
+    return self.game.current == koi.player.you and self.game:CanMatch(cardId, targetId)
 end
 
 ---@param self KoiKoi.Service
@@ -110,8 +109,7 @@ end
 ---@param cardId integer
 ---@return boolean
 function Service.CanDiscard(self, cardId)
-    -- todo and check phase
-    return self.game:CanDiscard(cardId)
+    return self.game.current == koi.player.you and self.game:CanDiscard(cardId)
 end
 
 ---@param self KoiKoi.Service
@@ -252,10 +250,11 @@ end
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
+---@param player KoiKoi.Player
 ---@return boolean
-function Service.CanPutbackCard(self, cardId)
+function Service.CanPutbackCard(self, cardId, player)
     if self.game.current == koi.player.you and (self.phase == phase.matchCard or self.phase == phase.matchCardWait) then
-        return self.game:HasCard(self.game.current, cardId)
+        return self.game:HasCard(player, cardId)
     end
     return false
 end

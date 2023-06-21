@@ -965,13 +965,17 @@ function View.RegisterHandCardEvent(self, element, cardId, service)
     ---@param e uiEventEventData
     function(e)
         -- keep highlight
-        -- grab card
-        if service:CanGrabCard(cardId) then
-            if GrabCard(e.source) then -- sync serivice?
-                sound.Play(sound.se.pickCard)
-            end
+        local grabbed = GetGrabCardId()
+        if grabbed then
+            tes3.messageBox(i18n("koi.view.infoWrongMatchHand"))
         else
-            tes3.messageBox(i18n("koi.view.infoGround"))
+            if service:CanGrabCard(cardId) then
+                if GrabCard(e.source) then -- sync serivice?
+                    sound.Play(sound.se.pickCard)
+                end
+            else
+                tes3.messageBox(i18n("koi.view.infoPickHand"))
+            end
         end
     end)
 end
@@ -979,7 +983,8 @@ end
 ---@param self KoiKoi.View
 ---@param element tes3uiElement
 ---@param service KoiKoi.Service
-function View.RegisterHandEvent(self, element, service)
+---@param player KoiKoi.Player
+function View.RegisterHandEvent(self, element, service, player)
     UnregisterEvents(element)
 
     element:register(tes3.uiEvent.mouseClick,
@@ -989,7 +994,7 @@ function View.RegisterHandEvent(self, element, service)
         -- or service has selectedcard
         local cardId = GetGrabCardId()
         if cardId then
-            if service:CanPutbackCard(cardId) then
+            if service:CanPutbackCard(cardId, player) then
                 if ReleaseGrabedCard(e.source) then -- sync serivice?
                     sound.Play(sound.se.putCard)
                 end
@@ -1072,8 +1077,10 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 root:updateLayout()
                 service:NotifyMatchedCards()
             else
-                tes3.messageBox(i18n("koi.view.infoHand"))
+                tes3.messageBox(i18n("koi.view.infoUnmatchHand"))
             end
+        else
+            tes3.messageBox(i18n("koi.view.infoPickGround"))
         end
     end)
 end
@@ -1986,8 +1993,8 @@ function View.OpenGameMenu(self, id, service)
         end
     end)
 
-    self:RegisterHandEvent(board:findChild(uiid.opponentHand), service)
-    self:RegisterHandEvent(board:findChild(uiid.playerHand), service)
+    self:RegisterHandEvent(board:findChild(uiid.opponentHand), service, koi.player.opponent)
+    self:RegisterHandEvent(board:findChild(uiid.playerHand), service, koi.player.you)
     self:RegisterGroundEvent(board:findChild(uiid.boardGroundRow0), service)
     self:RegisterGroundEvent(board:findChild(uiid.boardGroundRow1), service)
 
