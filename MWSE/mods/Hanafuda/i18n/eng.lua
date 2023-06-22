@@ -226,6 +226,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.comboList"] = "Combos",
     ["koi.view.quickRule"] = "Rule",
     ["koi.view.totalScore"] = "Total Score: ",
+    ["koi.view.roundCombo"] = "Combos in this round:",
     ["koi.view.help.matchingHand"] = "Now your turn.\nYou choose one card from your hand of the same suit as the card in the ground and capture them.\nOr discard a card not matching the suit with a card in the ground.",
     ["koi.view.help.matchingDrawn"] = "Now your turn.\nYou turn one card face up from the top of the deck and choose cards of the same suit in the ground to capthre them.\nOr if there is no card of the same suit, you discard it.",
     -- koikoi combo

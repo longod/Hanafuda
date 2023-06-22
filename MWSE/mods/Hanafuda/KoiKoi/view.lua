@@ -1947,7 +1947,7 @@ function View.OpenGameMenu(self, id, service)
     menu.flowDirection = tes3.flowDirection.leftToRight
     --menu:updateLayout()
 
-    local bg = menu:createImage({ path = "Textures/Hanafuda/bg2k.dds" })
+    local bg = menu:createImage({ path = "Textures/Hanafuda/bg.dds" })
     bg.width = menu.width
     bg.height = menu.height
     bg.widthProportional = 1
