@@ -351,12 +351,12 @@ function KoiKoi.Capture(self, player, cardId, ground, drawn)
         table.insert(pool[card.GetCardData(cardId).type], cardId)
         if ground then
             self.logger:trace("captured then removeing from ground ".. tostring(cardId))
-            self.logger:trace(table.concat(self.groundPool, ", "))
+            -- self.logger:trace(table.concat(self.groundPool, ", "))
             local removed = table.removevalue(self.groundPool, cardId)
             assert(removed)
         elseif not drawn then
             self.logger:trace("captured then removeing from hand ".. tostring(cardId))
-            self.logger:trace(table.concat(pool.hand, ", "))
+            -- self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
             assert(removed)
         end
@@ -374,7 +374,7 @@ function KoiKoi.Discard(self, player, cardId, drawn)
         if not drawn then
             local pool = self.pools[player]
             self.logger:trace("removeing ".. tostring(cardId))
-            self.logger:trace(table.concat(pool.hand, ", "))
+            -- self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
             assert(removed)
         end
@@ -468,7 +468,7 @@ end
 function KoiKoi.NextRound(self)
     if self.round < self.settings.round then
         self.round = self.round + 1
-        self.logger:debug("go to next round %d", self.round)
+        self.logger:trace("next round %d", self.round)
         return true
     end
     return false
@@ -487,7 +487,7 @@ function KoiKoi.GetGameWinner(self)
             winner = koi.player.opponent
         end
     end
-    self.logger:debug("score player %d, opponent %d", a, b)
+    self.logger:debug("score: player %d, opponent %d", a, b)
     self.logger:debug("winner " .. tostring(winner))
     return winner
 end

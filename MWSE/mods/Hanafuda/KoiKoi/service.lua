@@ -266,7 +266,7 @@ end
 function Service.OnEnterFrame(self, e)
     local state = {
         [phase.initialized] = function()
-            logger:info("initialized")
+            logger:debug("initialized")
             self:RequestPhase(phase.decidingParent)
             local cards = self.game:ChoiceDecidingParentCards(2)
             self.view:CreateDecidingParent(self, cards[1], cards[2])
@@ -275,7 +275,7 @@ function Service.OnEnterFrame(self, e)
             -- wait for input
         end,
         [phase.decidedParent] = function()
-            logger:info("inform parent %d", self.game.parent)
+            logger:debug("inform parent %d", self.game.parent)
             self:RequestPhase(phase.decidedParentWait)
             local cards = self.game.decidingParent
             self.view:InformParent(self.game.parent, self, self.game.decidingParentCardId, cards[1], cards[2])
@@ -561,7 +561,7 @@ end
 ---@param self KoiKoi.Service
 function Service.Initialize(self)
     assert(self.phase == phase.new)
-    logger:info("Begin Koi-Koi")
+    logger:debug("Begin Koi-Koi")
     assert(not self.enterFrameCallback)
     self.enterFrameCallback = function (e)
         self:OnEnterFrame(e)
@@ -592,7 +592,7 @@ function Service.Destory(self)
         self.debugDumpCallback = nil
     end
     self.view:Shutdown()
-    logger:info("Finished Koi-Koi")
+    logger:debug("Finished Koi-Koi")
 end
 
 ---@param self KoiKoi.Service

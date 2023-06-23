@@ -347,7 +347,6 @@ function this.CreateCardList(e, asset)
     local viewportWidth, viewportHeight = tes3ui.getViewportSize()
     local size = math.min(viewportWidth, viewportHeight)
 
-    logger:debug("card help")
     menu = tes3ui.createMenu({ id = uiid.helpCardListMenu, fixedFrame = true })
     menu.width = size * 0.9
     menu.height = size * 0.9
@@ -484,7 +483,6 @@ function this.CreateCombinationList(e, asset)
     local viewportWidth, viewportHeight = tes3ui.getViewportSize()
     local size = math.min(viewportWidth, viewportHeight)
 
-    logger:debug("combo help")
     menu = tes3ui.createMenu({ id = uiid.helpComboListMenu, fixedFrame = true })
     menu.width = size * 0.9
     menu.height = size * 0.9
@@ -553,7 +551,6 @@ function this.CreateRule(e)
     local viewportWidth, viewportHeight = tes3ui.getViewportSize()
     local size = math.min(viewportWidth, viewportHeight)
 
-    logger:debug("rule help")
     local menu = tes3ui.createMenu({ id = uiid.helpRuleMenu, fixedFrame = true })
     menu.width = size * 0.9
     menu.height = size * 0.9

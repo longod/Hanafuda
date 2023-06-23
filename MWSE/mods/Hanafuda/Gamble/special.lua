@@ -1,5 +1,6 @@
 ---@class Gamble.Special
 local this = {}
+local logger = require("Hanafuda.logger")
 
 local npcs = {
     -- essential
@@ -219,9 +220,11 @@ local creatures = {
     ["draugr_aesliip"] = false,
 }
 
+
 ---@param mobile tes3mobileNPC
 ---@return boolean
 function this.IsAllowdNPC(mobile)
+    logger:debug("NPC baseObject ID: " .. mobile.object.baseObject.id)
     local v = npcs[mobile.object.baseObject.id]
     return (v ~= nil) and (v == true) -- allowed only true
 end
@@ -229,6 +232,7 @@ end
 ---@param mobile tes3mobileCreature
 ---@return boolean
 function this.IsAllowdCreature(mobile)
+    logger:debug("Creature baseObject ID: " .. mobile.object.baseObject.id)
     local v = creatures[mobile.object.baseObject.id]
     return (v ~= nil) and (v == true) -- allowed only true
 end

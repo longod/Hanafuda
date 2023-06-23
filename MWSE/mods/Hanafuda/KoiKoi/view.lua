@@ -479,7 +479,7 @@ function View.OnExit(self, e, service)
         callback =
         function(btnCallbackData)
             if btnCallbackData.button == 0 then
-                logger:info("Yield the game")
+                logger:debug("Yield the game")
                 service:Exit(true)
             end
         end,

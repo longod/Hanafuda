@@ -12,8 +12,6 @@ this.se = soundData.se
 this.voice = soundData.voice
 this.music = soundData.music
 
--- todo need driver menu for testing audio
-
 ---@param t table
 ---@param excluding integer?
 ---@return integer?
@@ -54,13 +52,13 @@ function this.Play(id)
             if se then
                 se:play(nil, data.volume or 1)
             else
-                logger:debug("wrong sound id: ".. tostring(data.sound))
+                logger:warn("wrong sound id: ".. tostring(data.sound))
             end
         else
-            logger:debug("invalid sound data: ".. tostring(id))
+            logger:warn("invalid sound data: ".. tostring(id))
         end
     else
-        logger:debug("invalid sound ID: ".. tostring(id))
+        logger:warn("invalid sound ID: ".. tostring(id))
     end
 end
 
@@ -85,7 +83,7 @@ local function PlayVoice(id, race, female, disposition, excluding)
         local index = GetRandomIndex(voice, excluding)
         if index ~= nil then
             local path = voice[index]
-            logger:trace("Voice %d : %d %s", id, index, path)
+            logger:debug("Voice %d : %d %s", id, index, path)
             tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
             return index
         end
@@ -107,7 +105,7 @@ local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
             local index = GetRandomIndex(voice, excluding)
             if index ~= nil then
                 local path = voice[index]
-                logger:trace("Special Voice %d %s : %d %s", id, objectId, index, path)
+                logger:debug("Special Voice %d %s : %d %s", id, objectId, index, path)
                 tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
                 return index
             end

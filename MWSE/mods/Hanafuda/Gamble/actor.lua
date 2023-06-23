@@ -142,7 +142,7 @@ local function HasServiceMenuByClass(mobile)
     }
     -- modded class?
     local class = mobile.object.class.id:lower()
-    logger:trace(class)
+    logger:debug("npc class: " .. class)
     local v = classes[class]
     if v == nil then
         -- Some classes have service as a suffix, so look for it by forward matching.
@@ -154,7 +154,6 @@ local function HasServiceMenuByClass(mobile)
             end
         end
     end
-    -- logger:trace(v)
     return (v == nil) or (v == true) -- ignored only false
 end
 
@@ -229,7 +228,7 @@ local function ActorCanPerformService(mobile)
     }
     for _, value in ipairs(condition) do
         if mobile[value] then
-            logger:trace(value)
+            -- logger:trace(value)
             return false, value
         end
     end

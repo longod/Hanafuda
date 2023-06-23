@@ -355,8 +355,8 @@ function this.Runner()
             ---@param callbackData mwseTimerCallbackData
             callback = function(callbackData)
                 if cancellation then
-                    callbackData.timer:cancel()
                     logger:debug("cancel")
+                    callbackData.timer:cancel()
                     e.source.disabled = false
                     menu:updateLayout()
                     return

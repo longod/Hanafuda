@@ -18,6 +18,9 @@ local function CalculateBettingSettings(player, opponent, conf)
     -- todo mercantile, speechcraft, personality, luck, disposition, faction reaction
     local playerGold = act.GetActorGold(player)
     local opponentGold = act.GetActorGold(opponent)
+    logger:debug("Player money " .. tostring(playerGold))
+    logger:debug("NPC money " .. tostring(opponentGold ))
+
     -- Allow odds if there is some amount of payment on both sides.
     local gold = math.min(playerGold, opponentGold)
     local metric = math.ceil(gold / (settings.penaltyPointPerRound * settings.GetMultiplierFactorByHouseRule(config.koikoi.houseRule.multiplier) * conf.round)) -- average points per round... no evidence!
@@ -124,6 +127,7 @@ end
 local function ChangeDisposition(player, opponent, disposition)
     -- If they are teaming up with a PC like a companion, it seems better not to change their disposition, but how can I detect them?
     if not disposition then
+        logger:debug("no disposition changed")
         return false
     end
     if player.actorType == tes3.actorType.player and opponent.actorType == tes3.actorType.npc then
@@ -135,6 +139,7 @@ local function ChangeDisposition(player, opponent, disposition)
         logger:debug("disposition changed %d", disposition)
         return true
     end
+    -- error
     return false
 end
 
@@ -149,7 +154,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
 
     -- todo choice brain depends on actor stats
     local brain = require("Hanafuda.KoiKoi.brain.randomBrain").new({
-        koikoiChance = greedy, -- temp
+        koikoiChance = greedy * 0.7, -- temp
         meaninglessDiscardChance = (1 - gamble) * 0.3, -- temp
         waitHand = { s = 1, e = 4 },
         waitDrawn = { s = 0.5, e = 1.5 },
@@ -212,7 +217,7 @@ end
 ---@param e uiEventEventData
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
-local function UpdateVisibility(e, player, opponent)
+local function UpdateServiceMenuVisibility(e, player, opponent)
     timer.delayOneFrame(function()
             local b = e.source:findChild(uiid.menuDialogServiceKoiKoi)
             if b and not b.visible then
@@ -225,7 +230,7 @@ local function UpdateVisibility(e, player, opponent)
                     b.disabled = true
                 end
                 e.source:updateLayout() -- endless calling?
-                logger:trace("UpdateVisibility")
+                logger:trace("UpdateServiceMenuVisibility")
             end
         end,
         timer.real)
@@ -289,7 +294,7 @@ local function AddGamblingMenu(menu, player, opponent)
     menu:registerAfter(tes3.uiEvent.update,
     ---@param e uiEventEventData
     function(e)
-        UpdateVisibility(e, player, opponent)
+        UpdateServiceMenuVisibility(e, player, opponent)
     end)
 end
 
@@ -307,8 +312,6 @@ local function OnMenuDialogActivated(e)
         logger:trace("no service")
         return
     end
-    logger:trace("Player money " .. tostring(act.GetActorGold(tes3.mobilePlayer)))
-    logger:trace("NPC money " .. tostring(act.GetActorGold(serviceActor)))
 
     AddGamblingMenu(e.element, tes3.mobilePlayer, serviceActor)
 end
