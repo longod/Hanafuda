@@ -210,7 +210,7 @@ end
 ---@return string? -- reason
 local function ActorCanPerformService(mobile)
     local condition = {
-        "attacked",
+        -- "attacked", -- seems inconvinient flag
         "inCombat",
         "isAttackingOrCasting",
         "isDead",
@@ -228,7 +228,7 @@ local function ActorCanPerformService(mobile)
     }
     for _, value in ipairs(condition) do
         if mobile[value] then
-            -- logger:trace(value)
+            logger:trace(value)
             return false, value
         end
     end
