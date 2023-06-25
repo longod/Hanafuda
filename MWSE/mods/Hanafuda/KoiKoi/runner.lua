@@ -55,6 +55,12 @@ function this.Run(self)
             local choices = self.game:ChoiceDecidingParentCards(2)
             self.game:DecideParent(choices[1])
             self.game:DealInitialCards()
+
+            while self.game:CheckUnluckyGround() do
+                self.game:Initialize()
+                self.game:DealInitialCards()
+            end
+
             local lh0, total0 = self.game:CheckLuckyHands(koi.player.you)
             local lh1, total1 = self.game:CheckLuckyHands(koi.player.opponent)
 

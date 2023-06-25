@@ -1,4 +1,5 @@
 local logger = require("Hanafuda.logger")
+local config = require("Hanafuda.config")
 
 do
     local card = require("Hanafuda.card")
@@ -143,6 +144,19 @@ do
     unitwind:test("Kuttsuki", function()
     end)
 
+    unitwind:finish()
+
+    unitwind:start("Koi-Koi UnluckyGround Test")
+    unitwind:test("Unluck", function()
+        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi)
+        game.groundPool = { 1, 2, 3, 5, 6, 7, 9, 10}
+        unitwind:expect(game:CheckUnluckyGround()).toBe(false)
+    end)
+    unitwind:test("Normal", function()
+        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi)
+        game.groundPool = { 6, 10, 7, 11, 12, 5, 20, 8 }
+        unitwind:expect(game:CheckUnluckyGround()).toBe(true)
+    end)
     unitwind:finish()
 end
 

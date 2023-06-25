@@ -287,7 +287,15 @@ function Service.OnEnterFrame(self, e)
             self:RequestPhase(phase.dealingInitial)
             self.game:SetCurrentPlayer(self.game.parent)
             self.game:DealInitialCards()
-            -- todo show round info somewhere if need
+
+            -- If there are four cards of the same suit dealt on the field, they cannot be acquired. They must be redealt.
+            -- It would be nice to show the actual handouts and then start over, but without the animation it doesn't make much sense, and it's not very fast-paced if it happens several times over.
+            -- Super worst case scenario may occur many times, but should be handled until internally resolved.
+            while self.game:CheckUnluckyGround() do
+                self.game:Initialize()
+                self.game:DealInitialCards()
+            end
+
             self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
         end,
         [phase.dealingInitial] = function()

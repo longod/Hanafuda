@@ -210,6 +210,26 @@ function KoiKoi.DealInitialCards(self)
 end
 
 ---@param self KoiKoi.Game
+---@return boolean
+function KoiKoi.CheckUnluckyGround(self)
+    -- countup same suits
+    local suits = {}
+    for _, cardId in ipairs(self.groundPool) do
+        local data = card.GetCardData(cardId)
+        local v = table.getset(suits, data.suit, 0)
+        suits[data.suit] = v + 1
+    end
+
+    for s, value in pairs(suits) do
+        if value >= 4 then
+        self.logger:debug("There are 4 same suits: %d", s)
+        return true
+        end
+    end
+    return false
+end
+
+---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@return { [KoiKoi.LuckyHands] : integer }?
 ---@return integer
