@@ -119,7 +119,7 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     ["koi.help.more"] = "More Informations",
     ["koi.help.tldr.header"] = "Quick Rules of Koi-Koi",
     ["koi.help.tldr.description"] =
-[[1. A card is captured that matches the same suit in one hand and a card in the ground. If it does not match, a card is discarded from the hand.
+[[1. A card is captured that matches the same suit in one hand and a card in the field. If it does not match, a card is discarded from the hand.
 2. Draw a card from the deck and do the same.
 3. This is repeated alternately, with the player's turns swapped.
 4. When a combo is created with the captured cards, the player decides whether to continue (Koi-Koi) to create better combos or win the round (Shobu).
@@ -137,7 +137,7 @@ Koi-koi is a strategic game that combines luck and skill in forming combinations
     ["koi.help.rule.setup.header"] = "Setup",
     ["koi.help.rule.setup.description"] =
 [[Players who takes the face-down Hanafuda card and Whoever chooses the card of the early month becomes the dealer (Oya). If it is the same month, it is decided by the higher type of card. The person who does not is the player (Ko).
-The dealer shuffles the deck and after dealing 8 cards each to the players and the ground, the turn begins with the dealer.]],
+The dealer shuffles the deck and after dealing 8 cards each to the players and the field, the turn begins with the dealer.]],
     ["koi.help.rule.luckyHands.header"] = "Lucky Hands",
     ["koi.help.rule.luckyHands.description"] =
 [[After the cards are dealt, if the hand contains some combination of cards, the player reveals his or her cards to end the round.
@@ -146,14 +146,14 @@ If both players hold lucky hands, this round is a tie and no score.]],
     ["koi.help.rule.turn.header"] = "Turns",
     ["koi.help.rule.turn.match.header"] = "Matching from the Hand",
     ["koi.help.rule.turn.match.description"] =
-[[Select a card from the hand, choose a card in the ground with a matching suit, and capture them.
-Or discard the unmatched card from the hand to the ground.
-If there is even one matching card on the ground, it cannot be discarded and must be matched to be captured.
+[[Select a card from the hand, choose a card in the field with a matching suit, and capture them.
+Or discard the unmatched card from the hand to the field.
+If there is even one matching card in the field, it cannot be discarded and must be matched to be captured.
 If the palyer have a matching card in the hand, the player can still choose another unmatched card to discard, but without much benefit.]],
     ["koi.help.rule.turn.draw.header"] = "Matching with Drawn Card",
     ["koi.help.rule.turn.draw.description"] =
 [[A card is drawn from the deck, turned face up.
-As with the hand, it matched with a card on the ground to capture them, or discarded on the ground if not possible.]],
+As with the hand, it matched with a card in the field to capture them, or discarded in the field if not possible.]],
     ["koi.help.rule.turn.check.header"] = "Checking for Combinations",
     ["koi.help.rule.turn.check.description"] =
 [[Check to see if combinations are formed with the capturesd cards, the player declare one of the following.]],
@@ -209,12 +209,13 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.informParentMessage"] = "%{name} deals cards and is the first to play.",
     ["koi.view.informParentPick"] = "%{name} picked:",
     ["koi.view.infoPickHand"] = "Can't match cards from hand now.",
-    ["koi.view.infoWrongMatchHand"] = "This card is matched with the cards in the ground or discarded, not in hand.",
+    ["koi.view.infoWrongMatchHand"] = "This card is matched with the cards in the field or discarded, not in hand.",
     ["koi.view.infoPutback"] = "Can't put back this card in hand",
     ["koi.view.infoUnmatchHand"] = "Can't match this card because the suit does not match.",
-    ["koi.view.infoPickGround"] = "Cards in the ground cannot be directly captured.",
+    ["koi.view.infoPickGround"] = "Cards in the field cannot be directly captured.",
     ["koi.view.infoDiscard"] = "Can't discard this card. There are cards that can be matched.",
     ["koi.view.infoDraw"] = "Can't draw a card now.",
+    ["koi.view.infoManyCaptured"] = "There were %{count} cards of the same suit on the field, so they were all captured.",
     ["koi.view.beginTurn"] = "%{name}'s Turn",
     ["koi.view.hand.player"] = "Your hand",
     ["koi.view.hand.opponent"] = "Opponent's hand",
@@ -227,8 +228,8 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.quickRule"] = "Rule",
     ["koi.view.totalScore"] = "Total Score: ",
     ["koi.view.roundCombo"] = "Combos in this round:",
-    ["koi.view.help.matchingHand"] = "[Help] Now your turn.\nYou choose one card from your hand of the same suit as the card in the ground and capture them.\nOr discard a card not matching the suit with a card in the ground.",
-    ["koi.view.help.matchingDrawn"] = "[Help] Now your turn.\nYou turn one card face up from the top of the deck and choose cards of the same suit in the ground to capthre them.\nOr if there is no card of the same suit, you discard it.",
+    ["koi.view.help.matchingHand"] = "[Help] Now your turn.\nYou choose one card from your hand of the same suit as the card in the field and capture them.\nOr discard a card not matching the suit with a card in the field.",
+    ["koi.view.help.matchingDrawn"] = "[Help] Now your turn.\nYou turn one card face up from the top of the deck and choose cards of the same suit in the field to capthre them.\nOr if there is no card of the same suit, you discard it.",
     -- koikoi combo
     ["koi.combo.fiveBrights.name"] = "Five Brights",
     ["koi.combo.fiveBrights.point"] = "%{count} points.",

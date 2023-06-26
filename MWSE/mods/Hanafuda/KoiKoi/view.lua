@@ -1079,21 +1079,44 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
         if grab then
             local target = GetCardId(e.source) -- or use cardId
             if target and service:CanMatch(grab, target) then
-                service:Capture(grab, false)
-                service:Capture(target, true)
-                -- house rule: multiple captring
-                local grab = GetGrabCard()
-                assert(grab)
                 local root = e.source:getTopLevelMenu()
-                local moved0 = CaptureCard(e.source, koi.player.you)
-                local moved1 = CaptureGrabCard(koi.player.you)
-                if moved0 and moved1 then
-                    sound.Play(sound.se.putCard)
-                end
-                UnregisterEvents(moved0)
-                UnregisterEvents(moved1)
                 local g0 = root:findChild(uiid.boardGroundRow0)
                 local g1 = root:findChild(uiid.boardGroundRow1)
+
+                local caps  = service:Capture(grab, target)
+                if table.size(caps) == 1 then
+                    local moved0 = CaptureCard(e.source, koi.player.you)
+                    UnregisterEvents(moved0)
+                else
+                     ---@type tes3uiElement[]
+                     local elems = table.new(table.size(caps), 0)
+
+                    for _, cid in ipairs(caps) do
+                        local child = FindCardIdInChildren(g0, cid)
+                        if not child then
+                            child = FindCardIdInChildren(g1, cid)
+                        end
+                        if not child then
+                            logger:error("not find cardId %d in ground", cid)
+                            return
+                        end
+                        table.insert(elems, child)
+                    end
+
+                    assert(table.size(caps) == table.size(elems))
+
+                    for _, elem in ipairs(elems) do
+                        local moved0 = CaptureCard(elem, koi.player.you)
+                        UnregisterEvents(moved0)
+                    end
+
+                    tes3.messageBox(i18n("koi.view.infoManyCaptured", {count = table.size(caps)}))
+                end
+                local grab = GetGrabCard()
+                assert(grab)
+                local moved1 = CaptureGrabCard(koi.player.you)
+                UnregisterEvents(moved1)
+                sound.Play(sound.se.putCard)
                 local h0 = root:findChild(uiid.playerHand)
                 -- local h1 = root:findChild(uiid.opponentHand)
                 ResetHighlightCards(g0)
@@ -1210,7 +1233,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         local oh = gameMenu:findChild(uiid.opponentHand)
         local childHand = child == koi.player.you and ph or oh
         local parentHand = child == koi.player.you and oh or ph
-
 
         -- todo use from service settings
         local initialCards = 8
@@ -1397,7 +1419,7 @@ end
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
----@param matchedCard integer
+---@param matchedCard integer[]
 ---@param drawn boolean
 ---@param skipAnimation boolean
 function View.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
@@ -1422,26 +1444,32 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     end
     local g0 = gameMenu:findChild(uiid.boardGroundRow0)
     local g1 = gameMenu:findChild(uiid.boardGroundRow1)
-    local matched = FindCardIdInChildren(g0, matchedCard)
-    if not matched then
-        matched = FindCardIdInChildren(g1, matchedCard)
+
+    ---@type tes3uiElement[]
+    local elems = table.new(table.size(matchedCard), 0)
+
+    for _, cid in ipairs(matchedCard) do
+        local matched = FindCardIdInChildren(g0, cid)
+        if not matched then
+            matched = FindCardIdInChildren(g1, cid)
+        end
+        if not matched then
+            logger:error("not find cardId %d in ground", cid)
+        end
+        table.insert(elems, matched)
     end
-    if not matched then
-        logger:error("not find cardId %d in ground", matchedCard)
-        return
+
+    assert(table.size(matchedCard) == table.size(elems))
+
+    for _, elem in ipairs(elems) do
+        local moved0 = CaptureCard(elem, player)
+        UnregisterEvents(moved0)
     end
 
     assert(selected)
     local moved0 = CaptureCard(selected, player)
-    local moved1 = CaptureCard(matched, player)
-    if moved0 and moved1 then
-        sound.Play(sound.se.putCard)
-    end
     UnregisterEvents(moved0)
-    UnregisterEvents(moved1)
-
-    local g0 = gameMenu:findChild(uiid.boardGroundRow0)
-    local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+    sound.Play(sound.se.putCard)
     local h0 = gameMenu:findChild(uiid.playerHand)
     -- local h1 = gameMenu:findChild(uiid.opponentHand)
     ResetHighlightCards(g0)
@@ -1449,6 +1477,10 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     ResetHighlightCards(h0)
     gameMenu:updateLayout()
     service:NotifyMatchedCards() -- correct usage?
+
+    if table.size(matchedCard) > 1 then
+        tes3.messageBox(i18n("koi.view.infoManyCaptured", {count = table.size(matchedCard)}))
+    end
 
 end
 

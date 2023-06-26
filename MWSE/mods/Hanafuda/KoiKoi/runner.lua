@@ -31,6 +31,31 @@ function this.new(opponentBrain, playerBrain, logger)
     return instance
 end
 
+---debugging
+---@param self KoiKoi.Runner
+function this.DumpData(self)
+    self.logger:debug("state       = " .. tostring(self.state))
+    self.logger:debug("round       = " .. tostring(self.game.round))
+    self.logger:debug("parent      = " .. tostring(self.game.parent))
+    self.logger:debug("current     = " .. tostring(self.game.current))
+    self.logger:debug("drawn       = " .. tostring(self.drawnCard))
+    self.logger:debug("you         = %d:{%s}", table.size(self.game.pools[koi.player.you].hand), table.concat(self.game.pools[koi.player.you].hand, ", "))
+    self.logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.bright]), table.concat(self.game.pools[koi.player.you][card.type.bright], ", "))
+    self.logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.animal]), table.concat(self.game.pools[koi.player.you][card.type.animal], ", "))
+    self.logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.ribbon]), table.concat(self.game.pools[koi.player.you][card.type.ribbon], ", "))
+    self.logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.chaff]), table.concat(self.game.pools[koi.player.you][card.type.chaff], ", "))
+    self.logger:debug("opponent    = %d:{%s}", table.size(self.game.pools[koi.player.opponent].hand), table.concat(self.game.pools[koi.player.opponent].hand, ", "))
+    self.logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.bright]), table.concat(self.game.pools[koi.player.opponent][card.type.bright], ", "))
+    self.logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.animal]), table.concat(self.game.pools[koi.player.opponent][card.type.animal], ", "))
+    self.logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.ribbon]), table.concat(self.game.pools[koi.player.opponent][card.type.ribbon], ", "))
+    self.logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.chaff]), table.concat(self.game.pools[koi.player.opponent][card.type.chaff], ", "))
+    self.logger:debug("ground      = %d:{%s}", table.size(self.game.groundPool), table.concat(self.game.groundPool, ", "))
+    self.logger:debug("deck        = %d:{%s}", table.size(self.game.deck), table.concat(self.game.deck, ", "))
+    self.logger:debug("points      = {%s}", table.concat(self.game.points, ", "))
+    self.logger:debug("calls       = {%s}", table.concat(self.game.calls, ", "))
+end
+
+
 ---@param self KoiKoi.Runner
 ---@param next integer?
 function this.Next(self, next)
@@ -95,8 +120,17 @@ function this.Run(self)
                         self.logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
                     end
                     self.game:Capture(self.game.current, command.selectedCard, false, false)
-                    self.game:Capture(self.game.current, command.matchedCard, true, false)
-                elseif not command.matchedCard then
+
+                    local many = self.game:CanCaptureExtra(command.selectedCard)
+                    if many ~= nil then
+                        for _, value in ipairs(many) do
+                            self.game:Capture(self.game.current, value, true, false)
+                        end
+                    else
+                        self.game:Capture(self.game.current, command.matchedCard, true, false)
+                    end
+
+                elseif command.selectedCard and not command.matchedCard then
                     -- discard
                     for _, cardId in ipairs(self.game.groundPool) do
                         if koi.CanMatchSuit(command.selectedCard, cardId) then
@@ -128,8 +162,17 @@ function this.Run(self)
                         self.logger:error("wrong matching %d %d", command.selectedCard, command.matchedCard)
                     end
                     self.game:Capture(self.game.current, command.selectedCard, false, true)
-                    self.game:Capture(self.game.current, command.matchedCard, true, true)
-                elseif not command.matchedCard then
+
+                    local many = self.game:CanCaptureExtra(command.selectedCard)
+                    if many ~= nil then
+                        for _, value in ipairs(many) do
+                            self.game:Capture(self.game.current, value, true, true)
+                        end
+                    else
+                        self.game:Capture(self.game.current, command.matchedCard, true, true)
+                    end
+
+                elseif command.selectedCard and not command.matchedCard then
                     -- discard
                     for _, cardId in ipairs(self.game.groundPool) do
                         if koi.CanMatchSuit(command.selectedCard, cardId) then

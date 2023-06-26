@@ -96,14 +96,26 @@ end
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
----@param ground boolean
+---@param ground integer
+---@return integer[] -- captured ground card, there is a possibility of getting more than one.
 function Service.Capture(self, cardId, ground)
     local drawn = self.drawnCard == cardId
-    self.game:Capture(self.game.current, cardId, ground, drawn)
+    self.game:Capture(self.game.current, cardId, false, drawn)
+    local many = self.game:CanCaptureExtra(cardId)
+    if many ~= nil then
+        for _, value in ipairs(many) do
+            self.game:Capture(self.game.current, value, true, drawn)
+        end
+        return many
+    else
+        self.game:Capture(self.game.current, ground, true, drawn)
+    end
     if drawn then
         self.drawnCard = nil
     end
+    return { ground }
 end
+
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
@@ -362,20 +374,14 @@ function Service.OnEnterFrame(self, e)
 
                     if command.matchedCard then
                         -- match
-                        self:Capture(command.selectedCard, false)
-                        self:Capture(command.matchedCard, true)
                     else
                         -- discard
-                        self:Discard(command.selectedCard)
                     end
                 else
                     -- error?
                 end
             else
                 -- thinking or no brain
-                -- if no brain
-                -- tes3.messageBox("match in your hand or discard")
-                -- self:RequestPhase(phase.matchCardWait)
                 self.view:ThinkMatchingHand(self.game.current, e.delta);
             end
         end,
@@ -390,9 +396,11 @@ function Service.OnEnterFrame(self, e)
 
                     if command.matchedCard then
                         -- match
-                        self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, false, self.skipAnimation)
+                        local caps = self:Capture(command.selectedCard, command.matchedCard)
+                        self.view:Capture(self, self.game.current, command.selectedCard, caps, false, self.skipAnimation)
                     else
                         -- discard
+                        self:Discard(command.selectedCard)
                         self.view:Discard(self, self.game.current, command.selectedCard, false, self.skipAnimation)
                     end
                 else
@@ -425,9 +433,8 @@ function Service.OnEnterFrame(self, e)
 
                 if command.selectedCard and command.matchedCard then
                     -- match
-                    self.view:Capture(self, self.game.current, command.selectedCard, command.matchedCard, true, self.skipAnimation)
-                    self:Capture(command.selectedCard, false)
-                    self:Capture(command.matchedCard, true)
+                    local caps = self:Capture(command.selectedCard, command.matchedCard)
+                    self.view:Capture(self, self.game.current, command.selectedCard, caps, true, self.skipAnimation)
                     assert(not self.drawnCard)
                 elseif not command.matchedCard then
                     -- discard
@@ -442,9 +449,6 @@ function Service.OnEnterFrame(self, e)
                 --self:Next()
             else
                 -- thinking or no brain
-                -- if no brain
-                -- tes3.messageBox("draw card and match it or discard")
-                -- self:RequestPhase(phase.matchDrawCardWait)
                 self.view:ThinkMatchingDrawn(self.game.current, e.delta)
             end
         end,

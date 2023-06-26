@@ -192,6 +192,18 @@ function KoiKoi.DealInitialCards(self)
     local initialDealEach = self.settings.initialDealEach
     local first = self.pools[koi.GetOpponent(self.parent)].hand
     local second = self.pools[self.parent].hand
+
+    -- test for multiple captureing
+    --[[
+    initialDealEach = 8
+    self.deck = {
+        1, 2, 3, 4, 5, 6, 7, 8,
+        9, 10, 11, 13, 14, 15, 20, 35,
+        17, 18, 19, 21, 22, 23, 33, 34,
+        25, 26, 27, 29, 30, 31, 24, 36,
+    }
+    --]]
+
     while table.size(first) < initialCards do
         -- todo check count
         for i = 1, initialDealEach do
@@ -358,6 +370,25 @@ function KoiKoi.CheckEnd(self)
     end
     return true
     -- return table.size(self.deck) == 0 -- or empty deck
+end
+
+---@param self KoiKoi.Game
+---@param cardId integer?
+---@return integer[]?
+function KoiKoi.CanCaptureExtra(self, cardId)
+    if cardId then
+        local ids = {}
+        for _, id in pairs(self.groundPool) do
+            if koi.CanMatchSuit(cardId, id) then
+                table.insert(ids, id)
+            end
+        end
+        if table.size(ids) >= 3 then
+            self.logger:debug("find extra captureble cards " .. table.concat(ids, ", "))
+            return ids
+        end
+    end
+    return nil
 end
 
 ---@param self KoiKoi.Game

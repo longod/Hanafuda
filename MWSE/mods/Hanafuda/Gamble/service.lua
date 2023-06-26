@@ -154,8 +154,8 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
 
     -- todo choice brain depends on actor stats
     local brain = require("Hanafuda.KoiKoi.brain.randomBrain").new({
-        koikoiChance = greedy * 0.7, -- temp
-        meaninglessDiscardChance = (1 - gamble) * 0.3, -- temp
+        koikoiChance = math.remap(greedy, 0, 1, 0.2,  0.7), -- temp
+        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3,  0.0), -- temp
         waitHand = { s = 1, e = 4 },
         waitDrawn = { s = 0.5, e = 1.5 },
         waitCalling = { s = 2, e = 4 },
