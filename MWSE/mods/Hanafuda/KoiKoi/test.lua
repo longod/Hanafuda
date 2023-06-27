@@ -50,13 +50,13 @@ do
     unitwind:start("Koi-Koi Combination Test")
 
     unitwind:test("No Combo", function()
-        local actual = combo.Calculate(caps, houseRule)
+        local actual = combo.Calculate(caps, houseRule, logger)
         unitwind:expect(actual).toBe(nil)
         -- todo edge case
     end)
 
     unitwind:test("Goko", function()
-        local actual = combo.Calculate(AddCard({ type = card.type.bright, findAll = true }), houseRule)
+        local actual = combo.Calculate(AddCard({ type = card.type.bright, findAll = true }), houseRule, logger)
         unitwind:expect(actual).NOT.toBe(nil)
         if actual then
             unitwind:expect(actual[koi.combination.fiveBrights]).toBe(koi.basePoint[koi.combination.fiveBrights])
@@ -67,17 +67,17 @@ do
         local goko = AddCard({ type = card.type.bright, findAll = true })
         local shiko = table.deepcopy(goko)
         table.removevalue(shiko[card.type.bright], card.Find({ symbol = card.symbol.rainman }))
-        local current = combo.Calculate(goko, houseRule)
-        local prev = combo.Calculate(shiko, houseRule)
+        local current = combo.Calculate(goko, houseRule, logger)
+        local prev = combo.Calculate(shiko, houseRule, logger)
 
         do
-            local diff = combo.Different(prev, prev)
+            local diff = combo.Different(prev, prev, logger)
             unitwind:expect(diff).toBe(nil)
-            diff = combo.Different(current, current)
+            diff = combo.Different(current, current, logger)
             unitwind:expect(diff).toBe(nil)
         end
         do
-            local diff = combo.Different(current, prev)
+            local diff = combo.Different(current, prev, logger)
             unitwind:expect(diff).NOT.toBe(nil)
             if diff then
                 for key, value in pairs(diff) do
@@ -135,7 +135,7 @@ do
     unitwind:start("Koi-Koi LuckyHands Test")
 
     unitwind:test("No Hands", function()
-        local actual = combo.CalculateLuckyHands(hand, houseRule)
+        local actual = combo.CalculateLuckyHands(hand, houseRule, logger)
         unitwind:expect(actual).toBe(nil)
         -- todo edge case
     end)
@@ -148,12 +148,12 @@ do
 
     unitwind:start("Koi-Koi UnluckyGround Test")
     unitwind:test("Unluck", function()
-        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi)
+        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi, nil, nil, logger)
         game.groundPool = { 1, 2, 3, 5, 6, 7, 9, 10}
         unitwind:expect(game:CheckUnluckyGround()).toBe(false)
     end)
     unitwind:test("Normal", function()
-        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi)
+        local game = require("Hanafuda.KoiKoi.game").new(config.koikoi, nil, nil, logger)
         game.groundPool = { 6, 10, 7, 11, 12, 5, 20, 8 }
         unitwind:expect(game:CheckUnluckyGround()).toBe(true)
     end)
@@ -171,7 +171,8 @@ do
         unitwind:expect(function()
             local runner = require("Hanafuda.KoiKoi.runner").new(
                 require("Hanafuda.KoiKoi.brain.randomBrain").new({meaninglessDiscardChance=0.3}),
-                require("Hanafuda.KoiKoi.brain.simpleBrain").new()
+                require("Hanafuda.KoiKoi.brain.simpleBrain").new(),
+                logger
             )
             while runner:Run() do
             end

@@ -6,6 +6,8 @@ local config = require("Hanafuda.config")
 ---@class KoiKoi.Sound
 local this = {}
 
+-- todo instance
+
 local soundData = require("Hanafuda.KoiKoi.soundData")
 
 this.se = soundData.se

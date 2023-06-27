@@ -822,7 +822,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
     -- automatic layout does not center them, but this is not a major problem.
     local g0 = gameMenu:findChild(uiid.boardGroundRow0)
     local g1 = gameMenu:findChild(uiid.boardGroundRow1)
-    local c0 = PutCard(g0, self.asset, cardId0, true, true)
+    local c0 = PutCard(g1, self.asset, cardId0, true, true)
     local c1 = PutCard(g1, self.asset, cardId1, true, true)
     c0:register(tes3.uiEvent.help,
     function(_)

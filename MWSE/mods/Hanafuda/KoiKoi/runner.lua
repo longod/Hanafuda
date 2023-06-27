@@ -11,7 +11,7 @@ local this = {}
 
 ---@param opponentBrain KoiKoi.IBrain
 ---@param playerBrain KoiKoi.IBrain
----@param logger mwseLogger?
+---@param logger mwseLogger
 ---@return KoiKoi.Runner
 function this.new(opponentBrain, playerBrain, logger)
     --@type KoiKoi.Runner
@@ -25,7 +25,7 @@ function this.new(opponentBrain, playerBrain, logger)
         state = 0,
         round = 1,
         drawnCard = nil,
-        logger = logger or require("Hanafuda.logger"),
+        logger = logger,
     }
     setmetatable(instance, { __index = this })
     return instance

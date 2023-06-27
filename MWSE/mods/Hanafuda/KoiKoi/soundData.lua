@@ -40,17 +40,6 @@ this.musicData = {
 
 ---@type {[KoiKoi.SoundEffectId] : KoiKoi.SoundData}
 this.soundData = {
-    -- ["1"] = { sound ="",soundPath = "Fx/inter/menu1.wav" },
-    -- ["2"] = { sound ="",soundPath = "Fx/inter/menu2.wav" },
-    -- ["3"] = { sound ="",soundPath = "Fx/inter/menuNEWxbx.wav" },
-    -- ["4"] = { sound ="book close",soundPath = "Fx/item/bookclose.wav" },
-    -- ["5"] = { sound ="book open",soundPath = "Fx/item/bookopen.wav" },
-    -- ["6"] = { sound ="book page",soundPath = "Fx/item/bookpag1.wav" },
-    -- ["7"] = { sound ="book page2",soundPath = "Fx/item/bookpag2.wav" },
-    -- ["8"] = { sound ="Item Clothes Up",soundPath = "Fx/item/cloth.wav" },
-    -- ["9"] = { sound ="Item Misc Up",soundPath = "Fx/item/item.wav" },
-    -- ["10"] = { sound ="Item Gold Up",soundPath = "Fx/item/money.wav" },
-    -- Menu Size
     [this.se.dealCard] = { sound = "book page2" },
     [this.se.putDeck] = { sound = "book close" },
     [this.se.pickCard] = { sound = "book page" },
@@ -60,6 +49,7 @@ this.soundData = {
 ---@class KoiKoi.SoundGenData
 ---@field gen tes3.soundGenType
 
+-- todo require("MNWSE/gentype")
 ---@type {[KoiKoi.VoiceId] : KoiKoi.SoundGenData}
 this.soundGenData = {
     [this.voice.continue] = { gen = tes3.soundGenType.moan },

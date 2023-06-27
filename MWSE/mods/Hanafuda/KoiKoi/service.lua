@@ -1,4 +1,3 @@
-local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
 local config = require("Hanafuda.config")
@@ -57,6 +56,7 @@ local phase = {
 ---@field waitScale number
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(params : KoiKoi.ExitStatus)?
+---@field logger mwseLogger
 ---@field enterFrameCallback fun(e : enterFrameEventData)?
 ---@field debugDumpCallback fun(e : keyDownEventData)?
 local Service = {}
@@ -67,8 +67,9 @@ local Service = {}
 ---@param game KoiKoi.Game
 ---@param view KoiKoi.View
 ---@param onExit fun(params : KoiKoi.ExitStatus)?
+---@param logger mwseLogger
 ---@return KoiKoi.Service
-function Service.new(game, view, onExit)
+function Service.new(game, view, onExit, logger)
     --@type KoiKoi.Service
     local instance = {
         phase = phase.new,
@@ -81,6 +82,7 @@ function Service.new(game, view, onExit)
         waitScale = 1.0,
         lastCommand = nil,
         onExit = onExit,
+        logger = logger,
     }
     setmetatable(instance, { __index = Service })
     return instance
@@ -139,7 +141,7 @@ end
 ---@return KoiKoi.Phase
 function Service.RequestPhase(self, next)
     local n = next or (self.phase + 1)
-    logger:trace("Request Phase %d -> %d", self.phase, n)
+    self.logger:trace("Request Phase %d -> %d", self.phase, n)
     -- self.phase = n
     -- return self.phase
     self.phaseNext = n
@@ -209,7 +211,7 @@ function Service.TransitPhase(self)
             type = timer.real,
             ---@param e mwseTimerCallbackData
             callback = function(e)
-                logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
+                self.logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
                 self.phase = self.phaseNext
             end,
             iterations = 1,
@@ -217,7 +219,7 @@ function Service.TransitPhase(self)
             persist = false,
         })
     else
-        logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
+        self.logger:trace("Transit Phase %d -> %d", self.phase, self.phaseNext)
         self.phase = self.phaseNext
     end
 
@@ -278,7 +280,7 @@ end
 function Service.OnEnterFrame(self, e)
     local state = {
         [phase.initialized] = function()
-            logger:debug("initialized")
+            self.logger:debug("initialized")
             self:RequestPhase(phase.decidingParent)
             local cards = self.game:ChoiceDecidingParentCards(2)
             self.view:CreateDecidingParent(self, cards[1], cards[2])
@@ -287,7 +289,7 @@ function Service.OnEnterFrame(self, e)
             -- wait for input
         end,
         [phase.decidedParent] = function()
-            logger:debug("inform parent %d", self.game.parent)
+            self.logger:debug("inform parent %d", self.game.parent)
             self:RequestPhase(phase.decidedParentWait)
             local cards = self.game.decidingParent
             self.view:InformParent(self.game.parent, self, self.game.decidingParentCardId, cards[1], cards[2])
@@ -443,7 +445,7 @@ function Service.OnEnterFrame(self, e)
                     assert(not self.drawnCard)
                 else
                     -- error
-                    logger:error("wrong command for drawn card")
+                    self.logger:error("wrong command for drawn card")
                 end
 
                 --self:Next()
@@ -548,32 +550,33 @@ end
 ---debugging
 ---@param self KoiKoi.Service
 function Service.DumpData(self)
-    logger:debug("phase       = " .. tostring(self.phase))
-    logger:debug("round       = " .. tostring(self.game.round))
-    logger:debug("parent      = " .. tostring(self.game.parent))
-    logger:debug("current     = " .. tostring(self.game.current))
-    logger:debug("drawn       = " .. tostring(self.drawnCard))
-    logger:debug("you         = %d:{%s}", table.size(self.game.pools[koi.player.you].hand), table.concat(self.game.pools[koi.player.you].hand, ", "))
-    logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.bright]), table.concat(self.game.pools[koi.player.you][card.type.bright], ", "))
-    logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.animal]), table.concat(self.game.pools[koi.player.you][card.type.animal], ", "))
-    logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.ribbon]), table.concat(self.game.pools[koi.player.you][card.type.ribbon], ", "))
-    logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.chaff]), table.concat(self.game.pools[koi.player.you][card.type.chaff], ", "))
-    logger:debug("opponent    = %d:{%s}", table.size(self.game.pools[koi.player.opponent].hand), table.concat(self.game.pools[koi.player.opponent].hand, ", "))
-    logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.bright]), table.concat(self.game.pools[koi.player.opponent][card.type.bright], ", "))
-    logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.animal]), table.concat(self.game.pools[koi.player.opponent][card.type.animal], ", "))
-    logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.ribbon]), table.concat(self.game.pools[koi.player.opponent][card.type.ribbon], ", "))
-    logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.chaff]), table.concat(self.game.pools[koi.player.opponent][card.type.chaff], ", "))
-    logger:debug("ground      = %d:{%s}", table.size(self.game.groundPool), table.concat(self.game.groundPool, ", "))
-    logger:debug("deck        = %d:{%s}", table.size(self.game.deck), table.concat(self.game.deck, ", "))
-    logger:debug("points      = {%s}", table.concat(self.game.points, ", "))
-    logger:debug("calls       = {%s}", table.concat(self.game.calls, ", "))
+    self.logger:debug("phase       = " .. tostring(self.phase))
+    self.logger:debug("round       = " .. tostring(self.game.round))
+    self.logger:debug("parent      = " .. tostring(self.game.parent))
+    self.logger:debug("current     = " .. tostring(self.game.current))
+    self.logger:debug("drawn       = " .. tostring(self.drawnCard))
+    self.logger:debug("you         = %d:{%s}", table.size(self.game.pools[koi.player.you].hand), table.concat(self.game.pools[koi.player.you].hand, ", "))
+    self.logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.bright]), table.concat(self.game.pools[koi.player.you][card.type.bright], ", "))
+    self.logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.animal]), table.concat(self.game.pools[koi.player.you][card.type.animal], ", "))
+    self.logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.ribbon]), table.concat(self.game.pools[koi.player.you][card.type.ribbon], ", "))
+    self.logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.you][card.type.chaff]), table.concat(self.game.pools[koi.player.you][card.type.chaff], ", "))
+    self.logger:debug("opponent    = %d:{%s}", table.size(self.game.pools[koi.player.opponent].hand), table.concat(self.game.pools[koi.player.opponent].hand, ", "))
+    self.logger:debug("     bright = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.bright]), table.concat(self.game.pools[koi.player.opponent][card.type.bright], ", "))
+    self.logger:debug("     animal = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.animal]), table.concat(self.game.pools[koi.player.opponent][card.type.animal], ", "))
+    self.logger:debug("     ribbon = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.ribbon]), table.concat(self.game.pools[koi.player.opponent][card.type.ribbon], ", "))
+    self.logger:debug("      chaff = %d:{%s}", table.size(self.game.pools[koi.player.opponent][card.type.chaff]), table.concat(self.game.pools[koi.player.opponent][card.type.chaff], ", "))
+    self.logger:debug("ground      = %d:{%s}", table.size(self.game.groundPool), table.concat(self.game.groundPool, ", "))
+    self.logger:debug("deck        = %d:{%s}", table.size(self.game.deck), table.concat(self.game.deck, ", "))
+    self.logger:debug("points      = {%s}", table.concat(self.game.points, ", "))
+    self.logger:debug("calls       = {%s}", table.concat(self.game.calls, ", "))
 end
 
 
 ---@param self KoiKoi.Service
 function Service.Initialize(self)
     assert(self.phase == phase.new)
-    logger:debug("Begin Koi-Koi")
+    self.logger:debug("Begin Koi-Koi")
+    -- todo separate event
     assert(not self.enterFrameCallback)
     self.enterFrameCallback = function (e)
         self:OnEnterFrame(e)
@@ -604,7 +607,7 @@ function Service.Destory(self)
         self.debugDumpCallback = nil
     end
     self.view:Shutdown()
-    logger:debug("Finished Koi-Koi")
+    self.logger:debug("Finished Koi-Koi")
 end
 
 ---@param self KoiKoi.Service
@@ -612,7 +615,7 @@ end
 ---@return boolean
 function Service.Exit(self, giveup)
     local winner = self.game:GetGameWinner()
-    logger:debug("Exit Koi-Koi " .. tostring(winner))
+    self.logger:debug("Exit Koi-Koi " .. tostring(winner))
 
     -- callback or event trigger?
     if self.onExit then

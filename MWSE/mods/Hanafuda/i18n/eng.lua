@@ -215,7 +215,7 @@ The number of rounds is usually 3, 6, or 12; 12 comes from the number of months.
     ["koi.view.infoPickGround"] = "Cards in the field cannot be directly captured.",
     ["koi.view.infoDiscard"] = "Can't discard this card. There are cards that can be matched.",
     ["koi.view.infoDraw"] = "Can't draw a card now.",
-    ["koi.view.infoManyCaptured"] = "There were %{count} cards of the same suit on the field, so they were all captured.",
+    ["koi.view.infoManyCaptured"] = "There were %{count} same suits on the field, so they were all captured.",
     ["koi.view.beginTurn"] = "%{name}'s Turn",
     ["koi.view.hand.player"] = "Your hand",
     ["koi.view.hand.opponent"] = "Opponent's hand",

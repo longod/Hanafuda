@@ -92,14 +92,14 @@ ValidateSettings(defaults.settings)
 ---@param settings Config.KoiKoi
 ---@param opponentBrain KoiKoi.IBrain?
 ---@param playerBrain KoiKoi.IBrain?
----@param logger mwseLogger?
+---@param logger mwseLogger
 ---@return KoiKoi.Game
 function KoiKoi.new(settings, opponentBrain, playerBrain, logger)
     ---@type KoiKoi.Game
     local instance = table.deepcopy(defaults)
     instance.settings.houseRule = table.deepcopy(settings.houseRule) -- do not change in game
     instance.settings.round = settings.round
-    instance.logger = logger or require("Hanafuda.logger")
+    instance.logger = logger
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
     instance:SetBrains(opponentBrain, koi.player.opponent)

@@ -162,9 +162,8 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
     })
 
     service = require("Hanafuda.KoiKoi.service").new(
-        require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil),
+        require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil, logger),
         require("Hanafuda.KoiKoi.view").new(player, opponent, config.cardStyle, config.cardBackStyle),
-
         ---@param params KoiKoi.ExitStatus
         function(params)
             -- and maybe need to get points for gambling
@@ -207,7 +206,8 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
                     end
                 end
             end
-        end
+        end,
+        logger
     )
     service:Initialize()
 
