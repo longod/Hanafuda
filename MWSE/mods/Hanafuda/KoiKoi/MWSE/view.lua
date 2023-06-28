@@ -1,9 +1,9 @@
-local uiid = require("Hanafuda.KoiKoi.uiid")
+local uiid = require("Hanafuda.KoiKoi.MWSE.uiid")
 local card = require("Hanafuda.card")
 local sound = require("Hanafuda.KoiKoi.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
-local ui = require("Hanafuda.KoiKoi.ui")
+local ui = require("Hanafuda.KoiKoi.MWSE.ui")
 local assetPackage = require("Hanafuda.cardAsset")
 local config = require("Hanafuda.config")
 local i18n = mwse.loadTranslations("Hanafuda")
@@ -1827,6 +1827,9 @@ function View.CreateInfo(self, parent, service)
     cards.borderAllSides = 0
     combo.borderAllSides = 0
     rule.borderAllSides = 0
+    -- FIXME It can be pressed at the same time other message boxes appear.
+    -- It would be better to pause or limit the circumstances in which it can be pushed more, but there are concerns about the harm that could be done by doing so.
+    -- As long as it is not forced to exit, it should be no problem to close any of the messages.
     exit:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function(e)
@@ -2138,8 +2141,10 @@ function View.Shutdown(self)
     end
 end
 
----@param e enterFrameEventData
-function View:OnEnterFrame(e)
+---@param self KoiKoi.View
+---@param delta number
+---@param timestamp number
+function View.OnEnterFrame(self, delta, timestamp)
     -- follow cursor
     local grab = tes3ui.findHelpLayerMenu(uiid.grabMenu)
     if grab and grab.visible and not grab.disabled then

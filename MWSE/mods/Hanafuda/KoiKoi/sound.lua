@@ -297,7 +297,7 @@ function this.CreateSoundPlayer()
         e:getTopLevelMenu():updateLayout()
     end
 
-    local ui = require("Hanafuda.KoiKoi.ui")
+    local ui = require("Hanafuda.KoiKoi.MWSE.ui")
 
     ---@param e tes3uiElement
     ---@param index integer

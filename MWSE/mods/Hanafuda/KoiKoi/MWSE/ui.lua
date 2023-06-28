@@ -1,7 +1,7 @@
 -- Regardless of the view representation format, this handles UI that can be used in common.
 local this = {}
 
-local uiid = require("Hanafuda.KoiKoi.uiid")
+local uiid = require("Hanafuda.KoiKoi.MWSE.uiid")
 local card = require("Hanafuda.card")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")

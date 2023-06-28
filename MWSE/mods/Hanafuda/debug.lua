@@ -1,7 +1,7 @@
 local config = require("Hanafuda.config")
 
 -- koikoi
-local service = nil ---@type KoiKoi.Service?
+local eventHandler = nil ---@type KoiKoi.EventHandler?
 event.register(tes3.event.keyDown,
 ---@param e keyDownEventData
 function(e)
@@ -9,30 +9,35 @@ function(e)
     if mod then
         return
     end
-    if service then
-        service:Destory()
-        service = nil
-    else
+    if eventHandler then
+        eventHandler:Unregister()
+        eventHandler.service:Destory()
+        eventHandler.service = nil
+        eventHandler = nil
+else
         local logger = require("Hanafuda.logger")
         -- todo need game settings menu
         -- brain, parameters, debug options
-        service = require("Hanafuda.KoiKoi.service").new(
-            require("Hanafuda.KoiKoi.game").new(
-                require("Hanafuda.config").koikoi,
-                require("Hanafuda.KoiKoi.brain.randomBrain").new({ koikoiChance = 0.3, meaninglessDiscardChance = 0.1, waitHand = { s = 1, e = 4}, waitDrawn = { s = 0.5, e = 1.5}, waitCalling = { s = 2, e = 4 } }),
-                nil,
+        eventHandler = require("Hanafuda.KoiKoi.MWSE.event").new(
+            require("Hanafuda.KoiKoi.service").new(
+                require("Hanafuda.KoiKoi.game").new(
+                    require("Hanafuda.config").koikoi,
+                    require("Hanafuda.KoiKoi.brain.randomBrain").new({ koikoiChance = 0.3, meaninglessDiscardChance = 0.1, waitHand = { s = 1, e = 4}, waitDrawn = { s = 0.5, e = 1.5}, waitCalling = { s = 2, e = 4 } }),
+                    nil,
+                    logger
+                ),
+                require("Hanafuda.KoiKoi.MWSE.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
+                function()
+                    if eventHandler then
+                        eventHandler:Destory()
+                        eventHandler = nil
+                    end
+                end,
                 logger
-            ),
-            require("Hanafuda.KoiKoi.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
-            function()
-                if service then
-                    service:Destory()
-                    service = nil
-                end
-            end,
-            logger
+            )
         )
-        service:Initialize()
+        eventHandler.service:Initialize()
+        eventHandler:Register()
     end
 end, {filter = tes3.scanCode.k} )
 

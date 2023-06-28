@@ -57,8 +57,6 @@ local phase = {
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(params : KoiKoi.ExitStatus)?
 ---@field logger mwseLogger
----@field enterFrameCallback fun(e : enterFrameEventData)?
----@field debugDumpCallback fun(e : keyDownEventData)?
 local Service = {}
 
 -- todo debug: hold key skip to deside parent
@@ -273,11 +271,10 @@ function Service.CanPutbackCard(self, cardId, player)
     return false
 end
 
-
----comment
 ---@param self KoiKoi.Service
----@param e enterFrameEventData
-function Service.OnEnterFrame(self, e)
+---@param delta number
+---@param timestamp number
+function Service.OnEnterFrame(self, delta, timestamp)
     local state = {
         [phase.initialized] = function()
             self.logger:debug("initialized")
@@ -365,7 +362,7 @@ function Service.OnEnterFrame(self, e)
                 self:RequestPhase(phase.drawCard)
                 return
             end
-            local command = self.game:Simulate(self.game.current, nil, e.delta, e.timestamp)
+            local command = self.game:Simulate(self.game.current, nil, delta, timestamp)
             if command then
                 -- first flip card
                 self.lastCommand = command
@@ -384,7 +381,7 @@ function Service.OnEnterFrame(self, e)
                 end
             else
                 -- thinking or no brain
-                self.view:ThinkMatchingHand(self.game.current, e.delta);
+                self.view:ThinkMatchingHand(self.game.current, delta);
             end
         end,
         [phase.matchCardFlip] = function()
@@ -428,7 +425,7 @@ function Service.OnEnterFrame(self, e)
             -- waiting...
         end,
         [phase.matchDrawCard] = function()
-            local command = self.game:Simulate(self.game.current, self.drawnCard, e.delta, e.timestamp)
+            local command = self.game:Simulate(self.game.current, self.drawnCard, delta, timestamp)
             if command then
                 -- todo com:Execute()
                 self:RequestPhase(phase.matchDrawCardWait) -- wait for view
@@ -451,7 +448,7 @@ function Service.OnEnterFrame(self, e)
                 --self:Next()
             else
                 -- thinking or no brain
-                self.view:ThinkMatchingDrawn(self.game.current, e.delta)
+                self.view:ThinkMatchingDrawn(self.game.current, delta)
             end
         end,
         [phase.matchDrawCardWait] = function()
@@ -474,17 +471,17 @@ function Service.OnEnterFrame(self, e)
         end,
         [phase.checkComboWait] = function()
             -- wait for pc calling
-            self.view:ThinkCalling(self.game.current, e.delta);
+            self.view:ThinkCalling(self.game.current, delta);
         end,
         [phase.calling] = function()
-            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], e.delta, e.timestamp)
+            local command = self.game:Call(self.game.current, self.game.combinations[self.game.current], delta, timestamp)
             if command then
                 self:RequestPhase(phase.callingWait)
                 self.lastCommand = command
                 local basePoint, multiplier = self.game:CalculateRoundPoint(self.game.current)
                 self.view:ShowCalling(self.game.current, self, command.calling, basePoint * multiplier)
             else
-                self.view:ThinkCalling(self.game.current, e.delta);
+                self.view:ThinkCalling(self.game.current, delta);
             end
         end,
         [phase.callingWait] = function()
@@ -542,7 +539,7 @@ function Service.OnEnterFrame(self, e)
         state[self.phase]()
     end
     -- after?
-    self.view:OnEnterFrame(e)
+    self.view:OnEnterFrame(delta, timestamp)
 
     self:TransitPhase()
 end
@@ -576,18 +573,6 @@ end
 function Service.Initialize(self)
     assert(self.phase == phase.new)
     self.logger:debug("Begin Koi-Koi")
-    -- todo separate event
-    assert(not self.enterFrameCallback)
-    self.enterFrameCallback = function (e)
-        self:OnEnterFrame(e)
-    end
-    event.register(tes3.event.enterFrame, self.enterFrameCallback)
-    if config.development.debug then
-        self.debugDumpCallback = function (e)
-            self:DumpData()
-        end
-        event.register(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
-    end
     self.game:Initialize()
     self.view:Initialize(self)
     self.view:UpdateRound(self.game.round, self.game.settings.round)
@@ -598,14 +583,6 @@ end
 
 ---@param self KoiKoi.Service
 function Service.Destory(self)
-    if self.enterFrameCallback then
-        event.unregister(tes3.event.enterFrame, self.enterFrameCallback)
-        self.enterFrameCallback = nil
-    end
-    if self.debugDumpCallback then
-        event.unregister(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
-        self.debugDumpCallback = nil
-    end
     self.view:Shutdown()
     self.logger:debug("Finished Koi-Koi")
 end

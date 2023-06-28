@@ -342,7 +342,7 @@ function this.Runner()
         end
     end
 
-    local ui = require("Hanafuda.KoiKoi.ui")
+    local ui = require("Hanafuda.KoiKoi.MWSE.ui")
 
     local pane1 = ui.CreateSimpleListBox(nil, p1, brains, function (selectedIndex)
         params.p1.index = selectedIndex

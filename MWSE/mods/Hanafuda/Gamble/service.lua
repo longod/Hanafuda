@@ -9,8 +9,6 @@ local config = require("Hanafuda.config")
 local settings = require("Hanafuda.Gamble.settings")
 local i18n = mwse.loadTranslations("Hanafuda")
 
-local service ---@type KoiKoi.Service?
-
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param conf Config.KoiKoi
@@ -143,6 +141,8 @@ local function ChangeDisposition(player, opponent, disposition)
     return false
 end
 
+local eventHandler ---@type KoiKoi.EventHandler?
+
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param odds integer
@@ -161,55 +161,61 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
         waitCalling = { s = 2, e = 4 },
     })
 
-    service = require("Hanafuda.KoiKoi.service").new(
-        require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil, logger),
-        require("Hanafuda.KoiKoi.view").new(player, opponent, config.cardStyle, config.cardBackStyle),
-        ---@param params KoiKoi.ExitStatus
-        function(params)
-            -- and maybe need to get points for gambling
-            if service then
-                service:Destory()
-                service = nil
-            end
-            local winner = params.winner
-            local pp = params.playerPoint
-            local op = params.opponentPoint
-            if params.conceding ~= nil then
-                if params.conceding == koi.player.you then
-                    -- It's not actually winning, so it might not want to start referring to it for other things.
-                    winner = koi.player.opponent
-                    pp = 0
-                    op = math.max(op, penaltyPoint)
-                else
-                    winner = koi.player.you
-                    pp = math.max(pp, penaltyPoint)
-                    op = 0
+    -- I would like a helper.
+    eventHandler = require("Hanafuda.KoiKoi.MWSE.event").new(
+        require("Hanafuda.KoiKoi.service").new(
+            require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil, logger),
+            require("Hanafuda.KoiKoi.MWSE.view").new(player, opponent, config.cardStyle, config.cardBackStyle),
+            ---@param params KoiKoi.ExitStatus
+            function(params)
+                -- and maybe need to get points for gambling
+                if eventHandler then
+                    eventHandler:Unregister()
+                    eventHandler.service:Destory()
+                    eventHandler.service = nil
+                    eventHandler = nil
                 end
-            end
-            if winner ~= nil and odds > 0 then
-                local expected, actual, insufficient = TradeGold(player, opponent, pp, op, odds, false)
-                -- TODO Use insufficient for debt, etc.
-                logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
-                if expected > 0 then
-                    if insufficient == 0 then
-                        tes3.messageBox(i18n("gamble.collected", {actual = actual}))
+                local winner = params.winner
+                local pp = params.playerPoint
+                local op = params.opponentPoint
+                if params.conceding ~= nil then
+                    if params.conceding == koi.player.you then
+                        -- It's not actually winning, so it might not want to start referring to it for other things.
+                        winner = koi.player.opponent
+                        pp = 0
+                        op = math.max(op, penaltyPoint)
                     else
-                        tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
-                        ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
-                    end
-                elseif expected < 0 then
-                    if insufficient == 0 then
-                        tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
-                    else
-                        tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
-                        ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
+                        winner = koi.player.you
+                        pp = math.max(pp, penaltyPoint)
+                        op = 0
                     end
                 end
-            end
-        end,
-        logger
+                if winner ~= nil and odds > 0 then
+                    local expected, actual, insufficient = TradeGold(player, opponent, pp, op, odds, false)
+                    -- TODO Use insufficient for debt, etc.
+                    logger:debug("trade gold expected=%d, actual=%d, insufficient=%d", expected, actual, insufficient)
+                    if expected > 0 then
+                        if insufficient == 0 then
+                            tes3.messageBox(i18n("gamble.collected", {actual = actual}))
+                        else
+                            tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
+                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
+                        end
+                    elseif expected < 0 then
+                        if insufficient == 0 then
+                            tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
+                        else
+                            tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
+                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
+                        end
+                    end
+                end
+            end,
+            logger
+        )
     )
-    service:Initialize()
+    eventHandler.service:Initialize()
+    eventHandler:Register()
 
 end
 
