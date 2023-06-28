@@ -46,20 +46,6 @@ this.soundData = {
     [this.se.putCard] = { sound = "book page2" },
 }
 
----@class KoiKoi.SoundGenData
----@field gen tes3.soundGenType
-
--- todo require("MNWSE/gentype")
----@type {[KoiKoi.VoiceId] : KoiKoi.SoundGenData}
-this.soundGenData = {
-    [this.voice.continue] = { gen = tes3.soundGenType.moan },
-    [this.voice.finish] = { gen = tes3.soundGenType.roar },
-    [this.voice.loseRound] = { gen = tes3.soundGenType.scream },
-    [this.voice.winGame] = { gen = tes3.soundGenType.roar },
-    [this.voice.think] = { gen = tes3.soundGenType.moan },
-    [this.voice.remind] = { gen = tes3.soundGenType.roar },
-}
-
 -- TODO It would be nice to be able to assign unused assets. This is only for assets that are referenced by esm.
 -- Structures that can distinguish the gender, race, outlander, etc. of the other party are complex and are avoided.
 -- Maybe we should have 2 levels, depending on disposition.

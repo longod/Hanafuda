@@ -121,7 +121,7 @@ end
 ---@param creatureId string?
 ---@return nil
 local function PlaySoundGenerator(id, creatureId)
-    local data = soundData.soundGenData[id]
+    local data = require("Hanafuda.KoiKoi.MWSE.soundGenData").soundGenData[id]
     if creatureId and data then
         local gen = tes3.getSoundGenerator(creatureId, data.gen)
         if gen and gen.sound then

@@ -44,7 +44,12 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
   - runner.lua is also Controller that allows automatic play without input from the player.
 
 #### AI (Brain)
-- TODO
+- Create an instance that inherits from `KoiKoi.IBrain`.
+- Functions:
+  - `Reset`: Used for initialization at the start of the game.
+  - `Simulate`: Thinking to match cards in hand or drawn with cards on the field.
+  - `Call`: When a combo is formed, thinking is whether to continue (Koi-Koi) or end the round (Shobu).
+- Because it is single-threaded, it must return `nil` and continue to the next frame if it takes too long to think about it.
 
 ### Gamble
 - `Hanafuda/Gamble` provides the means to launch Koi-Koi from the world of morrowind.
@@ -72,3 +77,6 @@ I hope you can do it together.
 - Generalize as a card or board game such as framework
 - Other game rules using Hanafuda
 
+## Credit
+- Original card illustration by [MUSKA](https://www.pixiv.net/artworks/47260765)
+- Original background image by [Xero Foxx](https://www.nexusmods.com/morrowind/mods/50973)

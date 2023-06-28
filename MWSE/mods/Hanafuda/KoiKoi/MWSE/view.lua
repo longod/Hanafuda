@@ -1,6 +1,6 @@
 local uiid = require("Hanafuda.KoiKoi.MWSE.uiid")
 local card = require("Hanafuda.card")
-local sound = require("Hanafuda.KoiKoi.sound")
+local sound = require("Hanafuda.KoiKoi.MWSE.sound")
 local logger = require("Hanafuda.logger")
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local ui = require("Hanafuda.KoiKoi.MWSE.ui")
