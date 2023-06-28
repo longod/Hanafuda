@@ -77,6 +77,6 @@ I hope you can do it together.
 - Generalize as a card or board game such as framework
 - Other game rules using Hanafuda
 
-## Credit
+## Credits
 - Original card illustration by [MUSKA](https://www.pixiv.net/artworks/47260765)
 - Original background image by [Xero Foxx](https://www.nexusmods.com/morrowind/mods/50973)

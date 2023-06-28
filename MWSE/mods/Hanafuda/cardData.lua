@@ -1,6 +1,5 @@
 -- define card data, user non configuable.
 local i18n = mwse.loadTranslations("Hanafuda")
-local logger = require("Hanafuda.logger")
 
 local this = {}
 --- month
@@ -122,6 +121,7 @@ local cardBackAsset = { path = defaultCardDir .. "back.dds" }
 function this.SearchCardAssetStyle()
     local styles = {} ---@type string[]
     local dir = dataFiles .. cardDir
+    local logger = require("Hanafuda.logger")
     logger:debug("search styles in '%s'", dir )
     for path in lfs.dir(dir) do
         if not path:startswith(".") then -- '.', '..' and hidden files
@@ -157,6 +157,7 @@ function this.BuildCardAsset(style)
     if not style then
         return assets
     end
+    local logger = require("Hanafuda.logger")
     local styleDir = cardDir .. style  .. "\\"
     local dir = dataFiles .. styleDir
     logger:debug("search files in '%s'", dir )
@@ -183,6 +184,7 @@ function this.BuildCardBackAsset(style)
     if not style then
         return assets
     end
+    local logger = require("Hanafuda.logger")
     local styleDir = cardDir .. style  .. "\\"
     local dir = dataFiles .. styleDir
     logger:debug("search files in '%s'", dir )
