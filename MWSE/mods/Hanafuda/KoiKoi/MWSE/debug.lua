@@ -64,9 +64,9 @@ local function CreateRunner()
     local logger = require("Hanafuda.logger")
 
     local params = {
-        batchSize = 1,
-        iteration = 1,
-        epoch = 1,
+        batchSize = 10,
+        iteration = 10,
+        epoch = 10,
         p1 = { index = 1 },
         p2 = { index = 1 },
     }
@@ -140,6 +140,7 @@ local function CreateRunner()
 
     local dir = "Data Files\\MWSE\\mods\\Hanafuda\\KoiKoi\\brain\\"
     local relative = "Hanafuda.KoiKoi.brain."
+    ---@type string[]
     local brains = {}
     for file in lfs.dir(dir) do
         if not file:startswith(".") and file:endswith(".lua") and file ~= "brain.lua" then
@@ -190,22 +191,51 @@ local function CreateRunner()
         ---@param batch KoiKoi.Runner[]
         ---@param iteration integer
         ---@param epoch integer
+        ---@return KoiKoi.Runner.Stats[]
         local function Run(batch, iteration, epoch)
+            ---@type KoiKoi.Runner.Stats[]
+            local stats = table.new(table.size(batch),0)
             for _, runner in ipairs(batch) do
                 runner:Reset()
                 while runner:Run() do
                 end
-                -- TODO gather result
+                table.insert(stats, runner:GetStats())
             end
+            return stats
         end
 
         local runlogger = require("logging.logger").new({
             name = "Hanafuda.Runner",
-            logLevel = "DEBUG",
+            logLevel = "INFO",
         })
 
         local batch = table.new(params.batchSize, 0)
         local epoch = 1
+        -- flatten layout is better
+        local koi = require("Hanafuda.KoiKoi.koikoi")
+        ---@type KoiKoi.Runner.Stats[][][]
+        local epochStats = table.new(params.epoch, 0)
+        local allResults = {
+            win = {
+                [koi.player.you] = 0,
+                [koi.player.opponent] = 0,
+            },
+            tie = 0,
+        }
+
+        logger:info("batch %d, iterations %d, epoch %d, total %d",
+            params.batchSize,
+            params.iteration,
+            params.epoch,
+            params.batchSize * params.iteration * params.epoch
+        )
+        logger:info("%s, %s, %s, %s",
+            "epoch",
+            brains[params.p1.index],
+            brains[params.p2.index],
+            "tie"
+        )
+
         timer.start({
             type = timer.real,
             ---@param callbackData mwseTimerCallbackData
@@ -229,12 +259,64 @@ local function CreateRunner()
                         runlogger
                     ))
                 end
+
+                ---@type KoiKoi.Runner.Stats[][]
+                local iterationStats = table.new(params.iteration, 0)
                 for iteration = 1, params.iteration do
-                    Run(batch, iteration, epoch)
+                    local stats = Run(batch, iteration, epoch)
+                    table.insert(iterationStats, stats)
                 end
+                table.insert(epochStats, iterationStats)
+
+                local result = {
+                    win = {
+                        [koi.player.you] = 0,
+                        [koi.player.opponent] = 0,
+                    },
+                    tie = 0,
+                }
+
+                for _, batchStats in ipairs(iterationStats) do
+                    for _, stats in ipairs(batchStats) do
+                        if stats.winner then
+                            result.win[stats.winner] = result.win[stats.winner] + 1
+                        else
+                            result.tie = result.tie + 1
+                        end
+                    end
+                end
+
+                allResults.win[koi.player.you] = allResults.win[koi.player.you] + result.win[koi.player.you]
+                allResults.win[koi.player.opponent] = allResults.win[koi.player.opponent] + result.win[koi.player.opponent]
+                allResults.tie = allResults.tie + result.tie
+
+                local numPerEpoch = params.iteration * params.batchSize
+                logger:info("%d, %d (%.1f%%), %d (%.1f%%), %d (%.1f%%)",
+                    epoch,
+                    result.win[koi.player.you], result.win[koi.player.you] / numPerEpoch * 100,
+                    result.win[koi.player.opponent], result.win[koi.player.opponent] / numPerEpoch * 100,
+                    result.tie, result.tie / numPerEpoch * 100
+                 )
+
+                -- end
                 if epoch >= params.epoch then
+
+                    local total = params.epoch * numPerEpoch
+                    logger:info("result: %d (%.1f%%), %d (%.1f%%), %d (%.1f%%)",
+                        allResults.win[koi.player.you], allResults.win[koi.player.you] / total * 100,
+                        allResults.win[koi.player.opponent], allResults.win[koi.player.opponent] / total * 100,
+                        allResults.tie, allResults.tie / total * 100
+                    )
+
                     e.source.disabled = false
                     menu:updateLayout()
+
+                    tes3.messageBox("Done.\n%s, %s\n%d (%.1f%%), %d (%.1f%%), %d (%.1f%%)",
+                        brains[params.p1.index],
+                        brains[params.p2.index],
+                        allResults.win[koi.player.you], allResults.win[koi.player.you] / total * 100,
+                        allResults.win[koi.player.opponent], allResults.win[koi.player.opponent] / total * 100,
+                        allResults.tie, allResults.tie / total * 100)
                 end
                 epoch = epoch + 1
             end,

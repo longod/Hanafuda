@@ -132,6 +132,10 @@ function KoiKoi.Initialize(self)
     end
 end
 
+function KoiKoi.ResetPoints(self)
+    self.points = table.deepcopy(defaults.points)
+end
+
 -- The choice of the parents of the Hanafuda is flawed.
 -- In the case of the same month, it is determined by card point, but there are cases where both players pick chaff. You must keep drawing cards until it is resolved.
 -- That is boring in a video game, so limit the cards to avoid such a situation.

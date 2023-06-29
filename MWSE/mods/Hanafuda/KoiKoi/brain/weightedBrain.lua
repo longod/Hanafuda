@@ -162,6 +162,7 @@ function this.Call(self, p)
     end
 
     local k = math.random() < 0.3 -- todo
+    k = false
     self.logger:trace(k and "koikoi" or "shobu")
     return { calling = k and koi.calling.koikoi or koi.calling.shobu }
 end
