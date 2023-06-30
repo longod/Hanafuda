@@ -106,14 +106,13 @@ function Service.Capture(self, cardId, ground)
         for _, value in ipairs(many) do
             self.game:Capture(self.game.current, value, true, drawn)
         end
-        return many
     else
         self.game:Capture(self.game.current, ground, true, drawn)
     end
     if drawn then
         self.drawnCard = nil
     end
-    return { ground }
+    return many or { ground }
 end
 
 
@@ -434,12 +433,10 @@ function Service.OnEnterFrame(self, delta, timestamp)
                     -- match
                     local caps = self:Capture(command.selectedCard, command.matchedCard)
                     self.view:Capture(self, self.game.current, command.selectedCard, caps, true, self.skipAnimation)
-                    assert(not self.drawnCard)
                 elseif not command.matchedCard then
                     -- discard
                     self.view:Discard(self, self.game.current, command.selectedCard, true, self.skipAnimation)
                     self:Discard(command.selectedCard)
-                    assert(not self.drawnCard)
                 else
                     -- error
                     self.logger:error("wrong command for drawn card")
@@ -454,6 +451,11 @@ function Service.OnEnterFrame(self, delta, timestamp)
         [phase.matchDrawCardWait] = function()
         end,
         [phase.checkCombo] = function()
+            if self.drawnCard ~= nil then
+                self.logger:error("The card drawn is still held internally %d", self.drawnCard)
+                self.drawnCard = nil
+            end
+
             local combo = self.game:CheckCombination(self.game.current)
             if combo then
                 self:RequestPhase(phase.checkComboWait)
