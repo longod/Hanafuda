@@ -26,11 +26,17 @@
 ---@field logger mwseLogger
 local this = {}
 
----@param data table? -- todo class
+---@class KoiKoi.IBrain.Params
+---@field logger mwseLogger?
+
+---@class KoiKoi.IBrain.GenericParams : KoiKoi.IBrain.Params
+---@field numbers number[]
+
+---@param params KoiKoi.IBrain.Params?
 ---@return KoiKoi.IBrain
-function this.new(data)
+function this.new(params)
     ---@type KoiKoi.IBrain
-    local instance = data and table.copy(data) or {}
+    local instance = params and table.copy(params) or {}
     instance.logger = instance.logger or require("Hanafuda.logger")
     setmetatable(instance, { __index = this })
     return instance

@@ -14,7 +14,7 @@ function(e)
         eventHandler.service:Destory()
         eventHandler.service = nil
         eventHandler = nil
-else
+    else
         local logger = require("Hanafuda.logger")
         -- todo need game settings menu
         -- brain, parameters, debug options
@@ -29,7 +29,9 @@ else
                 require("Hanafuda.KoiKoi.MWSE.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
                 function()
                     if eventHandler then
-                        eventHandler:Destory()
+                        eventHandler:Unregister()
+                        eventHandler.service:Destory()
+                        eventHandler.service = nil
                         eventHandler = nil
                     end
                 end,
@@ -67,8 +69,12 @@ local function CreateRunner()
         batchSize = 10,
         iteration = 10,
         epoch = 10,
-        p1 = { index = 1 },
-        p2 = { index = 1 },
+        p1 = { index = 1,
+            numbers = { 0, 0 },
+        },
+        p2 = { index = 1,
+            numbers = { 0, 0 },
+        },
     }
 
     menu = tes3ui.createMenu({ id = menuid, fixedFrame = true })
@@ -130,13 +136,13 @@ local function CreateRunner()
     p1.heightProportional = 1
     p1.autoWidth = true
     p1.autoHeight = true
-    p1.flowDirection = tes3.flowDirection.topToBottom
+    p1.flowDirection = tes3.flowDirection.leftToRight
     local p2 = parent:createBlock()
     p2.widthProportional = 1
     p2.heightProportional = 1
     p2.autoWidth = true
     p2.autoHeight = true
-    p2.flowDirection = tes3.flowDirection.topToBottom
+    p2.flowDirection = tes3.flowDirection.leftToRight
 
     local dir = "Data Files\\MWSE\\mods\\Hanafuda\\KoiKoi\\brain\\"
     local relative = "Hanafuda.KoiKoi.brain."
@@ -155,10 +161,37 @@ local function CreateRunner()
     local pane1 = ui.CreateSimpleListBox(nil, p1, brains, function (selectedIndex)
         params.p1.index = selectedIndex
     end, params.p1.index)
+
+    local o1 = p1:createBlock()
+    o1.widthProportional = 1
+    o1.heightProportional = 1
+    o1.autoWidth = true
+    o1.autoHeight = true
+    o1.flowDirection = tes3.flowDirection.topToBottom
+    o1.paddingBottom = 8
+    for index, value in ipairs(params.p1.numbers) do
+        ui.CreateSimpleSlider(nil, o1, value, function (v)
+            params.p1.numbers[index] = v
+        end)
+    end
+
     local pane2 = ui.CreateSimpleListBox(nil, p2, brains, function (selectedIndex)
         params.p2.index = selectedIndex
     end, params.p2.index)
-    -- todo parameters settings ui
+
+    local o2 = p2:createBlock()
+    o2.widthProportional = 1
+    o2.heightProportional = 1
+    o2.autoWidth = true
+    o2.autoHeight = true
+    o2.flowDirection = tes3.flowDirection.topToBottom
+    o2.paddingBottom = 8
+    for index, value in ipairs(params.p2.numbers) do
+        ui.CreateSimpleSlider(nil, o2, value, function (v)
+            params.p2.numbers[index] = v
+        end)
+    end
+
 
     local footer = parent:createBlock()
     footer.widthProportional = 1
@@ -176,6 +209,7 @@ local function CreateRunner()
     run:register(tes3.uiEvent.mouseClick,
     ---@param e uiEventEventData
     function (e)
+        -- seems its not working well.
         e.source.disabled = true
         menu:updateLayout()
 
@@ -249,13 +283,16 @@ local function CreateRunner()
                 end
                 runlogger:debug("epoch %d", epoch)
                 -- todo use xpcall
-                -- todo need factory or abstraction parameters
                 -- todo custom house rules, no lucky hands
                 table.clear(batch)
+
+                local runner = require("Hanafuda.KoiKoi.runner")
+                local b1 = require(relative .. brains[params.p1.index])
+                local b2 = require(relative .. brains[params.p2.index])
                 for i = 1, params.batchSize do
-                    table.insert(batch, require("Hanafuda.KoiKoi.runner").new(
-                        require(relative .. brains[params.p1.index]).new({logger = runlogger}),
-                        require(relative .. brains[params.p2.index]).new({logger = runlogger}),
+                    table.insert(batch, runner.new(
+                        b1.generate({ logger = runlogger, numbers = params.p1.numbers }),
+                        b2.generate({ logger = runlogger, numbers = params.p2.numbers }),
                         runlogger
                     ))
                 end

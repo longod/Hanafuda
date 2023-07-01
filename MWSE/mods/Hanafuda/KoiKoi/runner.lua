@@ -9,17 +9,17 @@ local card = require("Hanafuda.card")
 ---@field logger mwseLogger
 local this = {}
 
----@param opponentBrain KoiKoi.IBrain
----@param playerBrain KoiKoi.IBrain
+---@param brain1 KoiKoi.IBrain
+---@param brain2 KoiKoi.IBrain
 ---@param logger mwseLogger
 ---@return KoiKoi.Runner
-function this.new(opponentBrain, playerBrain, logger)
+function this.new(brain1, brain2, logger)
     --@type KoiKoi.Runner
     local instance = {
         game = require("Hanafuda.KoiKoi.game").new(
             require("Hanafuda.config").koikoi,
-            opponentBrain,
-            playerBrain,
+            brain2, -- opponent
+            brain1, -- player
             logger
         ),
         state = 0,

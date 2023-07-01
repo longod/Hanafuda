@@ -710,7 +710,7 @@ function this.CreateDeckTooltip(deck)
     return tooltip
 end
 
----@param id string?
+---@param id number|string?
 ---@param parent tes3uiElement
 ---@param texts string[]
 ---@param selectedIndexChanged fun(selectedIndex:integer)?
@@ -760,5 +760,68 @@ function this.CreateSimpleListBox(id, parent, texts, selectedIndexChanged, initi
     return pane, items, selectedIndex
 end
 
+---@param id number|string?
+---@param parent tes3uiElement
+---@param initialValue number
+---@param valueChanged fun(value:number)?
+---@return tes3uiElement
+---@return tes3uiElement
+---@return tes3uiElement
+function this.CreateSimpleSlider(id, parent, initialValue, valueChanged)
+    local resolution = 100
+    local max = 1.0 * resolution
+
+    local format = function(value)
+        return string.format("%.2f", value)
+    end
+
+    local outer = parent:createBlock()
+    outer.widthProportional = 1
+    outer.autoWidth = true
+    outer.autoHeight = true
+    outer.flowDirection = tes3.flowDirection.leftToRight
+    outer.borderAllSides = 0
+    outer.borderLeft = 4
+    outer.borderRight = 4
+    local slider = outer:createSlider({ current = initialValue * resolution, max = max })
+    slider.widthProportional = 1.5
+    slider.autoWidth = true
+    slider.autoHeight = true
+    slider.borderAllSides = 0
+    slider.paddingAllSides = 0
+    slider.borderLeft = 4
+    slider.borderTop = 4
+    local label = outer:createLabel({ text = format(initialValue) }) -- one way
+    label.widthProportional = 0.5
+    label.autoWidth = true
+    label.autoHeight = true
+    label.borderAllSides = 0
+    label.paddingAllSides = 0
+    label.borderLeft = 4
+
+    ---@param e tes3uiEventData
+    local function OnValueChanged(e)
+        local val = (slider.widget.current) / resolution
+        val = math.clamp(val, 0.0, 1.0)
+        label.text = format(val)
+        if valueChanged then
+            valueChanged(val)
+        end
+    end
+
+    for _, child in ipairs(slider.children) do
+        child:register(tes3.uiElementType.mouseClick, OnValueChanged)  -- click, drag
+        child:register(tes3.uiEvent.mouseRelease, OnValueChanged)      -- drag
+        for _, gchild in ipairs(child.children) do
+            gchild:register(tes3.uiEvent.mouseClick, OnValueChanged)   -- click, drag
+            gchild:register(tes3.uiEvent.mouseRelease, OnValueChanged) -- drag
+        end
+    end
+
+    -- need to update only value test?
+    slider:register(tes3.uiEvent.partScrollBarChanged, OnValueChanged)
+
+    return outer, slider, label
+end
 
 return this

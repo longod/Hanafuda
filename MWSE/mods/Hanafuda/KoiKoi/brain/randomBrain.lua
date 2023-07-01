@@ -13,30 +13,39 @@ setmetatable(this, {__index = brain})
 
 local koi = require("Hanafuda.KoiKoi.koikoi")
 
----@class KoiKoi.RandomBrain.Params
----@field logger mwseLogger?
+---@class KoiKoi.RandomBrain.Params : KoiKoi.IBrain.Params
 ---@field koikoiChance number?
 ---@field meaninglessDiscardChance number?
 ---@field waitHand KoiKoi.AI.WaitRange?
 ---@field waitDrawn KoiKoi.AI.WaitRange?
 ---@field waitCalling KoiKoi.AI.WaitRange?
 
----@param params KoiKoi.RandomBrain.Params
+local defaults = {
+    koikoiChance = 0.3,
+    meaninglessDiscardChance = 0,
+    timer = 0,
+}
+
+---@param params KoiKoi.RandomBrain.Params?
 ---@return KoiKoi.RandomBrain
 function this.new(params)
-    local instance = brain.new({
-        logger = params.logger,
-        koikoiChance = params.koikoiChance ~= nil and params.koikoiChance or 0.3,
-        meaninglessDiscardChance = params.meaninglessDiscardChance ~= nil and params.meaninglessDiscardChance or 0,
-        waitHand = params.waitHand,
-        waitDrawn = params.waitDrawn,
-        waitCalling = params.waitCalling,
-        timer = 0,
-        wait = nil,
-    })
+    local instance = brain.new(params)
+    table.copymissing(instance, defaults)
     ---@cast instance KoiKoi.RandomBrain
+    instance.logger:trace("koikoiChance %f", instance.koikoiChance)
+    instance.logger:trace("meaninglessDiscardChance %f", instance.meaninglessDiscardChance)
     setmetatable(instance, { __index = this })
     return instance
+end
+
+---@param params KoiKoi.IBrain.GenericParams
+---@return KoiKoi.RandomBrain
+function this.generate(params)
+    return this.new({
+        logger = params.logger,
+        koikoiChance = params.numbers[1],
+        meaninglessDiscardChance = params.numbers[2],
+    })
 end
 
 ---@param self KoiKoi.RandomBrain

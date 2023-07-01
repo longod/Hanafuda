@@ -58,8 +58,7 @@ local baseWeights = {
     0, -- { suit = data.cardSuit.december,    type = data.cardType.chaff,  symbol = data.cardSymbol.none },
 }
 
----@class KoiKoi.WeightedBrain.Params
----@field logger mwseLogger?
+---@class KoiKoi.WeightedBrain.Params : KoiKoi.IBrain.Params
 
 ---@param params KoiKoi.WeightedBrain.Params?
 ---@return KoiKoi.WeightedBrain
@@ -69,6 +68,12 @@ function this.new(params)
     ---@cast instance KoiKoi.WeightedBrain
     setmetatable(instance, { __index = this })
     return instance
+end
+
+---@param params KoiKoi.IBrain.GenericParams
+---@return KoiKoi.WeightedBrain
+function this.generate(params)
+    return this.new({logger = params.logger})
 end
 
 ---@param self KoiKoi.WeightedBrain

@@ -6,13 +6,19 @@ setmetatable(this, {__index = brain})
 
 local koi = require("Hanafuda.KoiKoi.koikoi")
 
----@param params table?
+---@param params KoiKoi.IBrain.Params?
 ---@return KoiKoi.SimpleBrain
 function this.new(params)
     local instance = brain.new(params)
     ---@cast instance KoiKoi.SimpleBrain
     setmetatable(instance, { __index = this })
     return instance
+end
+
+---@param params KoiKoi.IBrain.GenericParams
+---@return KoiKoi.SimpleBrain
+function this.generate(params)
+    return this.new({logger = params.logger})
 end
 
 ---@param self KoiKoi.SimpleBrain
