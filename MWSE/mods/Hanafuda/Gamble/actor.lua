@@ -424,69 +424,74 @@ function this.GetRefusedReasonText(reason, name)
     return nil -- or fallback text
 end
 
----@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
----@param ability Gamble.Ability
----@return number
-function this.CalculateAbility(mobile, ability)
-    local value = 0
-    local total = 0
-    if ability.attributes then
-        local attributes = mobile.attributes
-        for _, a in ipairs(ability.attributes) do
-            local v = math.remap(attributes[a.attribute + 1].current, a.current.min, a.current.max, a.out.min, a.out.max)
-            value = value + v * a.weight
-            total = total + a.weight
-        end
-    end
-    if mobile.actorType == tes3.actorType.creature then
-        -- no skill
-    else
-        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
-        if ability.skills then
-            local skills = mobile.skills
-            for _, s in ipairs(ability.skills) do
-                local v = math.remap(skills[s.skill + 1].current, s.current.min, s.current.max, s.out.min, s.out.max)
-                value = value + v * s.weight
-                total = total + s.weight
-            end
-        end
-    end
-    if total > 0 then
-        value = value / total -- normalize
-        value = math.clamp(value, 0, 1)
-    end
-    return value
-end
-
 -- fate
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateLucky(mobile)
-    return this.CalculateAbility(mobile, settings.luckyAbility)
+    return settings.CalculateAbility(mobile, settings.luckyAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateCheatAbility(mobile)
-    return this.CalculateAbility(mobile, settings.cheatAbility)
+    return settings.CalculateAbility(mobile, settings.cheatAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateSpotAbility(mobile)
-    return this.CalculateAbility(mobile, settings.spotAbility)
+    return settings.CalculateAbility(mobile, settings.spotAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateGreedy(mobile)
-    return this.CalculateAbility(mobile, settings.greedyAbility)
+    return settings.CalculateAbility(mobile, settings.greedyAbility)
 end
 
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return number
 function this.CalculateGambleAbility(mobile)
-    return this.CalculateAbility(mobile, settings.gambleAbility)
+    return settings.CalculateAbility(mobile, settings.gambleAbility)
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+function this.CalculateBettingAbility(mobile)
+    return settings.CalculateAbility(mobile, settings.bettingAbility)
+end
+
+---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return number
+function this.CalculateBettingOddsModifier(player, opponent)
+    local playerBetting = this.CalculateBettingAbility(player) * settings.bettingModifier -- [0, 1] * mod
+    local opponentBetting = this.CalculateBettingAbility(opponent) * settings.bettingModifier -- [0, 1] * mod
+    local dispositionModifier = 0
+    if opponent.actorType == tes3.actorType.npc then
+        local disposition = math.clamp(opponent.object.disposition, 0, 100)
+        local range = settings.bettingDispositionRange
+        dispositionModifier = math.remap(disposition, range.current.min, range.current.max, range.out.min, range.out.max) -- [-params, params]
+    end
+    local bettingModifier = dispositionModifier + playerBetting - opponentBetting -- [-1, 1] * mod + disposition
+    bettingModifier = 1 + bettingModifier -- roughly [0, 2]
+    bettingModifier = math.max(bettingModifier, 0) -- or clamp
+    logger:trace("playerBetting %f", playerBetting)
+    logger:trace("opponentBetting %f", opponentBetting)
+    logger:trace("dispositionModifier %f", dispositionModifier)
+    logger:debug("Betting Modifier %f", bettingModifier)
+    return bettingModifier
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+function this.GetAIBrain(mobile)
+    local gamble = this.CalculateGambleAbility(mobile)
+    local greedy = this.CalculateGreedy(mobile)
+    logger:debug("gamble %f, greedy %f", gamble, greedy)
+    local params = settings.CalculateRandomBrainParams(gamble, greedy)
+    params.logger = logger
+    local brain = require("Hanafuda.KoiKoi.brain.randomBrain").new(params)
+    return brain
 end
 
 return this

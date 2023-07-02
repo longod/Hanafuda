@@ -20,7 +20,7 @@ do
     unitwind:start("Koi-Koi Gamble Test")
 
     unitwind:test("CalculateAbility Zero", function()
-        local act = require("Hanafuda.Gamble.actor")
+        local settings = require("Hanafuda.Gamble.settings")
         ---@type Gamble.Ability
         local ability = {}
         do
@@ -28,7 +28,7 @@ do
             local mobile = {
                 attributes = Repeat(table.size(tes3.attribute), {current = 0}),
             }
-            unitwind:expect(act.CalculateAbility(mobile, ability)).toBe(0)
+            unitwind:expect(settings.CalculateAbility(mobile, ability)).toBe(0)
         end
         do
             ---@type tes3mobileNPC
@@ -36,7 +36,7 @@ do
                 attributes = Repeat(table.size(tes3.attribute), {current = 0}),
                 skills = Repeat(table.size(tes3.skill), {current = 0}),
             }
-            unitwind:expect(act.CalculateAbility(mobile, ability)).toBe(0)
+            unitwind:expect(settings.CalculateAbility(mobile, ability)).toBe(0)
         end
     end)
 

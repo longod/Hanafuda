@@ -10,9 +10,7 @@ function(e)
         return
     end
     if eventHandler then
-        eventHandler:Unregister()
-        eventHandler.service:Destory()
-        eventHandler.service = nil
+        eventHandler:Destory()
         eventHandler = nil
     else
         local logger = require("Hanafuda.logger")
@@ -29,17 +27,14 @@ function(e)
                 require("Hanafuda.KoiKoi.MWSE.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
                 function()
                     if eventHandler then
-                        eventHandler:Unregister()
-                        eventHandler.service:Destory()
-                        eventHandler.service = nil
+                        eventHandler:Destory()
                         eventHandler = nil
                     end
                 end,
                 logger
             )
         )
-        eventHandler.service:Initialize()
-        eventHandler:Register()
+        eventHandler:Initialize()
     end
 end, {filter = tes3.scanCode.k} )
 
@@ -282,10 +277,9 @@ local function CreateRunner()
                     return
                 end
                 runlogger:debug("epoch %d", epoch)
-                -- todo use xpcall
+
                 -- todo custom house rules, no lucky hands
                 table.clear(batch)
-
                 local runner = require("Hanafuda.KoiKoi.runner")
                 local b1 = require(relative .. brains[params.p1.index])
                 local b2 = require(relative .. brains[params.p2.index])

@@ -34,7 +34,6 @@ function this.Register(self)
         end
         event.register(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
     end
-
 end
 
 ---@param self KoiKoi.EventHandler
@@ -47,6 +46,19 @@ function this.Unregister(self)
         event.unregister(tes3.event.keyDown, self.debugDumpCallback, {filter = tes3.scanCode.d} )
         self.debugDumpCallback = nil
     end
+end
+
+---@param self KoiKoi.EventHandler
+function this.Initialize(self)
+    self.service:Initialize()
+    self:Register()
+end
+
+---@param self KoiKoi.EventHandler
+function this.Destory(self)
+    self:Unregister()
+    self.service:Destory()
+    self.service = nil
 end
 
 

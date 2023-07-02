@@ -103,7 +103,9 @@ local function FindMatchWeighted(cardId, ground, weights)
     return id, max + weights[cardId]
 end
 
-function this.UpdateWeights(self)
+---@param self KoiKoi.WeightedBrain
+---@param p KoiKoi.AI.Params
+function this.UpdateWeights(self, p)
     -- TODO update weights
 end
 
@@ -113,7 +115,7 @@ end
 function this.Simulate(self, p)
     if p.drawnCard then
         local matched = FindMatchWeighted(p.drawnCard, p.groundPool, self.weights)
-        self:UpdateWeights()
+        self:UpdateWeights(p)
         if matched then
             self.logger:trace(string.format("match drawnCard = %d, matchedCard = %d", p.drawnCard, matched))
             return { selectedCard = p.drawnCard, matchedCard = matched }
@@ -142,7 +144,7 @@ function this.Simulate(self, p)
                 end
             end
         end
-        self:UpdateWeights()
+        self:UpdateWeights(p)
         if hand and matched then
             self.logger:trace(string.format("match selectedCard = %d, matchedCard = %d", hand, matched))
             return { selectedCard = hand, matchedCard = matched }

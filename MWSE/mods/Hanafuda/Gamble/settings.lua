@@ -32,6 +32,34 @@ this.fightThreshold = {
 this.dispositionThreshold = {
     base = 30,
 }
+
+this.bettingModifier = 1.0
+this.bettingDispositionRange = {
+    ---@type Gamble.Range
+    current = {
+        min = this.dispositionThreshold.base,
+        max = 100,
+    },
+    ---@type Gamble.Range
+    out = {
+        min = -1.0,
+        max = 1.0,
+    },
+}
+
+---@param gamble number
+---@param greedy number
+---@return KoiKoi.RandomBrain.Params
+function this.CalculateRandomBrainParams(gamble, greedy)
+    return {
+        koikoiChance = math.remap(greedy, 0, 1, 0.2,  0.5),
+        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3,  0.0),
+        waitHand = { s = 1, e = 3 },
+        waitDrawn = { s = 0.5, e = 1.5 },
+        waitCalling = { s = 1.5, e = 3.5 },
+    }
+end
+
 ---@class Gamble.Range
 ---@field min number
 ---@field max number
@@ -52,31 +80,65 @@ this.dispositionThreshold = {
 ---@field attributes Gamble.Attribute[]?
 ---@field skills Gamble.Skill[]?
 
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@param ability Gamble.Ability
+---@return number
+function this.CalculateAbility(mobile, ability)
+    local value = 0
+    local total = 0
+    if ability.attributes then
+        local attributes = mobile.attributes
+        for _, a in ipairs(ability.attributes) do
+            local v = math.remap(attributes[a.attribute + 1].current, a.current.min, a.current.max, a.out.min, a.out.max)
+            value = value + v * a.weight
+            total = total + a.weight
+        end
+    end
+    if mobile.actorType == tes3.actorType.creature then
+        -- no skill
+    else
+        ---@cast mobile tes3mobileNPC|tes3mobilePlayer
+        if ability.skills then
+            local skills = mobile.skills
+            for _, s in ipairs(ability.skills) do
+                local v = math.remap(skills[s.skill + 1].current, s.current.min, s.current.max, s.out.min, s.out.max)
+                value = value + v * s.weight
+                total = total + s.weight
+            end
+        end
+    end
+    if total > 0 then
+        value = value / total -- normalize
+        value = math.clamp(value, 0, 1)
+    end
+    return value
+end
+
 ---@type Gamble.Ability
 this.gambleAbility = {
     attributes = {
         {
             attribute = tes3.attribute.willpower,
-            weight = 1,
+            weight = 1.0,
             current = {
                 min = 30,
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
             attribute = tes3.attribute.intelligence,
-            weight = 1,
+            weight = 1.0,
             current = {
                 min = 30,
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -94,15 +156,15 @@ this.gambleAbility = {
     },
     skills = {
         {
-            skill = tes3.skill.mercantile,
-            weight = 1,
+            skill = tes3.skill.mercantile, -- need gammble skill
+            weight = 0.5,
             current = {
                 min = 0,
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
@@ -114,28 +176,28 @@ this.greedyAbility = {
     attributes = {
         {
             attribute = tes3.attribute.willpower,
-            weight = 1,
-            current = {
-                min = 0,
-                max = 100,
-            },
-            out = {
-                min = 0.9,
-                max = 0.1,
-            },
-        },
-    },
-    skills = {
-        {
-            skill = tes3.skill.mercantile,
             weight = 1.0,
             current = {
                 min = 0,
                 max = 100,
             },
             out = {
-                min = 0.1,
-                max = 0.5,
+                min = 1.0,
+                max = 0.0,
+            },
+        },
+    },
+    skills = {
+        {
+            skill = tes3.skill.mercantile,
+            weight = 0.5,
+            current = {
+                min = 0,
+                max = 100,
+            },
+            out = {
+                min = 1.0,
+                max = 0.0,
             },
         },
     },
@@ -152,8 +214,8 @@ this.cheatAbility = {
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -164,8 +226,8 @@ this.cheatAbility = {
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -176,22 +238,22 @@ this.cheatAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
     skills = {
         {
             skill = tes3.skill.security,
-            weight = 1,
+            weight = 1.0,
             current = {
                 min = 0,
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -202,8 +264,8 @@ this.cheatAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
@@ -220,8 +282,8 @@ this.spotAbility = {
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -232,8 +294,8 @@ this.spotAbility = {
                 max = 150,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
         {
@@ -244,8 +306,8 @@ this.spotAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
@@ -258,8 +320,8 @@ this.spotAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
@@ -277,11 +339,68 @@ this.luckyAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },
     skills = nil,
 }
+
+---@type Gamble.Ability
+this.bettingAbility = {
+    attributes = {
+        {
+            attribute = tes3.attribute.personality,
+            weight = 0.5,
+            current = {
+                min = 0,
+                max = 100,
+            },
+            out = {
+                min = 0.0,
+                max = 1.0,
+            },
+        },
+        {
+            attribute = tes3.attribute.luck,
+            weight = 0.25,
+            current = {
+                min = 0,
+                max = 100,
+            },
+            out = {
+                min = 0.0,
+                max = 1.0,
+            },
+        },
+    },
+    skills = {
+        {
+            skill = tes3.skill.mercantile,
+            weight = 1.0,
+            current = {
+                min = 0,
+                max = 100,
+            },
+            out = {
+                min = 0.0,
+                max = 1.0,
+            },
+        },
+        {
+            skill = tes3.skill.speechcraft,
+            weight = 0.5,
+            current = {
+                min = 0,
+                max = 100,
+            },
+            out = {
+                min = 0.0,
+                max = 1.0,
+            },
+        },
+    },
+}
+
 return this

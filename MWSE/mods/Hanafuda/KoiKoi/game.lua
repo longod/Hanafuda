@@ -32,9 +32,6 @@ local houseRule = require("Hanafuda.KoiKoi.houseRule")
 ---@field logger mwseLogger
 local KoiKoi = {}
 
-
--- todo random seed or random object
-
 ---@type KoiKoi.Game
 local defaults = {
     parent = koi.player.you,
@@ -209,7 +206,6 @@ function KoiKoi.DealInitialCards(self)
     --]]
 
     while table.size(first) < initialCards do
-        -- todo check count
         for i = 1, initialDealEach do
             table.insert(first, card.DealCard(self.deck))
         end

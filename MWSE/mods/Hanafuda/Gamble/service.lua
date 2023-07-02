@@ -13,15 +13,19 @@ local i18n = mwse.loadTranslations("Hanafuda")
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param conf Config.KoiKoi
 local function CalculateBettingSettings(player, opponent, conf)
-    -- todo mercantile, speechcraft, personality, luck, disposition, faction reaction
     local playerGold = act.GetActorGold(player)
     local opponentGold = act.GetActorGold(opponent)
     logger:debug("Player money " .. tostring(playerGold))
-    logger:debug("NPC money " .. tostring(opponentGold ))
+    logger:debug("NPC money " .. tostring(opponentGold))
 
     -- Allow odds if there is some amount of payment on both sides.
     local gold = math.min(playerGold, opponentGold)
-    local metric = math.ceil(gold / (settings.penaltyPointPerRound * settings.GetMultiplierFactorByHouseRule(config.koikoi.houseRule.multiplier) * conf.round)) -- average points per round... no evidence!
+    local bettingModifier = act.CalculateBettingOddsModifier(player, opponent)
+    local metric = gold / (settings.penaltyPointPerRound * settings.GetMultiplierFactorByHouseRule(config.koikoi.houseRule.multiplier) * conf.round) -- average points per round... no evidence!
+    metric = metric * bettingModifier
+    metric = math.ceil(math.max(metric, 0))
+    logger:debug("Betting Metric %f", metric)
+
     local enables = {}
     for _, value in ipairs(settings.oddsList) do
         local enable = value <= metric
@@ -107,6 +111,7 @@ local function CalculateDispositionByInsufficient(expected, actual, insufficient
     if insufficient == 0 or expected == 0 or odds == 0 then
         return 0
     end
+    -- affect personality, luck reputation, speechcraft?
     -- The more insufficient money and the higher the odds, the more likely it is to change.
     local ratio = (insufficient / expected) -- relative
     -- ratio = insufficient * 0.3 -- absolute
@@ -137,7 +142,7 @@ local function ChangeDisposition(player, opponent, disposition)
         logger:debug("disposition changed %d", disposition)
         return true
     end
-    -- error
+    -- creature
     return false
 end
 
@@ -148,18 +153,7 @@ local eventHandler ---@type KoiKoi.EventHandler?
 ---@param odds integer
 ---@param penaltyPoint integer
 local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
-    local gamble = act.CalculateGambleAbility(opponent)
-    local greedy = act.CalculateGreedy(opponent)
-    logger:debug("gamble %f, greedy %f", gamble, greedy)
-
-    -- todo choice brain depends on actor stats
-    local brain = require("Hanafuda.KoiKoi.brain.randomBrain").new({
-        koikoiChance = math.remap(greedy, 0, 1, 0.2,  0.7), -- temp
-        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3,  0.0), -- temp
-        waitHand = { s = 1, e = 4 },
-        waitDrawn = { s = 0.5, e = 1.5 },
-        waitCalling = { s = 2, e = 4 },
-    })
+    local brain = act.GetAIBrain(opponent)
 
     -- I would like a helper.
     eventHandler = require("Hanafuda.KoiKoi.MWSE.event").new(
@@ -170,9 +164,7 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
             function(params)
                 -- and maybe need to get points for gambling
                 if eventHandler then
-                    eventHandler:Unregister()
-                    eventHandler.service:Destory()
-                    eventHandler.service = nil
+                    eventHandler:Destory()
                     eventHandler = nil
                 end
                 local winner = params.winner
@@ -199,14 +191,14 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
                             tes3.messageBox(i18n("gamble.collected", {actual = actual}))
                         else
                             tes3.messageBox(i18n("gamble.collectedInsufficient", {expected = expected, actual = actual}))
-                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
+                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected, actual, insufficient, odds))
                         end
                     elseif expected < 0 then
                         if insufficient == 0 then
                             tes3.messageBox(i18n("gamble.paid", {actual = -actual}))
                         else
                             tes3.messageBox(i18n("gamble.paidInsufficient", {expected = -expected, actual = -actual}))
-                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected,actual, insufficient, odds))
+                            ChangeDisposition(player, opponent, CalculateDispositionByInsufficient(expected, actual, insufficient, odds))
                         end
                     end
                 end
@@ -214,11 +206,8 @@ local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
             logger
         )
     )
-    eventHandler.service:Initialize()
-    eventHandler:Register()
-
+    eventHandler:Initialize()
 end
-
 
 ---@param e uiEventEventData
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
