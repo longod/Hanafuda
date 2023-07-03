@@ -86,16 +86,16 @@ local function ValidateSettings(settings)
 end
 ValidateSettings(defaults.settings)
 
----@param settings Config.KoiKoi
+---@param rule Config.KoiKoi
 ---@param opponentBrain KoiKoi.IBrain?
 ---@param playerBrain KoiKoi.IBrain?
 ---@param logger mwseLogger
 ---@return KoiKoi.Game
-function KoiKoi.new(settings, opponentBrain, playerBrain, logger)
+function KoiKoi.new(rule, opponentBrain, playerBrain, logger)
     ---@type KoiKoi.Game
     local instance = table.deepcopy(defaults)
-    instance.settings.houseRule = table.deepcopy(settings.houseRule) -- do not change in game
-    instance.settings.round = settings.round
+    instance.settings.houseRule = table.deepcopy(rule.houseRule) -- do not change in game
+    instance.settings.round = rule.round
     instance.logger = logger
     ValidateSettings(instance.settings)
     setmetatable(instance, { __index = KoiKoi })
@@ -259,6 +259,50 @@ function KoiKoi.CheckLuckyHands(self, player)
 end
 
 ---@param self KoiKoi.Game
+---@return boolean luckyhands
+---@return KoiKoi.Player? winner
+---@return { [KoiKoi.Player] : {[KoiKoi.LuckyHands] : integer}? } combo
+---@return { [KoiKoi.Player] : integer } point
+function KoiKoi.CheckLuckyHandsEach(self)
+    local lh0, total0 = self:CheckLuckyHands(koi.player.you)
+    local lh1, total1 = self:CheckLuckyHands(koi.player.opponent)
+
+    -- test data
+    --[[
+    lh0 = {
+        [koi.luckyHands.fourOfAKind] = 6,
+        [koi.luckyHands.fourPairs] = 6,
+    }
+    total0 = 12
+    --]]
+    --[[
+    lh1 = {
+        --[koi.luckyHands.fourOfAKind] = 6,
+        [koi.luckyHands.fourPairs] = 6,
+    }
+    total1 = 6
+    --]]
+
+    local lh = {[koi.player.you] = lh0, [koi.player.opponent] = lh1}
+    local points = {[koi.player.you] = total0, [koi.player.opponent] = total1}
+
+    local accept = false
+    local tie = lh0 ~= nil and lh1 ~= nil
+    local winner = nil
+    if lh0 or lh1 then
+        accept = true
+        if not tie then
+            if lh0 then
+                winner = koi.player.you
+            else
+                winner = koi.player.opponent
+            end
+        end
+    end
+    return accept, winner, lh, points
+end
+
+---@param self KoiKoi.Game
 ---@return integer?
 function KoiKoi.DrawCard(self)
     return card.DealCard(self.deck)
@@ -291,13 +335,12 @@ end
 
 ---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
----@param combination { [KoiKoi.CombinationType] : integer }
+---@param combinations { [KoiKoi.CombinationType] : integer }
 ---@param deltaTime number
 ---@param timestamp number
 ---@return KoiKoi.CallCommand?
-function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
+function KoiKoi.Call(self, player, combinations, deltaTime, timestamp)
     if self.brains[player] then
-        -- todo this is temp parameter
         ---@type KoiKoi.AI.Params
         local params = {
             deltaTime = deltaTime,
@@ -307,7 +350,7 @@ function KoiKoi.Call(self, player, combination, deltaTime, timestamp)
             opponentPool = self.pools[koi.GetOpponent(player)],
             groundPool = self.groundPool,
             deck = self.deck,
-            combination = combination,
+            combination = combinations,
         }
         local command = self.brains[player]:Call(params)
         return command
@@ -327,7 +370,12 @@ end
 ---@param targetId integer
 ---@return boolean
 function KoiKoi.CanMatch(self, cardId, targetId)
-    -- todo check is in ground?
+    if table.find(self.groundPool, cardId) then
+        self.logger:error("%d find in ground. it must not be", cardId)
+    end
+    if not table.find(self.groundPool, targetId) then
+        self.logger:error("%d does not find in ground.", cardId)
+    end
     return koi.CanMatchSuit(cardId, targetId)
 end
 
@@ -394,8 +442,8 @@ end
 ---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param cardId integer?
----@param ground boolean -- todo smartway
----@param drawn boolean -- todo smartway
+---@param ground boolean
+---@param drawn boolean
 function KoiKoi.Capture(self, player, cardId, ground, drawn)
     if cardId then
         local pool = self.pools[player]
@@ -404,12 +452,16 @@ function KoiKoi.Capture(self, player, cardId, ground, drawn)
             self.logger:trace("captured then removeing from ground ".. tostring(cardId))
             -- self.logger:trace(table.concat(self.groundPool, ", "))
             local removed = table.removevalue(self.groundPool, cardId)
-            assert(removed)
+            if not removed then
+                self.logger:error("not found in ground")
+            end
         elseif not drawn then
             self.logger:trace("captured then removeing from hand ".. tostring(cardId))
             -- self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
-            assert(removed)
+            if not removed then
+                self.logger:error("not found in hand")
+            end
         end
         return true
     end
@@ -419,7 +471,7 @@ end
 ---@param self KoiKoi.Game
 ---@param player KoiKoi.Player
 ---@param cardId integer?
----@param drawn boolean -- todo smartway
+---@param drawn boolean
 function KoiKoi.Discard(self, player, cardId, drawn)
     if cardId then
         if not drawn then
@@ -427,7 +479,9 @@ function KoiKoi.Discard(self, player, cardId, drawn)
             self.logger:trace("removeing ".. tostring(cardId))
             -- self.logger:trace(table.concat(pool.hand, ", "))
             local removed = table.removevalue(pool.hand, cardId)
-            assert(removed)
+            if not removed then
+                self.logger:error("not found in hand")
+            end
         end
         table.insert(self.groundPool, cardId)
         return true

@@ -30,7 +30,7 @@ this.fightThreshold = {
     base = 70,
 }
 this.dispositionThreshold = {
-    base = 30,
+    base = 20,
 }
 
 this.bettingModifier = 1.0

@@ -312,36 +312,11 @@ function Service.OnEnterFrame(self, delta, timestamp)
             -- wait for view
         end,
         [phase.checkLuckyHands] = function()
-            local lh0, total0 = self.game:CheckLuckyHands(koi.player.you)
-            local lh1, total1 = self.game:CheckLuckyHands(koi.player.opponent)
-            -- test data
-            -- lh0 = {
-            --     [koi.luckyHands.fourOfAKind] = 6,
-            --     [koi.luckyHands.fourPairs] = 6,
-            -- }
-            -- total0 = 12
-            -- lh1 = {
-            --     --[koi.luckyHands.fourOfAKind] = 6,
-            --     [koi.luckyHands.fourPairs] = 6,
-            -- }
-            -- total1 = 6
-
-            -- todo in game?
-            if lh0 or lh1 then
+            local accept, winner, lh, points = self.game:CheckLuckyHandsEach()
+            if accept then
                 self:RequestPhase(phase.luckyHandsWait)
-                local tie = lh0 ~= nil and lh1 ~= nil
-                local winner = nil
-                if not tie then
-                    if lh0 then
-                        winner = koi.player.you
-                    else
-                        winner = koi.player.opponent
-                    end
-                end
-
-                local points = {[koi.player.you] = total0, [koi.player.opponent] = total1}
-                self.view:ShowLuckyHands({[koi.player.you] = lh0, [koi.player.opponent] = lh1}, points, winner, self)
-                if not tie then
+                self.view:ShowLuckyHands(lh, points, winner, self)
+                if winner then -- not tie
                     -- No transition to win, so we settle here.
                     self.game:SetRoundWinnerByLuckyHands(winner, points[winner])
                     self.view:UpdateScorePoint(winner, self.game.points[winner])
@@ -365,16 +340,9 @@ function Service.OnEnterFrame(self, delta, timestamp)
             if command then
                 -- first flip card
                 self.lastCommand = command
-                -- todo com:Execute()
                 if command.selectedCard then
                     self:RequestPhase(phase.matchCardFlip) -- wait for view
                     self.view:Flip(self, self.game.current, command.selectedCard, self.skipAnimation)
-
-                    if command.matchedCard then
-                        -- match
-                    else
-                        -- discard
-                    end
                 else
                     -- error?
                 end
@@ -389,6 +357,7 @@ function Service.OnEnterFrame(self, delta, timestamp)
         [phase.matchCardFlipWait] = function()
             if self.lastCommand then
                 local command = self.lastCommand ---@cast command KoiKoi.MatchCommand
+                -- todo com:Execute()
                 if command.selectedCard then
                     self:RequestPhase(phase.matchCardWait) -- wait for view
 
@@ -441,8 +410,6 @@ function Service.OnEnterFrame(self, delta, timestamp)
                     -- error
                     self.logger:error("wrong command for drawn card")
                 end
-
-                --self:Next()
             else
                 -- thinking or no brain
                 self.view:ThinkMatchingDrawn(self.game.current, delta)
@@ -491,7 +458,6 @@ function Service.OnEnterFrame(self, delta, timestamp)
         end,
         [phase.endTurn] = function()
             if self.game:CheckEnd() then
-                -- TODO test
                 self:RequestPhase(phase.noMatch)
             else
                 self.game:SwapPlayer()
@@ -501,7 +467,7 @@ function Service.OnEnterFrame(self, delta, timestamp)
         [phase.noMatch] = function()
             self:RequestPhase(phase.roundResultWait)
             self.view:ShowNoMatch(self.game.parent, self)
-            -- TODO draw or parent win (house rule)
+            -- TODO tie or parent win (house rule)
         end,
         [phase.win] = function()
             self:RequestPhase(phase.roundResultWait)
@@ -649,14 +615,14 @@ end
 ---@param self KoiKoi.Service
 function Service.NotifyMatchedCards(self)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- fixme bad conditions
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 
 ---@param self KoiKoi.Service
 function Service.NotifyDiscardCard(self)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait -- fixme bad conditions
+    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait
     self:RequestPhase(match and phase.drawCard or phase.checkCombo)
 end
 

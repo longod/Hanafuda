@@ -147,7 +147,7 @@ If both players hold lucky hands, this round is a tie and no score.]],
     ["koi.help.rule.turn.match.header"] = "Matching from the Hand",
     ["koi.help.rule.turn.match.description"] =
 [[Select a card from the hand, choose a card in the field with a matching suit, and capture them.
-Or discard the unmatched card from the hand to the field.
+Or discard the unmatched card from the hand to the field. If three same suits are on the field, all of them can be captured.
 If there is even one matching card in the field, it cannot be discarded and must be matched to be captured.
 If the palyer have a matching card in the hand, the player can still choose another unmatched card to discard, but without much benefit.]],
     ["koi.help.rule.turn.draw.header"] = "Matching with Drawn Card",

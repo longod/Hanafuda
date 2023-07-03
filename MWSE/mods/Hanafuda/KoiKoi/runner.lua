@@ -9,15 +9,16 @@ local card = require("Hanafuda.card")
 ---@field logger mwseLogger
 local this = {}
 
+---@param rule Config.KoiKoi
 ---@param brain1 KoiKoi.IBrain
 ---@param brain2 KoiKoi.IBrain
 ---@param logger mwseLogger
 ---@return KoiKoi.Runner
-function this.new(brain1, brain2, logger)
+function this.new(rule, brain1, brain2, logger)
     --@type KoiKoi.Runner
     local instance = {
         game = require("Hanafuda.KoiKoi.game").new(
-            require("Hanafuda.config").koikoi,
+            rule,
             brain2, -- opponent
             brain1, -- player
             logger
@@ -99,25 +100,14 @@ function this.Run(self)
                 self.game:DealInitialCards()
             end
 
-            local lh0, total0 = self.game:CheckLuckyHands(koi.player.you)
-            local lh1, total1 = self.game:CheckLuckyHands(koi.player.opponent)
-
-            -- todo in game?
-            if lh0 or lh1 then
-                local tie = lh0 ~= nil and lh1 ~= nil
-                local winner = nil
-                if not tie then
-                    if lh0 then
-                        winner = koi.player.you
-                    else
-                        winner = koi.player.opponent
-                    end
-                end
-                local points = {[koi.player.you] = total0, [koi.player.opponent] = total1}
-                if not tie then
+            local accept, winner, lh, points = self.game:CheckLuckyHandsEach()
+            if accept then
+                if winner then -- not tie
                     -- No transition to win, so we settle here.
                     self.game:SetRoundWinnerByLuckyHands(winner, points[winner])
-                    self:Next(99)
+                    self:Next(99) -- win
+                else
+                    self:Next(100) -- no game
                 end
             else
                 self:Next()

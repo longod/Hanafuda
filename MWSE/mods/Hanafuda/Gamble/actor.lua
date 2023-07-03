@@ -239,9 +239,9 @@ end
 ---@param opponent tes3mobileCreature|tes3mobileNPC
 ---@return boolean
 local function CanPerformServiceByFight(player, opponent)
+    -- May be varied by any factor. 30~80
     local baseFight = settings.fightThreshold.base
     local threshold = baseFight
-    -- todo Varying thresholds based on faction and other affinities with the player.
     return opponent.fight <= threshold
 end
 
@@ -249,9 +249,9 @@ end
 ---@param opponent tes3mobileNPC
 ---@return boolean
 local function CanPerformServiceByDisposition(player, opponent)
+    -- May be varied by any factor.
     local baseDisposition = settings.dispositionThreshold.base
     local threshold = baseDisposition
-    -- todo Varying thresholds based on faction and other affinities with the player.
     return opponent.object.disposition >= threshold
 end
 

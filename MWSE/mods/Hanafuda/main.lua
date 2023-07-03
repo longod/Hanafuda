@@ -21,5 +21,5 @@ if config.development.unittest then
     require("Hanafuda.Gamble.test")
 end
 
---- HACK Since the annotation are not defined in MWSE, this is to supress the warning caused by this.
+--- Since the annotation are not defined in MWSE, this is to supress the warning caused by this.
 --- @class tes3scriptVariables

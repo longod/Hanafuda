@@ -265,6 +265,10 @@ local function CreateRunner()
             "tie"
         )
 
+        -- set custom rules
+        local rule = require("Hanafuda.settings").Default().koikoi
+        rule.houseRule.luckyHands = false
+
         timer.start({
             type = timer.real,
             ---@param callbackData mwseTimerCallbackData
@@ -278,13 +282,13 @@ local function CreateRunner()
                 end
                 runlogger:debug("epoch %d", epoch)
 
-                -- todo custom house rules, no lucky hands
                 table.clear(batch)
                 local runner = require("Hanafuda.KoiKoi.runner")
                 local b1 = require(relative .. brains[params.p1.index])
                 local b2 = require(relative .. brains[params.p2.index])
                 for i = 1, params.batchSize do
                     table.insert(batch, runner.new(
+                        rule,
                         b1.generate({ logger = runlogger, numbers = params.p1.numbers }),
                         b2.generate({ logger = runlogger, numbers = params.p2.numbers }),
                         runlogger

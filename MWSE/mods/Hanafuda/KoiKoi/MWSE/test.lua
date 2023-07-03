@@ -170,6 +170,7 @@ do
     unitwind:test("Run Game", function()
         unitwind:expect(function()
             local runner = require("Hanafuda.KoiKoi.runner").new(
+                require("Hanafuda.settings").Default().koikoi,
                 require("Hanafuda.KoiKoi.brain.randomBrain").new({ koikoiChance = 0.3, meaninglessDiscardChance = 0.1}),
                 require("Hanafuda.KoiKoi.brain.simpleBrain").new(),
                 logger

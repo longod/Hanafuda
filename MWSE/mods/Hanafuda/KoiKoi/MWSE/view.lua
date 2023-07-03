@@ -297,8 +297,6 @@ local function GrabCard(element)
     grab.positionX = x
     grab.positionY = y
 
-    -- TODO lock captureable overlay hints
-
     grab:updateLayout()
     root:updateLayout()
     return true
@@ -317,8 +315,6 @@ local function ReleaseGrabedCard(to)
     local root = to:getTopLevelMenu()
     local moved = grab.children[1]:move({ to = to}) -- currently just one child.
     -- unregister events?
-
-    -- TODO unlock captureable overlay hints
 
     grab:updateLayout()
     root:updateLayout()
@@ -448,6 +444,9 @@ function View.ShowResult(self, service, player, points)
             sound.PlayMusic(sound.music.lose)
         end
         self:PlayVoice(sound.voice.winGame, player)
+    else -- tie
+        -- todo more better voice if exists
+        self:PlayVoice(sound.voice.remind, (math.random() < 0.5) and koi.player.you or koi.player.opponent )
     end
 
     local message = i18n("koi.view.gameResult", { name = self.names[koi.player.you], count = points[koi.player.you]}) .. "\n" ..
@@ -717,8 +716,6 @@ function View.ShowCallingDialog(self, player, service, combo, basePoint, multipl
     CreateSummaryCombinationList(parent, self.asset, combo)
     gameMenu:updateLayout()
 end
-
--- todo need driver for test
 
 ---@param self KoiKoi.View
 ---@param player KoiKoi.Player
@@ -1337,7 +1334,7 @@ end
 function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
     -- flip cards
     local tie = winner == nil
-    if not tie and winner == koi.player.opponent then
+    if tie or winner == koi.player.opponent then
         local gameMenu = tes3ui.findMenu(uiid.gameMenu)
         assert(gameMenu)
         --local ph = gameMenu:findChild(uiid.playerHand)
@@ -1350,8 +1347,11 @@ function View.ShowLuckyHands(self, luckyHands, totalPoints, winner, service)
         end
         sound.Play(sound.se.putCard)
     end
+    -- todo more better voice if exists
     if winner ~= nil then
-        self:PlayVoice(sound.voice.remind, winner) -- todo more better voice
+        self:PlayVoice(sound.voice.remind, winner)
+    else -- tie
+        self:PlayVoice(sound.voice.remind, (math.random() < 0.5) and koi.player.you or koi.player.opponent )
     end
 
     tes3ui.showMessageMenu({
