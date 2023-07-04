@@ -32,8 +32,7 @@ function this.new(params)
     local instance = brain.new(params)
     table.copymissing(instance, defaults)
     ---@cast instance KoiKoi.RandomBrain
-    instance.logger:trace("koikoiChance %f", instance.koikoiChance)
-    instance.logger:trace("meaninglessDiscardChance %f", instance.meaninglessDiscardChance)
+    instance.logger:debug("koikoiChance %f, meaninglessDiscardChance %f", instance.koikoiChance, instance.meaninglessDiscardChance)
     setmetatable(instance, { __index = this })
     return instance
 end

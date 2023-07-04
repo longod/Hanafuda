@@ -72,7 +72,7 @@ this.voiceData = {
                 "vo\\a\\f\\Hlo_AF057.mp3", --	Fresh game.
                 "vo\\a\\f\\Hlo_AF079.mp3", --	It looks unwell, unhealthy...
                 "vo\\a\\f\\Hlo_AF104.mp3", --	It looks unwell, unhealthy...
-                "vo\\a\\f\\Hlo_AF131.mp3", --	You are unwell, friend.
+                -- "vo\\a\\f\\Hlo_AF131.mp3", --	You are unwell, friend.
             },
             [this.voice.loseRound] = {
                 "vo\\a\\f\\Fle_AF002.mp3", --	Stop!
@@ -93,9 +93,9 @@ this.voiceData = {
                 "vo\\a\\f\\Hit_AF014.mp3", --	Hiss.
                 "vo\\a\\f\\Hlo_AF024.mp3",	--	Return to me no more.
                 "vo\\a\\f\\Hlo_AF025.mp3", --	Unwelcome it is.
-                "vo\\a\\f\\Hlo_AF026.mp3", --	Don't bother me.
-                "vo\\a\\f\\Hlo_AF028.mp3", --	Leave me.
-                "vo\\a\\f\\Hlo_AF029.mp3", --	Go away, wretch.
+                -- "vo\\a\\f\\Hlo_AF026.mp3", --	Don't bother me.
+                -- "vo\\a\\f\\Hlo_AF028.mp3", --	Leave me.
+                -- "vo\\a\\f\\Hlo_AF029.mp3", --	Go away, wretch.
             },
             [this.voice.winGame] = {
                 "vo\\a\\f\\Hlo_AF071.mp3", --	Excuse me, sera.
@@ -122,7 +122,7 @@ this.voiceData = {
                 "vo\\a\\f\\Hlo_AF083.mp3", --	Yes?
                 "vo\\a\\f\\Hlo_AF109.mp3", --	Share your thoughts.
                 "vo\\a\\f\\Hlo_AF111.mp3", --	It wants something. What does it ask?
-                "vo\\a\\f\\Hlo_AF132.mp3",	--	We work hard for you. Ease your burden.
+                -- "vo\\a\\f\\Hlo_AF132.mp3",	--	We work hard for you. Ease your burden.
                 "vo\\a\\f\\Idl_AF008.mp3", --	Click, click, click.
             },
         },
@@ -173,9 +173,9 @@ this.voiceData = {
                 "vo\\a\\m\\Hlo_AM022.mp3",	--	Be gone!
                 "vo\\a\\m\\Hlo_AM024.mp3",	--	Return to me no more.
                 "vo\\a\\m\\Hlo_AM025.mp3",	--	Unwelcome it is.
-                "vo\\a\\m\\Hlo_AM026.mp3",	--	Don't bother me.
-                "vo\\a\\m\\Hlo_AM028.mp3",	--	Leave me.
-                "vo\\a\\m\\Hlo_AM029.mp3",	--	Go away, stranger.
+                -- "vo\\a\\m\\Hlo_AM026.mp3",	--	Don't bother me.
+                -- "vo\\a\\m\\Hlo_AM028.mp3",	--	Leave me.
+                -- "vo\\a\\m\\Hlo_AM029.mp3",	--	Go away, stranger.
             },
             [this.voice.winGame] = {
                 "vo\\a\\m\\Hlo_AM135.mp3",  --	Blessed we are.
@@ -204,7 +204,7 @@ this.voiceData = {
                 "vo\\a\\m\\Hlo_AM089.mp3",  --	What is it? What do you want?
                 "vo\\a\\m\\Hlo_AM109.mp3",  --	Share your thoughts, friend.
                 "vo\\a\\m\\Hlo_AM111.mp3",  --	It wants something. What does it ask?
-                "vo\\a\\m\\Hlo_AM132.mp3",  --	We work hard for you. Ease your burden.
+                -- "vo\\a\\m\\Hlo_AM132.mp3",  --	We work hard for you. Ease your burden.
                 "vo\\a\\m\\Hlo_AM139.mp3",  --	Hiss!
                 "vo\\a\\m\\Idl_AM002.mp3",  --	Small fork on outside, or is it inside....
             },
@@ -220,8 +220,8 @@ this.voiceData = {
                 "vo\\b\\f\\Atk_BF010.mp3",	--	Come on, fight!
                 "vo\\b\\f\\Hlo_BF086.mp3",	--	Go ahead, I'm listening.
                 "vo\\b\\f\\Hlo_BF088.mp3",	--	I'm listening, please, go ahead.
-                "vo\\b\\f\\Hlo_BF134.mp3",	--	Go ahead, please. Tell me about yourself.
-                "vo\\b\\f\\Hlo_BF136.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
+                -- "vo\\b\\f\\Hlo_BF134.mp3",	--	Go ahead, please. Tell me about yourself.
+                -- "vo\\b\\f\\Hlo_BF136.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
             },
             [this.voice.finish] = {
                 "vo\\b\\f\\Atk_BF001.mp3",	--	Ha-ha!
@@ -253,7 +253,7 @@ this.voiceData = {
                 "vo\\b\\f\\Hit_BF013.mp3",	--	Hiss.
                 "vo\\b\\f\\Hit_BF014.mp3",	--	Hiss.
                 "vo\\b\\f\\Hit_BF015.mp3",	--	Hiss.
-                "vo\\b\\f\\Hlo_BF000e.mp3",	--	Get out of here!
+                -- "vo\\b\\f\\Hlo_BF000e.mp3",	--	Get out of here!
                 "vo\\b\\f\\Hlo_BF014.mp3",	--	You're positively revolting.
                 "vo\\b\\f\\Hlo_BF022.mp3",	--	This is most unsettling. Leave me.
             },
@@ -285,20 +285,20 @@ this.voiceData = {
             [this.voice.remind] = {
                 "vo\\b\\f\\Hlo_BF027.mp3",	--	Don't press your luck.
                 -- "vo\\b\\f\\Hlo_BF030.mp3",	--	Be quick about this or find someone else to talk to.
-                -- "vo\\b\\f\\Hlo_BF041.mp3",	--	What say you?
-                -- "vo\\b\\f\\Hlo_BF054.mp3",	--	I haven't much time, so be quick about this.
+                "vo\\b\\f\\Hlo_BF041.mp3",	--	What say you?
+                "vo\\b\\f\\Hlo_BF054.mp3",	--	I haven't much time, so be quick about this.
                 "vo\\b\\f\\Hlo_BF055.mp3",	--	I hope this won't take long.
                 -- "vo\\b\\f\\Hlo_BF056.mp3",	--	I am busy, so, if you will excuse me.
                 "vo\\b\\f\\Hlo_BF058.mp3",	--	So what do you want?
                 "vo\\b\\f\\Hlo_BF061.mp3",	--	Yes?
-                "vo\\b\\f\\Hlo_BF089.mp3",	--	May I help you?
+                -- "vo\\b\\f\\Hlo_BF089.mp3",	--	May I help you?
                 "vo\\b\\f\\Hlo_BF090.mp3",	--	Do you need something?
                 "vo\\b\\f\\Hlo_BF091.mp3",	--	Is there something I can do for you?
-                "vo\\b\\f\\Hlo_BF109.mp3",	--	What can I do for you, friend?
-                "vo\\b\\f\\Hlo_BF113.mp3",	--	What can I help you with?
+                -- "vo\\b\\f\\Hlo_BF109.mp3",	--	What can I do for you, friend?
+                -- "vo\\b\\f\\Hlo_BF113.mp3",	--	What can I help you with?
                 "vo\\b\\f\\Hlo_BF114.mp3",	--	How fair thee, friend?
-                "vo\\b\\f\\Hlo_BF115.mp3",	--	Should you need something, I will be happy to oblige.
-                "vo\\b\\f\\Hlo_BF135.mp3",	--	Share your thoughts, friend, I enjoy the company.
+                -- "vo\\b\\f\\Hlo_BF115.mp3",	--	Should you need something, I will be happy to oblige.
+                -- "vo\\b\\f\\Hlo_BF135.mp3",	--	Share your thoughts, friend, I enjoy the company.
             },
         },
         ["m"] = {
@@ -310,8 +310,8 @@ this.voiceData = {
                 "vo\\b\\m\\Atk_BM010.mp3",	--	Come on, fight!
                 "vo\\b\\m\\Hlo_BM086.mp3",	--	Go ahead, I'm listening.
                 "vo\\b\\m\\Hlo_BM088.mp3",	--	I'm listening, please, go ahead.
-                "vo\\b\\m\\Hlo_BM134.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
-                "vo\\b\\m\\Hlo_BM136.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
+                -- "vo\\b\\m\\Hlo_BM134.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
+                -- "vo\\b\\m\\Hlo_BM136.mp3",	--	I must say, I find you most interesting right now. Please, go ahead.
             },
             [this.voice.finish] = {
                 "vo\\b\\m\\Atk_BM001.mp3",	--	Ha-ha!
@@ -348,7 +348,7 @@ this.voiceData = {
                 "vo\\b\\m\\Hit_BM013.mp3",	--	Unulph!
                 "vo\\b\\m\\Hit_BM014.mp3",	--	Ungh!
                 "vo\\b\\m\\Hit_BM015.mp3",	--	Wheeze!
-                "vo\\b\\m\\Hlo_BM000e.mp3",	--	Get out of here!
+                -- "vo\\b\\m\\Hlo_BM000e.mp3",	--	Get out of here!
                 "vo\\b\\m\\Hlo_BM014.mp3",	--	You're positively revolting.
                 "vo\\b\\m\\Hlo_BM022.mp3",	--	This is most unsettling. Leave me.
             },
@@ -358,7 +358,6 @@ this.voiceData = {
                 "vo\\b\\m\\Hlo_BM011.mp3",	--	Whatever trouble you've gotten yourself into, you'll have to deal with it yourself.
                 "vo\\b\\m\\Hlo_BM025.mp3",	--	I don't have time for you.
                 "vo\\b\\m\\Hlo_BM116.mp3",	--	To what do I owe this pleasure?
-
             },
             [this.voice.think] = {
                 "vo\\b\\m\\Hlo_BM000a.mp3",	--	What?!
@@ -377,24 +376,24 @@ this.voiceData = {
             [this.voice.remind] = {
                 "vo\\b\\m\\Hlo_BM027.mp3",	--	Don't press your luck.
                 -- "vo\\b\\m\\Hlo_BM030.mp3",	--	Be quick about this or find someone else to talk to.
-                -- "vo\\b\\m\\Hlo_BM041.mp3",	--	What say you?
-                -- "vo\\b\\m\\Hlo_BM054.mp3",	--	I haven't much time, so be quick about this.
+                "vo\\b\\m\\Hlo_BM041.mp3",	--	What say you?
+                "vo\\b\\m\\Hlo_BM054.mp3",	--	I haven't much time, so be quick about this.
                 "vo\\b\\m\\Hlo_BM055.mp3",	--	I hope this won't take long.
                 -- "vo\\b\\m\\Hlo_BM056.mp3",	--	I am busy, so, if you will excuse me.
                 "vo\\b\\m\\Hlo_BM057.mp3",	--	What do you want?
                 "vo\\b\\m\\Hlo_BM061.mp3",	--	Yes, friend?
                 "vo\\b\\m\\Hlo_BM083.mp3",	--	All right, I'm listening.
                 "vo\\b\\m\\Hlo_BM087.mp3",	--	I suppose I have a moment. What is it?
-                "vo\\b\\m\\Hlo_BM089.mp3",	--	May I help you?
+                -- "vo\\b\\m\\Hlo_BM089.mp3",	--	May I help you?
                 "vo\\b\\m\\Hlo_BM090.mp3",	--	Do you need something?
                 "vo\\b\\m\\Hlo_BM091.mp3",	--	Is there something I can do for you?
-                "vo\\b\\m\\Hlo_BM108.mp3",	--	What can I do for you, friend?
+                -- "vo\\b\\m\\Hlo_BM108.mp3",	--	What can I do for you, friend?
                 "vo\\b\\m\\Hlo_BM109.mp3",	--	Tidings and good wishes to you.
-                "vo\\b\\m\\Hlo_BM113.mp3",	--	What can I help you with?
+                -- "vo\\b\\m\\Hlo_BM113.mp3",	--	What can I help you with?
                 "vo\\b\\m\\Hlo_BM114.mp3",	--	How fair thee, friend?
-                "vo\\b\\m\\Hlo_BM115.mp3",	--	Should you need something, I would be happy to oblige.
-                "vo\\b\\m\\Hlo_BM135.mp3",	--	Well, I find myself in pleasant company. Please, share your thoughts.
-                "vo\\b\\m\\Hlo_BM137.mp3",	--	Well, I find myself in pleasant company. Please, share your thoughts.
+                -- "vo\\b\\m\\Hlo_BM115.mp3",	--	Should you need something, I would be happy to oblige.
+                -- "vo\\b\\m\\Hlo_BM135.mp3",	--	Well, I find myself in pleasant company. Please, share your thoughts.
+                -- "vo\\b\\m\\Hlo_BM137.mp3",	--	Well, I find myself in pleasant company. Please, share your thoughts.
                 "vo\\b\\m\\Idl_BM001.mp3",	--	Do I drop the sweetroll or hand it over and come back later? Dunno....
                 "vo\\b\\m\\Idl_BM002.mp3",	--	The blue plates are nice, but the brown ones seem to last longer.
                 "vo\\b\\m\\Idl_BM003.mp3",	--	I think that tavern girl was looking at me. How can I tell her I'm not interested?
@@ -416,12 +415,12 @@ this.voiceData = {
                 "vo\\d\\f\\Hlo_DF031.mp3",	--	Not today.
                 "vo\\d\\f\\Hlo_DF036.mp3",	--	There's no time for talk now. Go.
                 "vo\\d\\f\\Hlo_DF084.mp3",	--	Go ahead.
-                "vo\\d\\f\\Hlo_DF092.mp3",	--	Come on, I haven't got all day to stand around and talk to you.
+                -- "vo\\d\\f\\Hlo_DF092.mp3",	--	Come on, I haven't got all day to stand around and talk to you.
                 "vo\\d\\f\\Hlo_DF123.mp3",	--	I'm listening. Go ahead.
                 "vo\\d\\f\\Hlo_DF184.mp3",	--	Go ahead, I'm listening.
                 "vo\\d\\f\\tHlo_DF159.mp3",	--	It's fine with me. Go ahead.
                 "vo\\d\\f\\tHlo_DF160.mp3",	--	Go ahead. I'm waiting.
-                "vo\\d\\f\\tHlo_DF171.mp3",	--	Go on. I can't stop you.
+                -- "vo\\d\\f\\tHlo_DF171.mp3",	--	Go on. I can't stop you.
             },
             [this.voice.finish] = {
                 "vo\\d\\f\\Atk_DF001.mp3",	--	Now you die.
@@ -444,7 +443,7 @@ this.voiceData = {
                 "vo\\d\\f\\tIdl_DF007.mp3",	--	No chance. None.
             },
             [this.voice.loseRound] = {
-                "vo\\d\\f\\bFle_DF003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\d\\f\\bFle_DF003.mp3",	--	Go away! I don't have any treats!
                 "vo\\d\\f\\Fle_DF003.mp3",	--	I can't take anymore!
                 "vo\\d\\f\\Fle_DF004.mp3",	--	Let me live!
                 "vo\\d\\f\\Fle_DF005.mp3",	--	This fight is over!
@@ -464,21 +463,20 @@ this.voiceData = {
                 "vo\\d\\f\\Hit_DF012.mp3",	--	Groan.
                 "vo\\d\\f\\Hit_DF013.mp3",	--	Growl.
                 "vo\\d\\f\\Hit_DF014.mp3",	--	Gasp.
-                "vo\\d\\f\\Hlo_DF000e.mp3",	--	Get out of here!
+                -- "vo\\d\\f\\Hlo_DF000e.mp3",	--	Get out of here!
                 "vo\\d\\f\\Hlo_DF001.mp3",	--	Go away.
                 "vo\\d\\f\\Hlo_DF017.mp3",	--	I am not amused.
                 "vo\\d\\f\\Hlo_DF029.mp3",	--	How rude!
                 "vo\\d\\f\\Hlo_DF033.mp3",	--	Leave me.
                 "vo\\d\\f\\Hlo_DF040.mp3",	--	I can already tell I'm not going to like this.
                 "vo\\d\\f\\Hlo_DF041.mp3",	--	Oh, come on. Leave me alone.
-                "vo\\d\\f\\Hlo_DF072.mp3",	--	Say what you want or go away.
+                -- "vo\\d\\f\\Hlo_DF072.mp3",	--	Say what you want or go away.
                 "vo\\d\\f\\Hlo_DF107.mp3",	--	We are punished by the gods. The wind is our suffering.
-                "vo\\d\\f\\tHlo_DF007.mp3",	--	Get OUT! Now!
+                -- "vo\\d\\f\\tHlo_DF007.mp3",	--	Get OUT! Now!
                 "vo\\d\\f\\tHlo_DF033.mp3",	--	So much for THAT problem....
-                "vo\\d\\f\\tHlo_DF034.mp3",	--	You BEAST! Get out of here!
+                -- "vo\\d\\f\\tHlo_DF034.mp3",	--	You BEAST! Get out of here!
                 "vo\\d\\f\\tHlo_DF062.mp3",	--	Mind your tongue, sera.
                 "vo\\d\\f\\tHlo_DF088.mp3",	--	It's terrible. Terrible. I'm so worried....
-
             },
             [this.voice.winGame] = {
                 "vo\\d\\f\\bAtk_DF004.mp3",	--	I've fought guars more ferocious than you!
@@ -504,7 +502,6 @@ this.voiceData = {
                 "vo\\d\\f\\tHlo_DF076.mp3",	--	Walk in mercy, sera.
                 "vo\\d\\f\\tHlo_DF078.mp3",	--	A pure reputation is wealth enough for me, sera.
                 "vo\\d\\f\\tHlo_DF085.mp3",	--	Take care, stranger.
-
             },
             [this.voice.think] = {
                 "vo\\d\\f\\bIdl_DF013.mp3",	--	*Pfbbbbbbbt*
@@ -538,19 +535,19 @@ this.voiceData = {
                 "vo\\d\\f\\Hlo_DF126.mp3",	--	What is this about?
                 "vo\\d\\f\\Hlo_DF127.mp3",	--	Can we hurry this up?
                 "vo\\d\\f\\Hlo_DF129.mp3",	--	What do you want?
-                "vo\\d\\f\\Hlo_DF145.mp3",	--	May I help you?
+                -- "vo\\d\\f\\Hlo_DF145.mp3",	--	May I help you?
                 "vo\\d\\f\\Hlo_DF147.mp3",	--	Is there something you need?
-                "vo\\d\\f\\Hlo_DF148.mp3",	--	Is there something I can do for you?
-                "vo\\d\\f\\Hlo_DF179.mp3",	--	Tell me what you want.
-                "vo\\d\\f\\Hlo_DF193.mp3",	--	Is there something I can do for you?
+                -- "vo\\d\\f\\Hlo_DF148.mp3",	--	Is there something I can do for you?
+                -- "vo\\d\\f\\Hlo_DF179.mp3",	--	Tell me what you want.
+                -- "vo\\d\\f\\Hlo_DF193.mp3",	--	Is there something I can do for you?
                 "vo\\d\\f\\Idl_DF001.mp3",	--	Cough.
                 "vo\\d\\f\\Idl_DF002.mp3",	--	Sniff.
                 "vo\\d\\f\\Idl_DF003.mp3",	--	Sigh.
                 "vo\\d\\f\\Idl_DF004.mp3",	--	Grumbling.
-                "vo\\d\\f\\tHlo_DF018.mp3",	--	What do you want?
-                "vo\\d\\f\\tHlo_DF020.mp3",	--	What do you want with me?
+                -- "vo\\d\\f\\tHlo_DF018.mp3",	--	What do you want?
+                -- "vo\\d\\f\\tHlo_DF020.mp3",	--	What do you want with me?
                 "vo\\d\\f\\tHlo_DF036.mp3",	--	Well? What's going on?
-                "vo\\d\\f\\tHlo_DF044.mp3",	--	Do you have a question for me, sera?
+                -- "vo\\d\\f\\tHlo_DF044.mp3",	--	Do you have a question for me, sera?
                 "vo\\d\\f\\tHlo_DF079.mp3",	--	Be quick, and I shall serve you, sera.
                 "vo\\d\\f\\tHlo_DF151.mp3",	--	I'm not busy now. What do you need?
                 "vo\\d\\f\\tHlo_DF153.mp3",	--	Happy to help. What's your problem?
@@ -585,7 +582,7 @@ this.voiceData = {
                 "vo\\d\\m\\tHlo_DM083.mp3",	--	Show respect, sera.
                 "vo\\d\\m\\tHlo_DM187.mp3",	--	It's fine with me. Go ahead.
                 "vo\\d\\m\\tHlo_DM188.mp3",	--	Go ahead. I'm waiting.
-                "vo\\d\\m\\tHlo_DM199.mp3",	--	Go on. I can't stop you.
+                -- "vo\\d\\m\\tHlo_DM199.mp3",	--	Go on. I can't stop you.
                 "vo\\d\\m\\tIdl_DM002.mp3",	--	Try me, and you'll regret it.
             },
             [this.voice.finish] = {
@@ -618,7 +615,7 @@ this.voiceData = {
                 "vo\\d\\m\\tIdl_DM004.mp3",	--	Trust in Gods and Justice.
             },
             [this.voice.loseRound] = {
-                "vo\\d\\m\\bFle_DM003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\d\\m\\bFle_DM003.mp3",	--	Go away! I don't have any treats!
                 "vo\\d\\m\\bHlo_DM004.mp3",	--	Uh... there's a perfectly good explanation for this, I assure you...
                 "vo\\d\\m\\bIdl_DM002.mp3",	--	The sun shines every day in hell.
                 "vo\\d\\m\\Fle_DM003.mp3",	--	I cannot take anymore!
@@ -639,18 +636,18 @@ this.voiceData = {
                 "vo\\d\\m\\Hit_DM013.mp3",	--	Unngh!
                 "vo\\d\\m\\Hit_DM014.mp3",	--	Ungh!
                 "vo\\d\\m\\Hlo_DM000e.mp3",	--	That is quite enough!
-                "vo\\d\\m\\Hlo_DM001.mp3",	--	Go away.
+                -- "vo\\d\\m\\Hlo_DM001.mp3",	--	Go away.
                 "vo\\d\\m\\Hlo_DM017.mp3",	--	I am not amused.
-                "vo\\d\\m\\Hlo_DM026.mp3",	--	What, n'wah?
+                -- "vo\\d\\m\\Hlo_DM026.mp3",	--	What, n'wah?
                 "vo\\d\\m\\Hlo_DM029.mp3",	--	How rude!
-                "vo\\d\\m\\Hlo_DM030.mp3",	--	Must you be so annoying? Go away.
-                "vo\\d\\m\\Hlo_DM033.mp3",	--	Leave me.
+                -- "vo\\d\\m\\Hlo_DM030.mp3",	--	Must you be so annoying? Go away.
+                -- "vo\\d\\m\\Hlo_DM033.mp3",	--	Leave me.
                 "vo\\d\\m\\Hlo_DM041.mp3",	--	Oh, come on. Leave me alone.
-                "vo\\d\\m\\Hlo_DM072.mp3",	--	Say what you want or go away.
+                -- "vo\\d\\m\\Hlo_DM072.mp3",	--	Say what you want or go away.
                 "vo\\d\\m\\Hlo_DM107.mp3",	--	We are punished by the gods. The wind is our suffering.
                 "vo\\d\\m\\tHlo_DM008.mp3",	--	Well, well, well. Aren't YOU the tasty little morsel?
                 "vo\\d\\m\\tHlo_DM043.mp3",	--	Mind your tongue, sera.
-                "vo\\d\\m\\tHlo_DM049.mp3",	--	Scram, f'lah.
+                -- "vo\\d\\m\\tHlo_DM049.mp3",	--	Scram, f'lah.
                 "vo\\d\\m\\tHlo_DM071.mp3",	--	Yes? W-w-what? What do you w-w-want?
                 "vo\\d\\m\\tHlo_DM072.mp3",	--	Oh, dear. Oh, m-m-my. Goddess protect me.
             },
@@ -729,18 +726,18 @@ this.voiceData = {
                 "vo\\d\\m\\Hlo_DM126.mp3",	--	What is this about?
                 "vo\\d\\m\\Hlo_DM127.mp3",	--	Can we hurry this up?
                 "vo\\d\\m\\Hlo_DM129.mp3",	--	What do you want?
-                "vo\\d\\m\\Hlo_DM145.mp3",	--	May I help you?
+                -- "vo\\d\\m\\Hlo_DM145.mp3",	--	May I help you?
                 "vo\\d\\m\\Hlo_DM147.mp3",	--	Is there something you need?
-                "vo\\d\\m\\Hlo_DM148.mp3",	--	Is there something I can do for you?
+                -- "vo\\d\\m\\Hlo_DM148.mp3",	--	Is there something I can do for you?
                 "vo\\d\\m\\Hlo_DM179.mp3",	--	Tell me what you want.
-                "vo\\d\\m\\Hlo_DM193.mp3",	--	Is there something I can do for you?
+                -- "vo\\d\\m\\Hlo_DM193.mp3",	--	Is there something I can do for you?
                 "vo\\d\\m\\Idl_DM001.mp3",	--	Cough.
                 "vo\\d\\m\\Idl_DM002.mp3",	--	Sniff.
                 "vo\\d\\m\\Idl_DM003.mp3",	--	Sigh.
                 "vo\\d\\m\\Idl_DM004.mp3",	--	Grumbling.
-                "vo\\d\\m\\tHlo_DM090.mp3",	--	Be quick, and I shall serve you, sera.
+                -- "vo\\d\\m\\tHlo_DM090.mp3",	--	Be quick, and I shall serve you, sera.
                 "vo\\d\\m\\tHlo_DM179.mp3",	--	I'm not busy now. What do you need?
-                "vo\\d\\m\\tHlo_DM181.mp3",	--	Happy to help. What's your problem?
+                -- "vo\\d\\m\\tHlo_DM181.mp3",	--	Happy to help. What's your problem?
                 "vo\\d\\m\\tHlo_DM183.mp3",	--	Whatever you want... within reason.
                 "vo\\d\\m\\tHlo_DM185.mp3",	--	Yes?
                 "vo\\d\\m\\tHlo_DM193.mp3",	--	What is it now?
@@ -796,7 +793,7 @@ this.voiceData = {
                 "vo\\h\\f\\Hit_HF013.mp3",	--	Hiss.
                 "vo\\h\\f\\Hit_HF014.mp3",	--	Ungh!
                 "vo\\h\\f\\Hit_HF015.mp3",	--	Hiss.
-                "vo\\h\\f\\Hlo_HF000e.mp3",	--	Get out of here!
+                -- "vo\\h\\f\\Hlo_HF000e.mp3",	--	Get out of here!
                 "vo\\h\\f\\Hlo_HF019.mp3",	--	I sense great hostility -- mine.
                 "vo\\h\\f\\Hlo_HF027.mp3",	--	You again. How tiresome.
                 "vo\\h\\f\\Idl_HF001.mp3",	--	The indignity of it all.
@@ -824,7 +821,7 @@ this.voiceData = {
                 "vo\\h\\f\\Hlo_HF057.mp3",	--	You have something to say to me?
                 "vo\\h\\f\\Hlo_HF059.mp3",	--	My patience is limited.
                 "vo\\h\\f\\Hlo_HF060.mp3",	--	Can we hurry this along?
-                "vo\\h\\f\\Hlo_HF061.mp3",	--	What assistance do you need?
+                -- "vo\\h\\f\\Hlo_HF061.mp3",	--	What assistance do you need?
                 "vo\\h\\f\\Hlo_HF082.mp3",	--	Any time now.
                 "vo\\h\\f\\Hlo_HF083.mp3",	--	You have my attention.
                 "vo\\h\\f\\Hlo_HF089.mp3",	--	Do you want something?
@@ -883,7 +880,7 @@ this.voiceData = {
                 "vo\\h\\m\\Hit_HM012.mp3",	--	Umph!
                 "vo\\h\\m\\Hit_HM013.mp3",	--	Humph!
                 "vo\\h\\m\\Hit_HM015.mp3",	--	Unghaaaah!
-                "vo\\h\\m\\Hlo_HM000e.mp3",	--	Get out of here!
+                -- "vo\\h\\m\\Hlo_HM000e.mp3",	--	Get out of here!
                 "vo\\h\\m\\Hlo_HM019.mp3",	--	I sense great hostility -- mine.
                 "vo\\h\\m\\Hlo_HM027.mp3",	--	You again. How tiresome.
             },
@@ -917,7 +914,7 @@ this.voiceData = {
                 "vo\\h\\m\\Hlo_HM083.mp3",	--	You have my attention.
                 "vo\\h\\m\\Hlo_HM089.mp3",	--	Do you want something?
                 "vo\\h\\m\\Hlo_HM103.mp3",	--	What happened to you?
-                "vo\\h\\m\\Hlo_HM114.mp3",	--	You've piqued my interest. Please, share your thoughts.
+                -- "vo\\h\\m\\Hlo_HM114.mp3",	--	You've piqued my interest. Please, share your thoughts.
                 "vo\\h\\m\\Hlo_HM129.mp3",	--	Oh, my good friend. What happened to you?
                 "vo\\h\\m\\Idl_HM006.mp3",	--	Whistle.
                 "vo\\h\\m\\Idl_HM007.mp3",	--	Humm.
@@ -940,7 +937,7 @@ this.voiceData = {
                 "vo\\i\\f\\Hlo_IF116.mp3",	--	Keep moving.
                 "vo\\i\\f\\Hlo_IF118.mp3",	--	Go ahead.
                 "vo\\i\\f\\Hlo_IF147.mp3",	--	I'm all yours, please go ahead.
-                "vo\\i\\f\\Hlo_IF161.mp3",	--	With pleasure, please, go ahead. I'm all ears.
+                -- "vo\\i\\f\\Hlo_IF161.mp3",	--	With pleasure, please, go ahead. I'm all ears.
                 "vo\\i\\f\\tHlo_IF095.mp3",	--	It's fine with me. Go ahead.
                 "vo\\i\\f\\tHlo_IF096.mp3",	--	Go ahead. I'm waiting.
             },
@@ -956,8 +953,8 @@ this.voiceData = {
                 "vo\\i\\f\\tHlo_IF004.mp3",	--	For King and Emperor.
             },
             [this.voice.loseRound] = {
-                "vo\\i\\f\\bFle_IF003.mp3",	--	Go away! I don't have any treats!
-                "vo\\i\\f\\Fle_IF002.mp3",	--	I'm getting out of here!
+                -- "vo\\i\\f\\bFle_IF003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\i\\f\\Fle_IF002.mp3",	--	I'm getting out of here!
                 "vo\\i\\f\\Fle_IF003.mp3",	--	No!
                 "vo\\i\\f\\Fle_IF005.mp3",	--	Help!
                 "vo\\i\\f\\Hit_IF001.mp3",	--	AAAIIEE.
@@ -975,9 +972,9 @@ this.voiceData = {
                 "vo\\i\\f\\Hit_IF013.mp3",	--	Hiss.
                 "vo\\i\\f\\Hit_IF014.mp3",	--	Hiss.
                 "vo\\i\\f\\Hit_IF015.mp3",	--	Hiss.
-                "vo\\i\\f\\Hlo_IF000e.mp3",	--	Get out of here!
+                -- "vo\\i\\f\\Hlo_IF000e.mp3",	--	Get out of here!
                 "vo\\i\\f\\Hlo_IF012.mp3",	--	Don't bother me.
-                "vo\\i\\f\\Hlo_IF028.mp3",	--	Go away.
+                -- "vo\\i\\f\\Hlo_IF028.mp3",	--	Go away.
                 "vo\\i\\f\\Hlo_IF032.mp3",	--	What? Why do you disturb me?
                 "vo\\i\\f\\tIdl_IF006.mp3",	--	[Long sigh.] Mother said there'd be days like this.
                 "vo\\i\\f\\tIdl_IF009.mp3",	--	Don't look at me! I didn't do it....
@@ -991,7 +988,6 @@ this.voiceData = {
                 "vo\\i\\f\\Hlo_IF107.mp3",	--	This is truly an honor.
                 "vo\\i\\f\\tHlo_IF101.mp3",	--	Zenithar's fortune to you.
                 "vo\\i\\f\\tHlo_IF102.mp3",	--	Today and tomorrow, good luck.
-
             },
             [this.voice.think] = {
                 "vo\\i\\f\\bIdl_IF012.mp3",	--	Oh, not AGAIN!
@@ -1023,10 +1019,10 @@ this.voiceData = {
                 "vo\\i\\f\\Hlo_IF088.mp3",	--	Yes?
                 "vo\\i\\f\\Hlo_IF090.mp3",	--	You want something?
                 "vo\\i\\f\\Hlo_IF106.mp3",	--	At ease.
-                "vo\\i\\f\\Hlo_IF117.mp3",	--	How can I help you?
+                -- "vo\\i\\f\\Hlo_IF117.mp3",	--	How can I help you?
                 "vo\\i\\f\\Hlo_IF120.mp3",	--	Do you want something from me?
-                "vo\\i\\f\\Hlo_IF149.mp3",	--	If I can be of any assistance, I'll be happy to help.
-                "vo\\i\\f\\Hlo_IF172.mp3",	--	The pleasure is mine. What may I do for you?
+                -- "vo\\i\\f\\Hlo_IF149.mp3",	--	If I can be of any assistance, I'll be happy to help.
+                -- "vo\\i\\f\\Hlo_IF172.mp3",	--	The pleasure is mine. What may I do for you?
                 "vo\\i\\f\\Idl_IF004.mp3",	--	Whistle.
                 "vo\\i\\f\\Idl_IF005.mp3",	--	Sniff.
                 "vo\\i\\f\\Idl_IF006.mp3",	--	Cough.
@@ -1061,7 +1057,7 @@ this.voiceData = {
                 "vo\\i\\m\\Hlo_IM116.mp3",	--	Keep moving.
                 "vo\\i\\m\\Hlo_IM118.mp3",	--	Go ahead.
                 "vo\\i\\m\\Hlo_IM147.mp3",	--	I'm all yours. Please, go ahead.
-                "vo\\i\\m\\Hlo_IM161.mp3",	--	With pleasure, please, go ahead. I'm all ears.
+                -- "vo\\i\\m\\Hlo_IM161.mp3",	--	With pleasure, please, go ahead. I'm all ears.
                 "vo\\i\\m\\tHlo_IM099.mp3",	--	It's fine with me. Go ahead.
                 "vo\\i\\m\\tHlo_IM100.mp3",	--	Go ahead. I'm waiting.
                 "vo\\i\\m\\tHlo_IM115.mp3",	--	Go on. I can't stop you.
@@ -1086,7 +1082,7 @@ this.voiceData = {
                 "vo\\i\\m\\tIdl_IM002.mp3",	--	Hard times, and well-deserved.
             },
             [this.voice.loseRound] = {
-                "vo\\i\\m\\bFle_IM003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\i\\m\\bFle_IM003.mp3",	--	Go away! I don't have any treats!
                 "vo\\i\\m\\bHlo_IM006.mp3",	--	Stuck here. Forever. I'll die.
                 "vo\\i\\m\\bHlo_IM023a.mp3",	--	I got nothing more to say.
                 "vo\\i\\m\\bIdl_IM024.mp3",	--	Just another of life's little disappointments...
@@ -1103,10 +1099,10 @@ this.voiceData = {
                 "vo\\i\\m\\Hit_IM008.mp3",	--	Ugharrrh.
                 "vo\\i\\m\\Hit_IM009.mp3",	--	Humphf.
                 "vo\\i\\m\\Hit_IM010.mp3",	--	Umphf.
-                "vo\\i\\m\\Hlo_IM000e.mp3",	--	Get out of here!
+                -- "vo\\i\\m\\Hlo_IM000e.mp3",	--	Get out of here!
                 "vo\\i\\m\\Hlo_IM011.mp3",	--	So tiresome.
                 "vo\\i\\m\\Hlo_IM012.mp3",	--	Don't bother me.
-                "vo\\i\\m\\Hlo_IM028.mp3",	--	Go away.
+                -- "vo\\i\\m\\Hlo_IM028.mp3",	--	Go away.
                 "vo\\i\\m\\Hlo_IM032.mp3",	--	What? Why do you disturb me?
                 "vo\\i\\m\\tHlo_IM006.mp3",	--	This is too much excitement for me!
                 "vo\\i\\m\\tHlo_IM015.mp3",	--	Must you? This is SO tiresome....
@@ -1173,10 +1169,10 @@ this.voiceData = {
                 "vo\\i\\m\\Hlo_IM064.mp3",	--	Yes?
                 "vo\\i\\m\\Hlo_IM088.mp3",	--	Yes?
                 "vo\\i\\m\\Hlo_IM090.mp3",	--	You want something, friend?
-                "vo\\i\\m\\Hlo_IM117.mp3",	--	How can I help you?
+                -- "vo\\i\\m\\Hlo_IM117.mp3",	--	How can I help you?
                 "vo\\i\\m\\Hlo_IM120.mp3",	--	Do you want something from me?
-                "vo\\i\\m\\Hlo_IM149.mp3",	--	If I can be of any assistance, I'll be happy to help.
-                "vo\\i\\m\\Hlo_IM172.mp3",	--	The pleasure is mine. What may I do for you?
+                -- "vo\\i\\m\\Hlo_IM149.mp3",	--	If I can be of any assistance, I'll be happy to help.
+                -- "vo\\i\\m\\Hlo_IM172.mp3",	--	The pleasure is mine. What may I do for you?
                 "vo\\i\\m\\Idl_IM001.mp3",	--	Sniff.
                 "vo\\i\\m\\Idl_IM002.mp3",	--	Sniff, sniff.
                 "vo\\i\\m\\Idl_IM004.mp3",	--	Clears throat.
@@ -1185,7 +1181,7 @@ this.voiceData = {
                 "vo\\i\\m\\Idl_IM008.mp3",	--	What was that?
                 "vo\\i\\m\\Idl_IM009.mp3",	--	Clears throat.
                 "vo\\i\\m\\tHlo_IM089.mp3",	--	I'm not busy now. What do you need?
-                "vo\\i\\m\\tHlo_IM091.mp3",	--	Happy to help. What's your problem?
+                -- "vo\\i\\m\\tHlo_IM091.mp3",	--	Happy to help. What's your problem?
                 "vo\\i\\m\\tHlo_IM093.mp3",	--	Whatever you want... within reason.
                 "vo\\i\\m\\tHlo_IM098.mp3",	--	Yes?
                 "vo\\i\\m\\tHlo_IM111.mp3",	--	Will this take long?
@@ -1239,7 +1235,7 @@ this.voiceData = {
                 "vo\\k\\f\\Hit_KF015.mp3",	--	Hiss.
                 "vo\\k\\f\\Hlo_KF023.mp3",	--	Do not bother us.
                 "vo\\k\\f\\Hlo_KF026.mp3",	--	So little manners. So little time.
-                "vo\\k\\f\\Hlo_KF029.mp3",	--	Go away.
+                -- "vo\\k\\f\\Hlo_KF029.mp3",	--	Go away.
                 "vo\\k\\f\\Hlo_KF053.mp3",	--	You do not please us.
             },
             [this.voice.winGame] = {
@@ -1322,7 +1318,7 @@ this.voiceData = {
                 "vo\\k\\m\\Hit_KM014.mp3",	--	Hiss.
                 "vo\\k\\m\\Hlo_KM023.mp3",	--	Do not bother us!
                 "vo\\k\\m\\Hlo_KM026.mp3",	--	So little manners, so little time.
-                "vo\\k\\m\\Hlo_KM029.mp3",	--	Go away.
+                -- "vo\\k\\m\\Hlo_KM029.mp3",	--	Go away.
                 "vo\\k\\m\\Hlo_KM053.mp3",	--	You do not please us.
             },
             [this.voice.winGame] = {
@@ -1393,7 +1389,7 @@ this.voiceData = {
                 "vo\\n\\f\\Hlo_NF092.mp3",	--	Hail.
             },
             [this.voice.loseRound] = {
-                "vo\\n\\f\\bFle_NF003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\n\\f\\bFle_NF003.mp3",	--	Go away! I don't have any treats!
                 "vo\\n\\f\\Fle_NF002.mp3",	--	You've won this round.
                 "vo\\n\\f\\Hit_NF001.mp3",	--	Arrgh.
                 "vo\\n\\f\\Hit_NF002.mp3",	--	Umpfh
@@ -1481,7 +1477,7 @@ this.voiceData = {
                 "vo\\n\\m\\Hlo_NM092.mp3",	--	Hail.
             },
             [this.voice.loseRound] = {
-                "vo\\n\\m\\bFle_NM003.mp3",	--	Go away! I don't have any treats!
+                -- "vo\\n\\m\\bFle_NM003.mp3",	--	Go away! I don't have any treats!
                 "vo\\n\\m\\bIdl_NM028.mp3",	--	What a life.
                 "vo\\n\\m\\Fle_NM002.mp3",	--	You've won this round.
                 "vo\\n\\m\\Hit_NM001.mp3",	--	Arrgh.
@@ -1528,7 +1524,7 @@ this.voiceData = {
             [this.voice.remind] = {
                 "vo\\n\\m\\bHlo_NM062.mp3",	--	What is it, friend?
                 "vo\\n\\m\\bHlo_NM066.mp3",	--	Let's get a move on.
-                -- "vo\\n\\m\\bHlo_NM071.mp3",	--	Let us fight through to the end.
+                "vo\\n\\m\\bHlo_NM071.mp3",	--	Let us fight through to the end.
                 "vo\\n\\m\\bIdl_NM004.mp3",	--	Ah... ah... AH... CHOOOO!
                 "vo\\n\\m\\bIdl_NM014.mp3",	--	*Pfbbbbbbbt*
                 "vo\\n\\m\\bIdl_NM016.mp3",	--	[Wide yawn.]
@@ -1589,14 +1585,14 @@ this.voiceData = {
                 "vo\\o\\f\\Hit_OF014.mp3",	--	Ungh!
                 "vo\\o\\f\\Hit_OF014.mp3",	--	Grunt.
                 "vo\\o\\f\\Hit_OF015.mp3",	--	Grunt.
-                "vo\\o\\f\\Hlo_OF000e.mp3",	--	Get out of here!
+                -- "vo\\o\\f\\Hlo_OF000e.mp3",	--	Get out of here!
                 "vo\\o\\f\\Hlo_OF001.mp3",	--	Anger me further and I will be forced to take action.
                 "vo\\o\\f\\Hlo_OF019.mp3",	--	You prey on the weak. There is no honor in this.
                 "vo\\o\\f\\Hlo_OF026.mp3",	--	So annoying.
                 "vo\\o\\f\\Hlo_OF047.mp3",	--	You prey on the weak. There is no honor in this.
             },
             [this.voice.winGame] = {
-                -- "vo\\o\\f\\Hlo_OF023.mp3",	--	I haven't time for fools.
+                "vo\\o\\f\\Hlo_OF023.mp3",	--	I haven't time for fools.
                 "vo\\o\\f\\Hlo_OF025.mp3",	--	You're hardly worth my time.
                 "vo\\o\\f\\Hlo_OF041.mp3",	--	You have much to learn.
                 "vo\\o\\f\\Hlo_OF056.mp3",	--	Do not waste my time.
@@ -1627,8 +1623,8 @@ this.voiceData = {
                 "vo\\o\\f\\Hlo_OF087.mp3",	--	Your actions show promise. What do you want?
                 "vo\\o\\f\\Hlo_OF091.mp3",	--	Friend.
                 "vo\\o\\f\\Hlo_OF108.mp3",	--	My attention is yours.
-                "vo\\o\\f\\Hlo_OF114.mp3",	--	How can I help you, friend?
-                "vo\\o\\f\\Hlo_OF134.mp3",	--	I am honored. Truly. How may I help you?
+                -- "vo\\o\\f\\Hlo_OF114.mp3",	--	How can I help you, friend?
+                -- "vo\\o\\f\\Hlo_OF134.mp3",	--	I am honored. Truly. How may I help you?
                 "vo\\o\\f\\Idl_OF003.mp3",	--	Clears throat.
                 "vo\\o\\f\\Idl_OF004.mp3",	--	Cough.
                 "vo\\o\\f\\Idl_OF005.mp3",	--	Sniff.
@@ -1680,9 +1676,10 @@ this.voiceData = {
                 "vo\\o\\m\\Hit_OM015.mp3",	--	Grunt.
                 "vo\\o\\m\\Hlo_OM000e.mp3",	--	Do not toy with me!
                 "vo\\o\\m\\Hlo_OM001.mp3",	--	Anger me further, and I will be forced to take action.
-                -- "vo\\o\\m\\Hlo_OM022.mp3",	--	By what right do you disturb me?
+                "vo\\o\\m\\Hlo_OM022.mp3",	--	By what right do you disturb me?
             },
             [this.voice.winGame] = {
+                "vo\\o\\m\\Hlo_OM023.mp3",	--	I haven't time for fools.
                 "vo\\o\\m\\Hlo_OM025.mp3",	--	You're hardly worth my time.
                 "vo\\o\\m\\Hlo_OM041.mp3",	--	You have much to learn.
                 "vo\\o\\m\\Hlo_OM083.mp3",	--	Fight well.
@@ -1705,7 +1702,6 @@ this.voiceData = {
                 "vo\\o\\m\\Idl_OM002.mp3",	--	What was that?
             },
             [this.voice.remind] = {
-                -- "vo\\o\\m\\Hlo_OM023.mp3",	--	I haven't time for fools.
                 "vo\\o\\m\\Hlo_OM031.mp3",	--	Sera?
                 "vo\\o\\m\\Hlo_OM053.mp3",	--	Hurry up, before I change my mind.
                 "vo\\o\\m\\Hlo_OM055.mp3",	--	What are you doing?
@@ -1716,8 +1712,8 @@ this.voiceData = {
                 "vo\\o\\m\\Hlo_OM078.mp3",	--	Yes, what is it?
                 "vo\\o\\m\\Hlo_OM087.mp3",	--	Your actions show promise. What do you want?
                 "vo\\o\\m\\Hlo_OM091.mp3",	--	Friend.
-                "vo\\o\\m\\Hlo_OM114.mp3",	--	How can I help you, friend?
-                "vo\\o\\m\\Hlo_OM134.mp3",	--	I am honored. Truly. How may I help you?
+                -- "vo\\o\\m\\Hlo_OM114.mp3",	--	How can I help you, friend?
+                -- "vo\\o\\m\\Hlo_OM134.mp3",	--	I am honored. Truly. How may I help you?
                 "vo\\o\\m\\Hlo_OM136.mp3",	--	I feel I can truly share with you, without fear.
                 "vo\\o\\m\\Idl_OM003.mp3",	--	Growl.
                 "vo\\o\\m\\Idl_OM004.mp3",	--	Hmmm.
@@ -1772,11 +1768,11 @@ this.voiceData = {
                 "vo\\r\\f\\Hit_RF012.mp3",	--	Groan.
                 "vo\\r\\f\\Hit_RF013.mp3",	--	Growl.
                 "vo\\r\\f\\Hit_RF014.mp3",	--	Gasp.
-                "vo\\r\\f\\Hlo_RF000e.mp3",	--	Get out of here!
+                -- "vo\\r\\f\\Hlo_RF000e.mp3",	--	Get out of here!
                 "vo\\r\\f\\Hlo_RF021.mp3",	--	I don't think so.
             },
             [this.voice.winGame] = {
-                -- "vo\\r\\f\\Hlo_RF000d.mp3",	--	I won't waste my time on the likes of you.
+                "vo\\r\\f\\Hlo_RF000d.mp3",	--	I won't waste my time on the likes of you.
                 "vo\\r\\f\\Hlo_RF001.mp3",	--	I think it would be best if you leave. Now.
                 "vo\\r\\f\\Hlo_RF042.mp3",	--	Now what did I do to deserve this honor?
                 "vo\\r\\f\\Hlo_RF115.mp3",	--	I think you're going to fit right in here, friend. You've won me over.
@@ -1798,7 +1794,7 @@ this.voiceData = {
                 "vo\\r\\f\\Hlo_RF059.mp3",	--	Anytime you're ready. Just don't keep me waiting.
                 "vo\\r\\f\\Hlo_RF062.mp3",	--	I think I could spare a few minutes.
                 "vo\\r\\f\\Hlo_RF087.mp3",	--	Anything I can do for you?
-                "vo\\r\\f\\Hlo_RF089.mp3",	--	Can I help you out? Do you need something?
+                -- "vo\\r\\f\\Hlo_RF089.mp3",	--	Can I help you out? Do you need something?
                 "vo\\r\\f\\Hlo_RF109.mp3",	--	Anytime, friend. I'm right here.
                 "vo\\r\\f\\Idl_RF004.mp3",	--	Humming.
                 "vo\\r\\f\\Idl_RF005.mp3",	--	Cough.
@@ -1858,6 +1854,8 @@ this.voiceData = {
             },
             [this.voice.winGame] = {
                 "vo\\r\\m\\Hlo_RM001.mp3",	--	I think it would be best if you leave, now!
+                -- "vo\\r\\m\\Hlo_RM044.mp3",	--	Stop wasting my time with your foolishness!
+                -- "vo\\r\\m\\Hlo_RM046.mp3",	--	I don't want any part of this. Whatever it is.
                 "vo\\r\\m\\Hlo_RM116.mp3",	--	May each day greet you warmly, friend.
                 "vo\\r\\m\\Hlo_RM117.mp3",	--	This is a pleasant surprise. Greetings, friend.
                 "vo\\r\\m\\Hlo_RM133.mp3",	--	It's probably a bad idea to walk around like that.
@@ -1873,17 +1871,15 @@ this.voiceData = {
                 "vo\\r\\m\\Hlo_RM118.mp3",	--	Well, what have we here?
             },
             [this.voice.remind] = {
-                -- "vo\\r\\m\\Hlo_RM044.mp3",	--	Stop wasting my time with your foolishness!
-                -- "vo\\r\\m\\Hlo_RM046.mp3",	--	I don't want any part of this. Whatever it is.
                 "vo\\r\\m\\Hlo_RM058.mp3",	--	So what do you want?
                 "vo\\r\\m\\Hlo_RM059.mp3",	--	Anytime you're ready. Just don't keep me waiting.
                 "vo\\r\\m\\Hlo_RM062.mp3",	--	I think I could spare a few minutes.
                 "vo\\r\\m\\Hlo_RM080.mp3",	--	What happened to you?
                 "vo\\r\\m\\Hlo_RM087.mp3",	--	Anything I can do for you?
-                "vo\\r\\m\\Hlo_RM089.mp3",	--	Can I help you out? Do you need something?
+                -- "vo\\r\\m\\Hlo_RM089.mp3",	--	Can I help you out? Do you need something?
                 "vo\\r\\m\\Hlo_RM109.mp3",	--	Anytime, friend. I'm right here.
                 "vo\\r\\m\\Hlo_RM111.mp3",	--	You seem to be doing all right for yourself. What can I do for you?
-                "vo\\r\\m\\Hlo_RM114.mp3",	--	Can I do anything to help?
+                -- "vo\\r\\m\\Hlo_RM114.mp3",	--	Can I do anything to help?
                 "vo\\r\\m\\Idl_RM008.mp3",	--	Sniff.
                 "vo\\r\\m\\Idl_RM009.mp3",	--	Cough.
             },
@@ -1915,7 +1911,7 @@ this.voiceData = {
             [this.voice.loseRound] = {
                 "vo\\w\\f\\Fle_WF001.mp3",	--	There will be vengeance! This is not the last of this!
                 "vo\\w\\f\\Fle_WF002.mp3",	--	When we meet again, you will die!
-                "vo\\w\\f\\Fle_WF003.mp3",	--	Get away I do not wish to fight!
+                -- "vo\\w\\f\\Fle_WF003.mp3",	--	Get away I do not wish to fight!
                 "vo\\w\\f\\Fle_WF004.mp3",	--	I will deny you your victory and the spoils!
                 "vo\\w\\f\\Fle_WF005.mp3",	--	Aaaagh!
                 "vo\\w\\f\\Hit_WF001.mp3",	--	Arrgh!
@@ -1935,10 +1931,10 @@ this.voiceData = {
                 "vo\\w\\f\\Hit_WF014.mp3",	--	Gasp.
                 "vo\\w\\f\\Hit_WF015.mp3",	--	Scream.
                 "vo\\w\\f\\Hlo_WF000d.mp3",	--	You don't want to see me angry.
-                "vo\\w\\f\\Hlo_WF000e.mp3",	--	Get out of here!
+                -- "vo\\w\\f\\Hlo_WF000e.mp3",	--	Get out of here!
                 "vo\\w\\f\\Hlo_WF025.mp3",	--	I really don't want you around here.
                 "vo\\w\\f\\Hlo_WF026.mp3",	--	Don't bother me.
-                "vo\\w\\f\\Hlo_WF138.mp3",	--	Aargh! Go away!
+                -- "vo\\w\\f\\Hlo_WF138.mp3",	--	Aargh! Go away!
             },
             [this.voice.winGame] = {
                 "vo\\w\\f\\Hlo_WF001.mp3",	--	Go back where you came from.
@@ -1966,14 +1962,14 @@ this.voiceData = {
                 "vo\\w\\f\\Hlo_WF061.mp3",	--	If I can help I will, but don't take too much time.
                 "vo\\w\\f\\Hlo_WF085.mp3",	--	I don't know if I can help you, but I'll try.
                 "vo\\w\\f\\Hlo_WF086.mp3",	--	Do you want something from me?
-                "vo\\w\\f\\Hlo_WF087.mp3",	--	How may I help you?
+                -- "vo\\w\\f\\Hlo_WF087.mp3",	--	How may I help you?
                 "vo\\w\\f\\Hlo_WF090.mp3",	--	How do you do?
                 "vo\\w\\f\\Hlo_WF091.mp3",	--	What can I do for you?
                 "vo\\w\\f\\Hlo_WF108.mp3",	--	Yes?
-                "vo\\w\\f\\Hlo_WF109.mp3",	--	Of course. What may I do for you?
+                -- "vo\\w\\f\\Hlo_WF109.mp3",	--	Of course. What may I do for you?
                 "vo\\w\\f\\Hlo_WF110.mp3",	--	Yes, stranger?
-                "vo\\w\\f\\Hlo_WF115.mp3",	--	How can I help? I'll do what I can.
-                "vo\\w\\f\\Hlo_WF137.mp3",	--	If there is anything I can do, I am humbly at your service.
+                -- "vo\\w\\f\\Hlo_WF115.mp3",	--	How can I help? I'll do what I can.
+                -- "vo\\w\\f\\Hlo_WF137.mp3",	--	If there is anything I can do, I am humbly at your service.
                 "vo\\w\\f\\Idl_WF001.mp3",	--	Sniff.
                 "vo\\w\\f\\Idl_WF002.mp3",	--	Cough.
                 "vo\\w\\f\\Idl_WF003.mp3",	--	Sigh.
@@ -2006,7 +2002,7 @@ this.voiceData = {
             },
             [this.voice.loseRound] = {
                 "vo\\w\\m\\Fle_WM002.mp3",	--	When we meet again, you will die!
-                "vo\\w\\m\\Fle_WM003.mp3",	--	Get away! I do not wish to fight!
+                -- "vo\\w\\m\\Fle_WM003.mp3",	--	Get away! I do not wish to fight!
                 "vo\\w\\m\\Fle_WM004.mp3",	--	I will deny you your victory and the spoils!
                 "vo\\w\\m\\Fle_WM005.mp3",	--	Aaaagh!
                 "vo\\w\\m\\Hit_WM001.mp3",	--	Arrgh.
@@ -2052,15 +2048,15 @@ this.voiceData = {
                 "vo\\w\\m\\Hlo_WM059.mp3",	--	Hurry this up, will you?
                 "vo\\w\\m\\Hlo_WM060.mp3",	--	Sorry, stranger, my time is short, so get on with it.
                 "vo\\w\\m\\Hlo_WM086.mp3",	--	Do you want something from me?
-                "vo\\w\\m\\Hlo_WM087.mp3",	--	How may I help you?
+                -- "vo\\w\\m\\Hlo_WM087.mp3",	--	How may I help you?
                 "vo\\w\\m\\Hlo_WM090.mp3",	--	How do you do?
                 "vo\\w\\m\\Hlo_WM091.mp3",	--	What can I do for you?
                 "vo\\w\\m\\Hlo_WM108.mp3",	--	Yes?
                 "vo\\w\\m\\Hlo_WM109.mp3",	--	Of course. What may I do for you?
                 "vo\\w\\m\\Hlo_WM110.mp3",	--	Yes, stranger?
                 "vo\\w\\m\\Hlo_WM111.mp3",	--	And how are you? Can I help you?
-                "vo\\w\\m\\Hlo_WM115.mp3",	--	How can I help? I'll do what I can.
-                "vo\\w\\m\\Hlo_WM137.mp3",	--	If there is anything I can do, I am humbly at your service.
+                -- "vo\\w\\m\\Hlo_WM115.mp3",	--	How can I help? I'll do what I can.
+                -- "vo\\w\\m\\Hlo_WM137.mp3",	--	If there is anything I can do, I am humbly at your service.
                 "vo\\w\\m\\Idl_WM001.mp3",	--	Sniff.
                 "vo\\w\\m\\Idl_WM002.mp3",	--	Cough.
                 "vo\\w\\m\\Idl_WM003.mp3",	--	Sigh.

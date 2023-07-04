@@ -1820,9 +1820,9 @@ function View.CreateInfo(self, parent, service)
     right.autoWidth= true
     right.autoHeight = true
     right.childAlignX = 1.0
+    local rule = right:createButton({text = i18n("koi.view.quickRule")})
     local cards = right:createButton({text = i18n("koi.view.cardList")})
     local combo = right:createButton({text = i18n("koi.view.comboList")})
-    local rule = right:createButton({text = i18n("koi.view.quickRule")})
     exit.borderAllSides = 0
     cards.borderAllSides = 0
     combo.borderAllSides = 0

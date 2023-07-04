@@ -645,8 +645,6 @@ function this.CreateRule(e)
     createHeader(parent, i18n("koi.help.rule.end.header"), 2)
     createText(parent, i18n("koi.help.rule.end.description"), 2)
 
-    -- todo house rules
-
     -- more info
     parent:createDivider().widthProportional = 1.0
     createHeader(parent, i18n("koi.help.more"))
