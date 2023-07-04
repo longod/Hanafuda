@@ -3,6 +3,8 @@
 This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morrowind.  
 `Hanafuda` is traditional Japanese playing cards and `Koi-Koi` is one of its game rules, but in-game treats them as card games brought by [Akavir](https://en.uesp.net/wiki/Lore:Akavir) and it will aim to make them lore-friendly.
 
+![Featured image of Hanafuda: Akaviri Playing Cards](featured.png)
+
 ## Requirements
 - Morrowind
 - Morrowind Script Extender latest nightly build
