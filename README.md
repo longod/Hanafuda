@@ -6,8 +6,8 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
 ![Featured image of Hanafuda: Akaviri Playing Cards](featured.png)
 
 ## Requirements
-- Morrowind
-- Morrowind Script Extender latest nightly build
+- Morrowind, Tribunal, Bloodmoon
+- The latest nightly build of Morrowind Script Extender 2.1
 
 ## How to play
 - This is where `Data Files` is located.
@@ -61,7 +61,7 @@ This mod allows you to play game (`Koi-Koi`) using `Hanafuda` with MWSE in Morro
   - Depending on the game result of Koi-Koi, it will affect that actor orand the world of Morrowind.
 
 ### Localization
-- See MWSE [Mod Translations](https://mwse.github.io/MWSE/guides/mod-translations/) for basic instructions
+- See MWSE [Mod Translations](https://mwse.github.io/MWSE/guides/mod-translations/) for basic instructions.
 - Apart from the game's locale, the terms are replaced with the original language by config. Please keep the original language and replacement code.
 
 ## TODO

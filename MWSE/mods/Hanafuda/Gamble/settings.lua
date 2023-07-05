@@ -52,8 +52,8 @@ this.bettingDispositionRange = {
 ---@return KoiKoi.RandomBrain.Params
 function this.CalculateRandomBrainParams(gamble, greedy)
     return {
-        koikoiChance = math.remap(greedy, 0, 1, 0.2,  0.5),
-        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3,  0.0),
+        koikoiChance = math.remap(greedy, 0, 1, 0.1, 0.5),
+        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3, 0.0),
         waitHand = { s = 1, e = 3 },
         waitDrawn = { s = 0.5, e = 1.5 },
         waitCalling = { s = 1.5, e = 3.5 },
@@ -122,7 +122,7 @@ this.gambleAbility = {
             weight = 1.0,
             current = {
                 min = 30,
-                max = 150,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -134,7 +134,7 @@ this.gambleAbility = {
             weight = 1.0,
             current = {
                 min = 30,
-                max = 150,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -149,8 +149,8 @@ this.gambleAbility = {
                 max = 100,
             },
             out = {
-                min = 0,
-                max = 1,
+                min = 0.0,
+                max = 1.0,
             },
         },
     },

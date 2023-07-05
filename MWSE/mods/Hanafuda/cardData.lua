@@ -160,7 +160,7 @@ function this.BuildCardAsset(style)
     local logger = require("Hanafuda.logger")
     local styleDir = cardDir .. style  .. "\\"
     local dir = dataFiles .. styleDir
-    logger:debug("search files in '%s'", dir )
+    logger:debug("frontface search files in '%s'", dir )
     for m=1, 12 do
         for i=1, 4 do
             local index = (m - 1) * 4 + i
@@ -187,7 +187,7 @@ function this.BuildCardBackAsset(style)
     local logger = require("Hanafuda.logger")
     local styleDir = cardDir .. style  .. "\\"
     local dir = dataFiles .. styleDir
-    logger:debug("search files in '%s'", dir )
+    logger:debug("backface search files in '%s'", dir )
     local path = "back"
     local ext = TextureFileExists(dir .. path)
     if ext then
