@@ -241,6 +241,17 @@ end
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 local function AddGamblingMenu(menu, player, opponent)
+    --[[
+    logger:debug("willpower    %d", opponent.willpower.current)
+    logger:debug("intelligence %d", opponent.intelligence.current)
+    logger:debug("personality  %d", opponent.personality.current)
+    logger:debug("luck         %d", opponent.luck.current)
+    if opponent.actorType == tes3.actorType.npc then
+        logger:debug("mercantile   %d", opponent.mercantile.current)
+        logger:debug("speechcraft  %d", opponent.speechcraft.current)
+    end
+    --]]
+
     local divider = menu:findChild(uiid.menuDialogDivider)
     local parent = divider.parent
     assert(divider)

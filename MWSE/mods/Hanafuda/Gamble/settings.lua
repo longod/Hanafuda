@@ -42,8 +42,8 @@ this.bettingDispositionRange = {
     },
     ---@type Gamble.Range
     out = {
-        min = -1.0,
-        max = 1.0,
+        min = -0.5,
+        max = 0.5,
     },
 }
 
@@ -52,8 +52,8 @@ this.bettingDispositionRange = {
 ---@return KoiKoi.RandomBrain.Params
 function this.CalculateRandomBrainParams(gamble, greedy)
     return {
-        koikoiChance = math.remap(greedy, 0, 1, 0.1, 0.5),
-        meaninglessDiscardChance = math.remap(gamble, 0, 1, 0.3, 0.0),
+        koikoiChance = math.clamp(math.remap(greedy, 0, 1, 0.1, 0.6), 0, 1),
+        meaninglessDiscardChance = math.clamp(math.remap(gamble, 0, 1, 0.25, 0.0), 0, 1),
         waitHand = { s = 1, e = 3 },
         waitDrawn = { s = 0.5, e = 1.5 },
         waitCalling = { s = 1.5, e = 3.5 },
@@ -90,6 +90,7 @@ function this.CalculateAbility(mobile, ability)
         local attributes = mobile.attributes
         for _, a in ipairs(ability.attributes) do
             local v = math.remap(attributes[a.attribute + 1].current, a.current.min, a.current.max, a.out.min, a.out.max)
+            v = math.clamp(v, 0.0, 1.0)
             value = value + v * a.weight
             total = total + a.weight
         end
@@ -102,6 +103,7 @@ function this.CalculateAbility(mobile, ability)
             local skills = mobile.skills
             for _, s in ipairs(ability.skills) do
                 local v = math.remap(skills[s.skill + 1].current, s.current.min, s.current.max, s.out.min, s.out.max)
+                v = math.clamp(v, 0.0, 1.0)
                 value = value + v * s.weight
                 total = total + s.weight
             end
@@ -113,6 +115,13 @@ function this.CalculateAbility(mobile, ability)
     end
     return value
 end
+
+-- Most NPC's luck is 40
+-- Other attributes range from 30 to 100
+-- Mercantile of most NPCs is less than 60
+-- Speechcraft of most NPCs is less than 75, 70
+-- Security of most NPCs is less than 65
+-- Sneak of most NPCs is less than 70
 
 ---@type Gamble.Ability
 this.gambleAbility = {
@@ -145,8 +154,8 @@ this.gambleAbility = {
             attribute = tes3.attribute.luck,
             weight = 0.5,
             current = {
-                min = 0,
-                max = 100,
+                min = 40,
+                max = 60,
             },
             out = {
                 min = 0.0,
@@ -160,7 +169,7 @@ this.gambleAbility = {
             weight = 0.5,
             current = {
                 min = 0,
-                max = 100,
+                max = 60,
             },
             out = {
                 min = 0.0,
@@ -178,7 +187,7 @@ this.greedyAbility = {
             attribute = tes3.attribute.willpower,
             weight = 1.0,
             current = {
-                min = 0,
+                min = 30,
                 max = 100,
             },
             out = {
@@ -193,7 +202,7 @@ this.greedyAbility = {
             weight = 0.5,
             current = {
                 min = 0,
-                max = 100,
+                max = 60,
             },
             out = {
                 min = 1.0,
@@ -203,6 +212,7 @@ this.greedyAbility = {
     },
 }
 
+-- affect both PC and NPC
 ---@type Gamble.Ability
 this.cheatAbility = {
     attributes = {
@@ -210,8 +220,8 @@ this.cheatAbility = {
             attribute = tes3.attribute.personality,
             weight = 0.5,
             current = {
-                min = 50,
-                max = 150,
+                min = 30,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -222,8 +232,8 @@ this.cheatAbility = {
             attribute = tes3.attribute.agility,
             weight = 0.5,
             current = {
-                min = 50,
-                max = 150,
+                min = 30,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -234,7 +244,7 @@ this.cheatAbility = {
             attribute = tes3.attribute.luck,
             weight = 0.25,
             current = {
-                min = 0,
+                min = 40,
                 max = 100,
             },
             out = {
@@ -271,6 +281,7 @@ this.cheatAbility = {
     },
 }
 
+-- affect both PC and NPC
 ---@type Gamble.Ability
 this.spotAbility = {
     attributes = {
@@ -278,8 +289,8 @@ this.spotAbility = {
             attribute = tes3.attribute.willpower,
             weight = 0.5,
             current = {
-                min = 50,
-                max = 150,
+                min = 30,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -290,8 +301,8 @@ this.spotAbility = {
             attribute = tes3.attribute.intelligence,
             weight = 0.5,
             current = {
-                min = 50,
-                max = 150,
+                min = 30,
+                max = 100,
             },
             out = {
                 min = 0.0,
@@ -302,7 +313,7 @@ this.spotAbility = {
             attribute = tes3.attribute.luck,
             weight = 0.25,
             current = {
-                min = 0,
+                min = 40,
                 max = 100,
             },
             out = {
@@ -327,6 +338,7 @@ this.spotAbility = {
     },
 }
 
+-- affect both PC and NPC?
 -- not ability, but same formula
 ---@type Gamble.Ability
 this.luckyAbility = {
@@ -347,6 +359,7 @@ this.luckyAbility = {
     skills = nil,
 }
 
+-- affect both PC and NPC
 ---@type Gamble.Ability
 this.bettingAbility = {
     attributes = {
@@ -354,7 +367,7 @@ this.bettingAbility = {
             attribute = tes3.attribute.personality,
             weight = 0.5,
             current = {
-                min = 0,
+                min = 30,
                 max = 100,
             },
             out = {
@@ -366,7 +379,7 @@ this.bettingAbility = {
             attribute = tes3.attribute.luck,
             weight = 0.25,
             current = {
-                min = 0,
+                min = 40,
                 max = 100,
             },
             out = {

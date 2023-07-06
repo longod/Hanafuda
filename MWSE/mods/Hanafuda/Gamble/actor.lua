@@ -474,11 +474,11 @@ function this.CalculateBettingOddsModifier(player, opponent)
         dispositionModifier = math.remap(disposition, range.current.min, range.current.max, range.out.min, range.out.max) -- [-params, params]
     end
     local bettingModifier = dispositionModifier + playerBetting - opponentBetting -- [-1, 1] * mod + disposition
-    bettingModifier = 1 + bettingModifier -- roughly [0, 2]
-    bettingModifier = math.max(bettingModifier, 0) -- or clamp
-    logger:trace("playerBetting %f", playerBetting)
-    logger:trace("opponentBetting %f", opponentBetting)
-    logger:trace("dispositionModifier %f", dispositionModifier)
+    bettingModifier = math.clamp(bettingModifier, -1, 1)
+    bettingModifier = 1 + bettingModifier -- [0, 2]
+    logger:debug("playerBetting %f", playerBetting)
+    logger:debug("opponentBetting %f", opponentBetting)
+    logger:debug("dispositionModifier %f", dispositionModifier)
     logger:debug("Betting Modifier %f", bettingModifier)
     return bettingModifier
 end
