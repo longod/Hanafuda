@@ -1,7 +1,7 @@
 [package]
 name = "Hanafuda: Akaviri Playing Cards"
-description = "Play Koi-Koi with Hanafuda in Morrowind."
-homepage = "https://github.com/longod/Hanafuda"
+description = "Let's play Koi-Koi with Hanafuda in Morrowind."
+homepage = "https://www.nexusmods.com/morrowind/mods/53104"
 repository = "https://github.com/longod/Hanafuda"
 authors = ["longod"]
 version = "1.0.0"

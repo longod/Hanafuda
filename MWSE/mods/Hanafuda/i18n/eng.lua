@@ -104,10 +104,10 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     -- koikoi
     ["koi.service.label"] = "Koi-Koi",
     ["koi.service.tooltip"] = "Wouldn't mind a few rounds of Koi-Koi?",
-    ["koi.service.odds.label"] = "Betting Odds",
+    ["koi.service.odds.label"] = "Bet Amount",
     ["koi.service.odds.free"] = "Free",
     ["koi.service.odds.rate"] = "%{count} gold per point",
-    ["koi.service.odds.disabled"] = "You or the opponent does not have sufficient ability to pay.",
+    ["koi.service.odds.disabled"] = "It's an amount you or your opponent cannot possibly pay.",
     ["koi.service.payout"] = "Minimum payout for conceding: %{count}",
     ["koi.koikoi"] = "Koi-Koi",
     ["koi.shobu"] = "Shobu",
@@ -119,11 +119,11 @@ Hanafuda can be played in various ways with different rulesets and variations.]]
     ["koi.help.more"] = "More Informations",
     ["koi.help.tldr.header"] = "Quick Rules of Koi-Koi",
     ["koi.help.tldr.description"] =
-[[1. A card is captured that matches the same suit in one hand and a card in the field. If it does not match, a card is discarded from the hand.
-2. Draw a card from the deck and do the same.
-3. This is repeated alternately, with the player's turns swapped.
-4. When a combo is created with the captured cards, the player decides whether to continue (Koi-Koi) to create better combos or win the round (Shobu).
-5. The player with the highest total points wins At the end of the game.]],
+[[1. Select one card from your hand that has the same suit as the card in the field and match and capture them. Or, discard one non-matching card from your hand to the field.
+2. Flip a card from the deck and do the same.
+3. Swap turns and repeat these steps.
+4. When combos are created with the captured cards, the player decides whether to continue (Koi-Koi) to make better combos or win this round (Shobu).
+5. Rounds are repeated, and the player with the highest total score at the end of the game wins.]],
     ["koi.help.tips.header"] = "Tips",
     ["koi.help.tips.description"] =
 [[It is to make the combo faster than the opponent and at the same time prevent the opponent from making the combo.
@@ -289,9 +289,9 @@ Over time, the power and influence of the Tribunal in Morrowind began to decline
 With this change, Hanafuda gained acceptance and popularity among the population of Morrowind. It became a cherished pastime, enjoyed for its beautiful artwork, strategic gameplay, and the opportunities it provided for social interaction among players.]],
     ["mcm.hanafuda.category"] = "Hanafuda",
     ["mcm.hanafuda.cardStyle.label"] = "Card Front-side Style",
-    ["mcm.hanafuda.cardStyle.description"] = "Change the style of the front side of the card.  You can add styles as you like. Please see the readme for where to add them and the naming conventions.",
+    ["mcm.hanafuda.cardStyle.description"] = "Change the style of the front side of the card.  You can add styles as you like. Please see GitHub repository for where to add them and the naming conventions.",
     ["mcm.hanafuda.cardBackStyle.label"] = "Card Back-side Style",
-    ["mcm.hanafuda.cardBackStyle.description"] = "Change the style of the back side of the card.  You can add styles as you like. Please see the readme for where to add them and the naming conventions.",
+    ["mcm.hanafuda.cardBackStyle.description"] = "Change the style of the back side of the card.  You can add styles as you like. Please see GitHub repository for where to add them and the naming conventions.",
     ["mcm.hanafuda.cardLanguage.label"] = "Card Language",
     ["mcm.hanafuda.cardLanguage.description"] = "Tamrielic: Tamrielic translation (current locale)\nAkaviri: Original language (Japanese)",
     ["mcm.hanafuda.cardLanguage.japanese"] = "Akaviri",

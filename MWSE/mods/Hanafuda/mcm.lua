@@ -23,8 +23,17 @@ local function OnModConfigReady(e)
 
     local page = template:createSideBarPage({
         label = i18n("mcm.page.label"), -- does not show
-        description = i18n("mcm.page.description", { name = settings.modName, version = settings.version })
     })
+    page.sidebar:createInfo{ text = i18n("mcm.page.description", { name = settings.modName, version = settings.version }) }
+    page.sidebar:createHyperLink({
+		text = "Nexus",
+		url = "https://www.nexusmods.com/morrowind/mods/53104",
+	})
+    page.sidebar:createHyperLink({
+		text = "GitHub",
+		url = "https://github.com/longod/Hanafuda",
+	})
+
     local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
 
     --- first letter to upper case

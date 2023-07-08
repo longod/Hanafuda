@@ -133,7 +133,7 @@ local function PlaySoundGenerator(id, creatureId)
 end
 
 ---@param id KoiKoi.VoiceId
----@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer? -- todo use weak tes3reference or less dependency
 ---@param disposition number? Mutual disposition
 ---@param excluding integer?
 ---@return integer? -- random choice index

@@ -241,14 +241,14 @@ end
 ---@param player tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 local function AddGamblingMenu(menu, player, opponent)
-    --[[
-    logger:debug("willpower    %d", opponent.willpower.current)
-    logger:debug("intelligence %d", opponent.intelligence.current)
-    logger:debug("personality  %d", opponent.personality.current)
-    logger:debug("luck         %d", opponent.luck.current)
+    ----[[
+    logger:trace("willpower    %d", opponent.willpower.current)
+    logger:trace("intelligence %d", opponent.intelligence.current)
+    logger:trace("personality  %d", opponent.personality.current)
+    logger:trace("luck         %d", opponent.luck.current)
     if opponent.actorType == tes3.actorType.npc then
-        logger:debug("mercantile   %d", opponent.mercantile.current)
-        logger:debug("speechcraft  %d", opponent.speechcraft.current)
+        logger:trace("mercantile   %d", opponent.mercantile.current)
+        logger:trace("speechcraft  %d", opponent.speechcraft.current)
     end
     --]]
 

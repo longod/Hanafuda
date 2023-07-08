@@ -1,6 +1,5 @@
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
-local config = require("Hanafuda.config")
 
 ---@enum KoiKoi.Phase
 local phase = {
