@@ -242,13 +242,13 @@ end
 ---@param opponent tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 local function AddGamblingMenu(menu, player, opponent)
     ----[[
-    logger:trace("willpower    %d", opponent.willpower.current)
-    logger:trace("intelligence %d", opponent.intelligence.current)
-    logger:trace("personality  %d", opponent.personality.current)
-    logger:trace("luck         %d", opponent.luck.current)
+    logger:debug("willpower    %d", opponent.willpower.current)
+    logger:debug("intelligence %d", opponent.intelligence.current)
+    logger:debug("personality  %d", opponent.personality.current)
+    logger:debug("luck         %d", opponent.luck.current)
     if opponent.actorType == tes3.actorType.npc then
-        logger:trace("mercantile   %d", opponent.mercantile.current)
-        logger:trace("speechcraft  %d", opponent.speechcraft.current)
+        logger:debug("mercantile   %d", opponent.mercantile.current)
+        logger:debug("speechcraft  %d", opponent.speechcraft.current)
     end
     --]]
 
@@ -263,7 +263,7 @@ local function AddGamblingMenu(menu, player, opponent)
     if not act.CanPerformService(player, opponent) then
         serviceButton.widget.state = tes3.uiState.disabled
         serviceButton.disabled = true
-    else
+    end
     serviceButton:register(tes3.uiEvent.mouseClick,
         ---@param _ uiEventEventData
         function(_)
@@ -275,7 +275,6 @@ local function AddGamblingMenu(menu, player, opponent)
                 LaunchKoiKoi(player, opponent, odds, penaltyPayout)
             end)
         end)
-    end
 
     serviceButton:register(tes3.uiEvent.help,
         ---@param e uiEventEventData

@@ -76,7 +76,7 @@ this.voiceData = {
             },
             [this.voice.loseRound] = {
                 "vo\\a\\f\\Fle_AF002.mp3", --	Stop!
-                "vo\\a\\f\\Fle_AF003.mp3", --	Go away!
+                -- "vo\\a\\f\\Fle_AF003.mp3", --	Go away!
                 "vo\\a\\f\\Fle_AF004.mp3", --	No more!
                 "vo\\a\\f\\Fle_AF005.mp3", --	Make it stop!
                 "vo\\a\\f\\Hit_AF001.mp3",	--	Ungh!
@@ -91,7 +91,7 @@ this.voiceData = {
                 "vo\\a\\f\\Hit_AF011.mp3", --	Grunt.
                 "vo\\a\\f\\Hit_AF012.mp3", --	Grunt.
                 "vo\\a\\f\\Hit_AF014.mp3", --	Hiss.
-                "vo\\a\\f\\Hlo_AF024.mp3",	--	Return to me no more.
+                -- "vo\\a\\f\\Hlo_AF024.mp3",	--	Return to me no more.
                 "vo\\a\\f\\Hlo_AF025.mp3", --	Unwelcome it is.
                 -- "vo\\a\\f\\Hlo_AF026.mp3", --	Don't bother me.
                 -- "vo\\a\\f\\Hlo_AF028.mp3", --	Leave me.
@@ -153,7 +153,7 @@ this.voiceData = {
             [this.voice.loseRound] = {
                 "vo\\a\\m\\Fle_AM001.mp3",	--	Stop! Help!
                 "vo\\a\\m\\Fle_AM002.mp3",	--	Help us!
-                "vo\\a\\m\\Fle_AM003.mp3",	--	Go away!
+                -- "vo\\a\\m\\Fle_AM003.mp3",	--	Go away!
                 "vo\\a\\m\\Fle_AM004.mp3",	--	No more!
                 "vo\\a\\m\\Fle_AM005.mp3",	--	No!
                 "vo\\a\\m\\Hit_AM001.mp3",	--	AAAIIEE!
@@ -171,7 +171,7 @@ this.voiceData = {
                 "vo\\a\\m\\Hit_AM015.mp3",	--	Hiss!
                 "vo\\a\\m\\Hit_AM016.mp3",	--	Arrgh!
                 "vo\\a\\m\\Hlo_AM022.mp3",	--	Be gone!
-                "vo\\a\\m\\Hlo_AM024.mp3",	--	Return to me no more.
+                -- "vo\\a\\m\\Hlo_AM024.mp3",	--	Return to me no more.
                 "vo\\a\\m\\Hlo_AM025.mp3",	--	Unwelcome it is.
                 -- "vo\\a\\m\\Hlo_AM026.mp3",	--	Don't bother me.
                 -- "vo\\a\\m\\Hlo_AM028.mp3",	--	Leave me.
@@ -237,7 +237,7 @@ this.voiceData = {
                 "vo\\b\\f\\Fle_BF002.mp3",	--	Help!
                 "vo\\b\\f\\Fle_BF003.mp3",	--	Hey, leave me alone! I give up!
                 "vo\\b\\f\\Fle_BF004.mp3",	--	I've had enough of this! I hope you get eaten by a kagouti!
-                "vo\\b\\f\\Fle_BF005.mp3",	--	Go away!
+                -- "vo\\b\\f\\Fle_BF005.mp3",	--	Go away!
                 "vo\\b\\f\\Hit_BF001.mp3",	--	AAAIIEE.
                 "vo\\b\\f\\Hit_BF002.mp3",	--	Oomph!
                 "vo\\b\\f\\Hit_BF003.mp3",	--	Ack!
@@ -333,7 +333,7 @@ this.voiceData = {
                 "vo\\b\\m\\Fle_BM002.mp3",	--	Help!
                 "vo\\b\\m\\Fle_BM003.mp3",	--	Leave me alone!
                 "vo\\b\\m\\Fle_BM004.mp3",	--	Not today.
-                "vo\\b\\m\\Fle_BM005.mp3",	--	I have no more quarrel with you. Go away!
+                -- "vo\\b\\m\\Fle_BM005.mp3",	--	I have no more quarrel with you. Go away!
                 "vo\\b\\m\\Hit_BM001.mp3",	--	AAAIIEE.
                 "vo\\b\\m\\Hit_BM002.mp3",	--	Umph!
                 "vo\\b\\m\\Hit_BM004.mp3",	--	Ow!
@@ -464,12 +464,12 @@ this.voiceData = {
                 "vo\\d\\f\\Hit_DF013.mp3",	--	Growl.
                 "vo\\d\\f\\Hit_DF014.mp3",	--	Gasp.
                 -- "vo\\d\\f\\Hlo_DF000e.mp3",	--	Get out of here!
-                "vo\\d\\f\\Hlo_DF001.mp3",	--	Go away.
+                -- "vo\\d\\f\\Hlo_DF001.mp3",	--	Go away.
                 "vo\\d\\f\\Hlo_DF017.mp3",	--	I am not amused.
                 "vo\\d\\f\\Hlo_DF029.mp3",	--	How rude!
-                "vo\\d\\f\\Hlo_DF033.mp3",	--	Leave me.
+                -- "vo\\d\\f\\Hlo_DF033.mp3",	--	Leave me.
                 "vo\\d\\f\\Hlo_DF040.mp3",	--	I can already tell I'm not going to like this.
-                "vo\\d\\f\\Hlo_DF041.mp3",	--	Oh, come on. Leave me alone.
+                -- "vo\\d\\f\\Hlo_DF041.mp3",	--	Oh, come on. Leave me alone.
                 -- "vo\\d\\f\\Hlo_DF072.mp3",	--	Say what you want or go away.
                 "vo\\d\\f\\Hlo_DF107.mp3",	--	We are punished by the gods. The wind is our suffering.
                 -- "vo\\d\\f\\tHlo_DF007.mp3",	--	Get OUT! Now!
@@ -642,7 +642,7 @@ this.voiceData = {
                 "vo\\d\\m\\Hlo_DM029.mp3",	--	How rude!
                 -- "vo\\d\\m\\Hlo_DM030.mp3",	--	Must you be so annoying? Go away.
                 -- "vo\\d\\m\\Hlo_DM033.mp3",	--	Leave me.
-                "vo\\d\\m\\Hlo_DM041.mp3",	--	Oh, come on. Leave me alone.
+                -- "vo\\d\\m\\Hlo_DM041.mp3",	--	Oh, come on. Leave me alone.
                 -- "vo\\d\\m\\Hlo_DM072.mp3",	--	Say what you want or go away.
                 "vo\\d\\m\\Hlo_DM107.mp3",	--	We are punished by the gods. The wind is our suffering.
                 "vo\\d\\m\\tHlo_DM008.mp3",	--	Well, well, well. Aren't YOU the tasty little morsel?
@@ -1087,7 +1087,7 @@ this.voiceData = {
                 "vo\\i\\m\\bHlo_IM023a.mp3",	--	I got nothing more to say.
                 "vo\\i\\m\\bIdl_IM024.mp3",	--	Just another of life's little disappointments...
                 "vo\\i\\m\\bIdl_IM032.mp3",	--	What a life.
-                "vo\\i\\m\\Fle_IM002.mp3",	--	I'm getting out of here!
+                -- "vo\\i\\m\\Fle_IM002.mp3",	--	I'm getting out of here!
                 "vo\\i\\m\\Fle_IM003.mp3",	--	No!
                 "vo\\i\\m\\Hit_IM001.mp3",	--	Uggh
                 "vo\\i\\m\\Hit_IM002.mp3",	--	Wuggh
@@ -1754,7 +1754,7 @@ this.voiceData = {
                 "vo\\r\\f\\Fle_RF002.mp3",	--	We're done here!
                 "vo\\r\\f\\Fle_RF003.mp3",	--	I'll be back, and you'll be dead!
                 "vo\\r\\f\\Fle_RF004.mp3",	--	Not today!
-                "vo\\r\\f\\Fle_RF005.mp3",	--	Get away from me!
+                -- "vo\\r\\f\\Fle_RF005.mp3",	--	Get away from me!
                 "vo\\r\\f\\Hit_RF001.mp3",	--	Arrgh.
                 "vo\\r\\f\\Hit_RF002.mp3",	--	Umpfh
                 "vo\\r\\f\\Hit_RF003.mp3",	--	Ungh!
@@ -1833,7 +1833,7 @@ this.voiceData = {
                 "vo\\r\\m\\Fle_RM001.mp3",	--	Not this time.
                 "vo\\r\\m\\Fle_RM002.mp3",	--	We're done here!
                 "vo\\r\\m\\Fle_RM003.mp3",	--	I'll be back, and you'll be dead!
-                "vo\\r\\m\\Fle_RM005.mp3",	--	Get away from me!
+                -- "vo\\r\\m\\Fle_RM005.mp3",	--	Get away from me!
                 "vo\\r\\m\\Hit_RM001.mp3",	--	Arrgh.
                 "vo\\r\\m\\Hit_RM002.mp3",	--	Urgh!
                 "vo\\r\\m\\Hit_RM003.mp3",	--	Ungh.
@@ -1850,7 +1850,7 @@ this.voiceData = {
                 "vo\\r\\m\\Hit_RM013.mp3",	--	Growl.
                 "vo\\r\\m\\Hit_RM014.mp3",	--	Gasp.
                 "vo\\r\\m\\Hit_RM015.mp3",	--	Scream.
-                "vo\\r\\m\\Hlo_RM042.mp3",	--	Not now. Go away.
+                -- "vo\\r\\m\\Hlo_RM042.mp3",	--	Not now. Go away.
             },
             [this.voice.winGame] = {
                 "vo\\r\\m\\Hlo_RM001.mp3",	--	I think it would be best if you leave, now!
@@ -2156,7 +2156,7 @@ this.creatures = {
         [this.voice.loseRound] = {
         },
         [this.voice.winGame] = {
-            "vo\\Misc\\tr_almgreet1.mp3",	--	Many Blessings upon you, my loyal servant.
+            -- "vo\\Misc\\tr_almgreet1.mp3",	--	Many Blessings upon you, my loyal servant.
         },
         [this.voice.think] = {
         },

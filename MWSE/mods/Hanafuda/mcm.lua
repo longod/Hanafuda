@@ -36,6 +36,26 @@ local function OnModConfigReady(e)
 
     local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
 
+    local languageTable = {
+        { label = i18n("mcm.hanafuda.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
+        { label = i18n("mcm.hanafuda.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },
+    }
+    hanafuda:createDropdown({
+        label = i18n("mcm.hanafuda.cardLanguage.label"),
+        description = i18n("mcm.hanafuda.cardLanguage.description") .. "\n\n" .. i18n("mcm.default") .. languageTable[defaults.cardLanguage].label, -- Strictly it is not correct to treat it as an index
+        options = languageTable,
+        variable = mwse.mcm.createTableVariable({
+            id = "cardLanguage",
+            table = config,
+            restartRequired = true,
+        }),
+    })
+    hanafuda:createYesNoButton({
+        label = i18n("mcm.hanafuda.tooltipImage.label"),
+        description = i18n("mcm.hanafuda.tooltipImage.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.tooltipImage),
+        variable = mwse.mcm.createTableVariable({ id = "tooltipImage", table = config })
+    })
+
     --- first letter to upper case
     ---@param s string
     ---@return string
@@ -86,27 +106,6 @@ local function OnModConfigReady(e)
             id = "cardBackStyle",
             table = config,
         }),
-    })
-
-
-    local languageTable = {
-        { label = i18n("mcm.hanafuda.cardLanguage.japanese"), value = settings.cardLanguage.japanese },
-        { label = i18n("mcm.hanafuda.cardLanguage.tamrielic"), value = settings.cardLanguage.tamrielic },
-    }
-    hanafuda:createDropdown({
-        label = i18n("mcm.hanafuda.cardLanguage.label"),
-        description = i18n("mcm.hanafuda.cardLanguage.description") .. "\n\n" .. i18n("mcm.default") .. languageTable[defaults.cardLanguage].label, -- Strictly it is not correct to treat it as an index
-        options = languageTable,
-        variable = mwse.mcm.createTableVariable({
-            id = "cardLanguage",
-            table = config,
-            restartRequired = true,
-        }),
-    })
-    hanafuda:createYesNoButton({
-        label = i18n("mcm.hanafuda.tooltipImage.label"),
-        description = i18n("mcm.hanafuda.tooltipImage.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.tooltipImage),
-        variable = mwse.mcm.createTableVariable({ id = "tooltipImage", table = config })
     })
 
     do

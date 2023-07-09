@@ -35,7 +35,7 @@ end
 ---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
 ---@return integer
 function this.GetActorGold(mobile)
-    local gold = mobile.barterGold
+    local gold = math.max(mobile.barterGold, 0)
 
     local goldId = {
         ["Gold_001"] = true,
@@ -48,7 +48,7 @@ function this.GetActorGold(mobile)
     local items = mobile.inventory
     for _, item in ipairs(items) do
         if goldId[item.object.id] then
-            gold = gold + item.object.value * item.count
+            gold = gold + item.object.value * math.abs(item.count) -- possible negative
         end
     end
     return gold
@@ -68,11 +68,11 @@ local function HasServiceMenuByClass(mobile)
     local classes = {
         -- pc and npc classes
         ["acrobat"] = false,
-        ["agent"] = true,
+        ["agent"] = false, -- speechcraft is good
         ["archer"] = false,
         ["assassin"] = false,
         ["barbarian"] = false,
-        ["bard"] = false,
+        ["bard"] = true,
         ["battlemage"] = false,
         ["crusader"] = false,
         ["healer"] = false,
@@ -119,7 +119,7 @@ local function HasServiceMenuByClass(mobile)
         ["pawnbroker"] = true,
         ["priest"] = false,
         ["publican"] = true,
-        ["savant"] = false,
+        ["savant"] = true,
         ["sharpshooter"] = false,
         ["shipmaster"] = false,
         ["slave"] = false,
