@@ -162,7 +162,7 @@ end
 ---@return boolean
 function this.HasServiceMenu(player, opponent)
     if not ActorHasServiceMenu(opponent) then
-        logger:trace("service is not allowed opponent condition")
+        logger:debug("service is not allowed opponent condition")
         return false
     end
 
@@ -172,7 +172,7 @@ function this.HasServiceMenu(player, opponent)
         ---@return boolean
             function(a)
                 if not special.IsAllowdCreature(a) then
-                    logger:trace("service is not allowed creature")
+                    logger:debug("service is not allowed creature")
                     return false
                 end
                 return true
@@ -182,11 +182,11 @@ function this.HasServiceMenu(player, opponent)
         ---@return boolean
             function(a)
                 if special.IsAllowdNPC(a) then
-                    logger:trace("service allowd by special npc")
+                    logger:debug("service allowd by special npc")
                     return true
                 end
                 if not HasServiceMenuByClass(a) then
-                    logger:trace("service is not allowd by class")
+                    logger:debug("service is not allowd by class")
                     return false
                 end
                 return true

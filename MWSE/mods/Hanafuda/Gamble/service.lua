@@ -314,7 +314,7 @@ local function OnMenuDialogActivated(e)
     end
 
     if not act.HasServiceMenu(tes3.mobilePlayer, serviceActor) then
-        logger:trace("no service")
+        logger:debug("no service")
         return
     end
 

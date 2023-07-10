@@ -53,7 +53,7 @@ this.bettingDispositionRange = {
 function this.CalculateRandomBrainParams(gamble, greedy)
     return {
         koikoiChance = math.clamp(math.remap(greedy, 0, 1, 0.1, 0.6), 0, 1),
-        meaninglessDiscardChance = math.clamp(math.remap(gamble, 0, 1, 0.25, 0.0), 0, 1),
+        meaninglessDiscardChance = math.clamp(math.remap(gamble, 0, 1, 0.3, 0.0), 0, 1),
         waitHand = { s = 1, e = 3 },
         waitDrawn = { s = 0.5, e = 1.5 },
         waitCalling = { s = 1.5, e = 3.5 },
