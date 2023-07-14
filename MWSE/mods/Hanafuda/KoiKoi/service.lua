@@ -270,9 +270,25 @@ function Service.CanPutbackCard(self, cardId, player)
 end
 
 ---@param self KoiKoi.Service
+---@return boolean
+function Service.IsPaused(self)
+    if self.view and self.view:IsPaused() then
+        return true
+    end
+    return false
+end
+
+---@param self KoiKoi.Service
 ---@param delta number
 ---@param timestamp number
 function Service.OnEnterFrame(self, delta, timestamp)
+    if self:IsPaused() then
+        --self.logger:trace("paused")
+        -- TODO the view should do something in response to the pause.
+        -- It's not serious, but grabed card is visible and not following.
+        return
+    end
+
     local state = {
         [phase.initialized] = function()
             self.logger:debug("initialized")

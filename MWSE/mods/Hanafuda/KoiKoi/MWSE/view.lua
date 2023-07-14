@@ -2079,6 +2079,16 @@ function View.OpenGameMenu(self, id, service)
 end
 
 ---@param self KoiKoi.View
+---@return boolean
+function View.IsPaused(self)
+    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+    if gameMenu then
+        return not gameMenu.visible
+    end
+    return false
+end
+
+---@param self KoiKoi.View
 ---@param service KoiKoi.Service
 function View.Initialize(self, service)
     -- driver for testing
