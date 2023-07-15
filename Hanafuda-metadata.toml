@@ -4,7 +4,7 @@ description = "Let's play Koi-Koi with Hanafuda in Morrowind."
 homepage = "https://www.nexusmods.com/morrowind/mods/53104"
 repository = "https://github.com/longod/Hanafuda"
 authors = ["longod"]
-version = "1.0.0"
+version = "1.1"
 
 [tools.mwse]
 lua-mod = "Hanafuda"
@@ -13,7 +13,8 @@ wait-until-initialized = true
 
 [dependencies]
 assets = [
-    "Textures\\Hanafuda"
+    "Textures\\Hanafuda",
+    "Sound\\Fx\\Hanafuda"
 ]
 
 [dependencies.mwse]

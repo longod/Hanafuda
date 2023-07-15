@@ -842,7 +842,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         -- no tooltips after flipped
         c0:unregister(tes3.uiEvent.help)
         c1:unregister(tes3.uiEvent.help)
-        sound.Play(sound.se.pickCard)
+        sound.Play(sound.se.flipCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId0
         service:NotifyDecideParent(selectedCardId)
@@ -858,7 +858,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         -- no tooltips after flipped
         c0:unregister(tes3.uiEvent.help)
         c1:unregister(tes3.uiEvent.help)
-        sound.Play(sound.se.pickCard)
+        sound.Play(sound.se.flipCard)
         gameMenu:updateLayout()
         local selectedCardId = cardId1
         service:NotifyDecideParent(selectedCardId)
@@ -1193,7 +1193,7 @@ function View.RegisterDeckEvent(self, element, service)
                 local element = PutCard(drawn, self.asset, cardId, false)
                 self:RegisterDrawnCardEvent(element, cardId, service)
                 e.source:getTopLevelMenu():updateLayout()
-                sound.Play(sound.se.pickCard)
+                sound.Play(sound.se.flipCard)
             end
         else
             tes3.messageBox(i18n("koi.view.infoDraw"))
@@ -1407,7 +1407,7 @@ function View.Flip(self, service, player, selectedCard, skipAnimation)
     local selected = FindCardIdInChildren(hand, selectedCard)
     if selected then
         FlipCard(selected, self.asset)
-        sound.Play(sound.se.pickCard) -- todo
+        sound.Play(sound.se.pickCard)
     else
         logger:error("%u does not contain in %u", selectedCard, player)
     end
@@ -1546,7 +1546,7 @@ function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
         pile.visible = false
     end
     gameMenu:updateLayout()
-    sound.Play(sound.se.pickCard)
+    sound.Play(sound.se.flipCard)
 
     service:NotifyDrawCard()
 

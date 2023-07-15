@@ -46,8 +46,12 @@ function this.Play(id)
     if data then
         -- tes3.playSound performs 3D audio with references, so it crashes when used in the main menu because of no references exist.
         -- but play using soundPath is only tes3.playSound, tes3sound only data loaded by esm, esp.
-        if data.soundPath and not tes3.onMainMenu() then
-            tes3.playSound({ soundPath = data.soundPath, mixChannel = tes3.soundMix.master, volume = data.volume or 1 })
+        if not tes3.onMainMenu() and data.soundPath and table.size(data.soundPath) > 0 then
+            local path = table.choice(data.soundPath) ---@type string
+            local pitch = 1
+            pitch = pitch + (math.random() * 0.2 - 0.1) -- perhaps normal distribution is better
+            logger:trace(path)
+            tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.effects, volume = data.volume or 1, pitch = pitch })
         elseif data.sound then
             -- todo tes3.playSound version when 3D
             local se = tes3.getSound(data.sound) -- todo cache?

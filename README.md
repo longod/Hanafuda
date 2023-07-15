@@ -80,5 +80,7 @@ I hope you can do it together.
 - Other game rules using Hanafuda
 
 ## Credits
+These assets are not licensed for this project.
 - Original card illustration by [MUSKA](https://www.pixiv.net/artworks/47260765)
 - Original background image by [Xero Foxx](https://www.nexusmods.com/morrowind/mods/50973)
+- Sound effects by [On-Jin](https://on-jin.com/), [Soundeffect-Lab](https://soundeffect-lab.info/) and [Springin' Sound Stock](https://www.springin.org/sound-stock/)

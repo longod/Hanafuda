@@ -6,6 +6,7 @@ this.se = {
     putDeck = 2,
     pickCard = 3,
     putCard = 4,
+    flipCard = 5,
 }
 ---@enum KoiKoi.VoiceId
 this.voice = {
@@ -34,16 +35,17 @@ this.musicData = {
 }
 
 ---@class KoiKoi.SoundData
----@field soundPath string?
+---@field soundPath string[]?
 ---@field sound string? fallback
 ---@field volume number? normalzied value
 
 ---@type {[KoiKoi.SoundEffectId] : KoiKoi.SoundData}
 this.soundData = {
-    [this.se.dealCard] = { sound = "book page2" },
-    [this.se.putDeck] = { sound = "book close" },
-    [this.se.pickCard] = { sound = "book page" },
-    [this.se.putCard] = { sound = "book page2" },
+    [this.se.dealCard] = { sound = "book page2", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_put1.wav", "Fx\\Hanafuda\\springin_put1.wav" } },
+    [this.se.putDeck] = { sound = "book close", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_pick1.wav" } },
+    [this.se.pickCard] = { sound = "book page", soundPath = { "Fx\\Hanafuda\\on-jin_pick1.wav", "Fx\\Hanafuda\\on-jin_pick2.wav" }, volume = 0.8 },
+    [this.se.putCard] = { sound = "book page2", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_put1.wav", "Fx\\Hanafuda\\springin_put1.wav" } },
+    [this.se.flipCard] = { sound = "book page", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_flip1.wav", "Fx\\Hanafuda\\springin_flip1.wav" } },
 }
 
 -- TODO It would be nice to be able to assign unused assets. This is only for assets that are referenced by esm.
