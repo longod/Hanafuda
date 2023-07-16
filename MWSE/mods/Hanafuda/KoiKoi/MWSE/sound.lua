@@ -49,8 +49,10 @@ function this.Play(id)
         if not tes3.onMainMenu() and data.soundPath and table.size(data.soundPath) > 0 then
             local path = table.choice(data.soundPath) ---@type string
             local pitch = 1
-            pitch = pitch + (math.random() * 0.2 - 0.1) -- perhaps normal distribution is better
-            logger:trace(path)
+            -- Fluctuation to create variation
+            -- perhaps normal distribution is better
+            pitch = pitch + (math.random() * 0.2 - 0.1)
+            logger:trace("SE %d : %s", id, path)
             tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.effects, volume = data.volume or 1, pitch = pitch })
         elseif data.sound then
             -- todo tes3.playSound version when 3D

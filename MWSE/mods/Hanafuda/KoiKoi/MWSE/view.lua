@@ -2083,7 +2083,8 @@ end
 function View.IsPaused(self)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     if gameMenu then
-        return not gameMenu.visible
+        -- When the esc menu
+        return not gameMenu.visible or gameMenu.disabled
     end
     return false
 end
