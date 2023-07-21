@@ -2169,4 +2169,9 @@ this.creatures = {
 
 }
 
+
+this.customVoicePath = "Vo\\Hanafuda\\"
+---@type {[string] : {[string]: {[KoiKoi.VoiceId] : string[] } } } race, sex, VoiceId, file excluding directory
+this.customVoiceData = {}
+
 return this

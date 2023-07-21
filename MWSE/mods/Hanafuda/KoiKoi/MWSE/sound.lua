@@ -1,5 +1,3 @@
-
-
 local logger = require("Hanafuda.logger")
 local config = require("Hanafuda.config")
 
@@ -13,6 +11,56 @@ local soundData = require("Hanafuda.KoiKoi.soundData")
 this.se = soundData.se
 this.voice = soundData.voice
 this.music = soundData.music
+
+---@param id KoiKoi.VoiceId
+---@param race string
+---@param female boolean
+---@return string[]
+function this.FindCustomVoice(id, race, female)
+    local r = string.lower(race):sub(1, 1)
+    local s = female and "f" or "m"
+    -- find cache
+    local rd = soundData.customVoiceData[r]
+    if rd ~= nil then
+        local sd = rd[s]
+        if sd ~= nil then
+            local voices = sd[id]
+            --logger:debug(tostring(voices))
+            if voices ~= nil then
+                return voices
+            end
+        end
+    else
+        -- prepare searching
+        soundData.customVoiceData[r] = {}
+    end
+    -- search files
+    local dataFiles = "Data Files\\Sound\\"
+    local voiceDir = soundData.customVoicePath .. r .. "\\" .. s .. "\\"
+    local dir = dataFiles .. voiceDir
+    logger:debug("search custom voices in " .. dir)
+
+    local cache = {} ---@type {[KoiKoi.VoiceId] : string[] }
+    local keys = table.keys(this.voice)
+    for index, value in ipairs(keys) do
+        -- logger:trace(value)
+        -- logger:trace(this.voice[value])
+        local vdir = dir .. value .. "\\"
+        logger:trace("enumerate custom voices in ".. vdir)
+        cache[this.voice[value]] = {}
+        local c = cache[this.voice[value]]
+        local d = voiceDir .. value .. "\\"
+        for path in lfs.dir(vdir) do
+            if not path:startswith(".") and path:endswith(".mp3") and lfs.fileexists(vdir .. path) then -- '.', '..' and hidden files
+                local p = d .. path
+                -- logger:trace(p)
+                table.insert(c, p)
+            end
+        end
+    end
+    soundData.customVoiceData[r][s] = cache
+    return cache[id]
+end
 
 ---@param t table
 ---@param excluding integer?
@@ -88,6 +136,26 @@ local function PlayVoice(id, race, female, disposition, excluding)
             return nil
         end
         local voice = s[id]
+
+        local custom = math.random() < 1.0 -- TODO tweak
+        if custom then
+            local offset = table.size(voice) -- builtin offset
+            local customVoice = this.FindCustomVoice(id, race, female)
+            if customVoice and table.size(customVoice) > 0 then
+                local e = excluding
+                if e ~= nil then -- without offset
+                    e = e - offset
+                end
+                local index = GetRandomIndex(customVoice, e)
+                if index ~= nil then
+                    local path = customVoice[index]
+                    logger:debug("Custom Voice %d : %d %s", id, index, path)
+                    tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+                    return index + offset
+                end
+            end
+        end
+
         local index = GetRandomIndex(voice, excluding)
         if index ~= nil then
             local path = voice[index]

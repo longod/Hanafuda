@@ -210,5 +210,19 @@ do
         end
     end)
 
+    unitwind:test("Find NPC Custom Voice", function()
+        local sound = require("Hanafuda.KoiKoi.MWSE.sound")
+        local soundData = require("Hanafuda.KoiKoi.soundData")
+        for race, genders in pairs(soundData.voiceData) do
+            for gender, voices in pairs(genders) do
+                local female = gender == "f"
+                for voiceId, paths in pairs(voices) do
+                    local voice = sound.FindCustomVoice(voiceId, race, female)
+                    -- todo test
+                end
+            end
+        end
+        soundData.customVoiceData = {} -- reset
+    end)
     unitwind:finish()
 end
