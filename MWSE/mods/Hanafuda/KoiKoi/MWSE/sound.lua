@@ -120,12 +120,13 @@ end
 
 -- The dialogue corresponding to the opponent's race is not taken into account.
 ---@param id KoiKoi.VoiceId
+---@param reference tes3reference
 ---@param race string
 ---@param female boolean
 ---@param disposition number? Mutual disposition
 ---@param excluding integer?
 ---@return integer?
-local function PlayVoice(id, race, female, disposition, excluding)
+local function PlayVoice(id, reference, race, female, disposition, excluding)
     if not tes3.onMainMenu() then
         local r = soundData.voiceData[string.lower(race)]
         if not r then
@@ -150,7 +151,8 @@ local function PlayVoice(id, race, female, disposition, excluding)
                 if index ~= nil then
                     local path = customVoice[index]
                     logger:debug("Custom Voice %d : %d %s", id, index, path)
-                    tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+                    tes3.removeSound({ reference = reference })
+                    tes3.say({ reference = reference, soundPath = path })
                     return index + offset
                 end
             end
@@ -160,7 +162,8 @@ local function PlayVoice(id, race, female, disposition, excluding)
         if index ~= nil then
             local path = voice[index]
             logger:debug("Voice %d : %d %s", id, index, path)
-            tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+            tes3.removeSound({ reference = reference })
+            tes3.say({ reference = reference, soundPath = path })
             return index
         end
     end
@@ -168,13 +171,15 @@ local function PlayVoice(id, race, female, disposition, excluding)
 end
 
 ---@param id KoiKoi.VoiceId
+---@param reference tes3reference
 ---@param objectId string
 ---@param special {[string] : {[KoiKoi.VoiceId] : string[]}} id, VoiceId, file excluding directory
 ---@param disposition number? Mutual disposition
 ---@param excluding integer?
 ---@return integer?
-local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
+local function PlaySpecialVoice(id, reference, objectId, special, disposition, excluding)
     if special then
+        -- todo custom voice
         local sp = special[objectId]
         if sp then
             local voice = sp[id]
@@ -182,7 +187,8 @@ local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
             if index ~= nil then
                 local path = voice[index]
                 logger:debug("Special Voice %d %s : %d %s", id, objectId, index, path)
-                tes3.playSound({ soundPath = path, mixChannel = tes3.soundMix.voice })
+                tes3.removeSound({ reference = reference })
+                tes3.say({ reference = reference, soundPath = path })
                 return index
             end
         end
@@ -190,7 +196,6 @@ local function PlaySpecialVoice(id, objectId, special, disposition, excluding)
     return nil
 end
 
----comments
 ---@param id KoiKoi.VoiceId
 ---@param creatureId string?
 ---@return nil
@@ -225,7 +230,7 @@ function this.PlayVoice(id, mobile, disposition, excluding)
                 if not config.audio.npcVoice then
                     return nil, nil
                 end
-                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.creatures, disposition, excluding)
+                local sp = PlaySpecialVoice(id, m.reference, m.object.baseObject.id, soundData.creatures, disposition, excluding)
                 if sp ~= nil then
                     return sp, true
                 end
@@ -240,11 +245,11 @@ function this.PlayVoice(id, mobile, disposition, excluding)
                 if not config.audio.npcVoice then
                     return nil, nil
                 end
-                local sp = PlaySpecialVoice(id, m.object.baseObject.id, soundData.npcs, disposition, excluding)
+                local sp = PlaySpecialVoice(id, m.reference, m.object.baseObject.id, soundData.npcs, disposition, excluding)
                 if sp ~= nil then
                     return sp, true
                 end
-                return PlayVoice(id, m.object.race.id, m.object.female, disposition, excluding), false
+                return PlayVoice(id, m.reference, m.object.race.id, m.object.female, disposition, excluding), false
             end,
             [tes3.actorType.player] =
             ---@param m tes3mobilePlayer
@@ -254,7 +259,7 @@ function this.PlayVoice(id, mobile, disposition, excluding)
                 if not config.audio.playerVoice then
                     return nil, nil
                 end
-                return PlayVoice(id, m.object.race.id, m.object.female, disposition, excluding), false
+                return PlayVoice(id, m.reference, m.object.race.id, m.object.female, disposition, excluding), false
             end,
         }
         if types[mobile.actorType] then
@@ -289,6 +294,8 @@ function this.CreateSoundPlayer()
             gender = "m",
             voiceId = "continue",
         },
+        -- todo
+        -- custom voices
         creature = {},
         spnpc = {},
         spcreature = {},
