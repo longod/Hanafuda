@@ -75,6 +75,7 @@ local defaults = {
     },
     decidingParentCardId = nil,
     decidingParent = {},
+    logger = nil, ---@diagnostic disable-line: assign-type-mismatch
 }
 
 ---@param settings KoiKoi.Settings

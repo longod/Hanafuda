@@ -63,6 +63,8 @@ do
         end
     end)
 
+    -- todo all combos
+
     unitwind:test("Different", function()
         local goko = AddCard({ type = card.type.bright, findAll = true })
         local shiko = table.deepcopy(goko)
@@ -139,6 +141,7 @@ do
         unitwind:expect(actual).toBe(nil)
         -- todo edge case
     end)
+    -- todo
     unitwind:test("Teshi", function()
     end)
     unitwind:test("Kuttsuki", function()
@@ -156,6 +159,35 @@ do
         local game = require("Hanafuda.KoiKoi.game").new(config.koikoi, nil, nil, logger)
         game.groundPool = { 6, 10, 7, 11, 12, 5, 20, 8 }
         unitwind:expect(game:CheckUnluckyGround()).toBe(true)
+    end)
+    unitwind:finish()
+end
+
+do
+    local unitwind = require("unitwind").new({
+        enabled = true,
+        highlight = false,
+    })
+    unitwind:start("Koi-Koi Animation Test")
+    local anim = require("Hanafuda.KoiKoi.animation")
+    unitwind:test("Vector2f Animation", function()
+        local a = anim.new({ startX = 1, startY = 4, endX = 3, endY = 2, duration = 2 })
+        local v, x, y = a:Update(0)
+        unitwind:expect(v).toBe(true)
+        unitwind:expect(x).toBe(1)
+        unitwind:expect(y).toBe(4)
+        v, x, y = a:Update(1)
+        unitwind:expect(v).toBe(true)
+        unitwind:expect(x).toBe(2.75)
+        unitwind:expect(y).toBe(2.25)
+        v, x, y = a:Update(1)
+        unitwind:expect(v).toBe(true)
+        unitwind:expect(x).toBe(3)
+        unitwind:expect(y).toBe(2)
+        v, x, y = a:Update(1)
+        unitwind:expect(v).toBe(false)
+        unitwind:expect(x).toBe(3)
+        unitwind:expect(y).toBe(2)
     end)
     unitwind:finish()
 end

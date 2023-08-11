@@ -25,16 +25,18 @@ do
         local ability = {}
         do
             ---@type tes3mobileCreature
+            ---@diagnostic disable-next-line: missing-fields
             local mobile = {
-                attributes = Repeat(table.size(tes3.attribute), {current = 0}),
+                attributes = Repeat(table.size(tes3.attribute), { current = 0 }),
             }
             unitwind:expect(settings.CalculateAbility(mobile, ability)).toBe(0)
         end
         do
             ---@type tes3mobileNPC
+            ---@diagnostic disable-next-line: missing-fields
             local mobile = {
-                attributes = Repeat(table.size(tes3.attribute), {current = 0}),
-                skills = Repeat(table.size(tes3.skill), {current = 0}),
+                attributes = Repeat(table.size(tes3.attribute), { current = 0 }),
+                skills = Repeat(table.size(tes3.skill), { current = 0 }),
             }
             unitwind:expect(settings.CalculateAbility(mobile, ability)).toBe(0)
         end
