@@ -24,6 +24,111 @@ local cardProperty = "Hanafuda:CardId"
 local helpReminderFirstTime = 15
 local helpReminderTime = 20
 
+-- todo member
+---@type KoiKoi.AnimationBinding[]
+local bindings = {}
+
+---@param target tes3uiElement
+---@param startX number
+---@param startY number
+---@param endX number
+---@param endY number
+---@param duration number?
+---@param params any
+---@param onFinished fun(ab : KoiKoi.AnimationBinding)?
+---@return KoiKoi.AnimationBinding
+local function AddAnimation(target, startX, startY, endX, endY, duration, params, onFinished)
+    duration = duration or 0.5
+    local anim = require("Hanafuda.KoiKoi.animation").new({ startX = startX, startY = startY, endX = endX, endY = endY, duration = duration })
+    local binding = require("Hanafuda.KoiKoi.MWSE.animationBinding").new(target, anim, params, onFinished, function (ab)
+        ab.target:destroy()
+    end)
+    table.insert(bindings, binding)
+    return binding
+end
+
+-- todo member
+---@param deltaTime number
+local function UpdateAnimationBindings(deltaTime)
+    -- bad performance, but no problem in this case
+    for i = table.size(bindings), 1, -1 do
+        local b = bindings[i]
+        if not b:Update(deltaTime) then
+            b:Destory()
+            table.remove(bindings, i)
+        end
+    end
+end
+
+-- todo member
+local function DestoryAnimationBindings()
+    for _, b in ipairs(bindings) do
+        b:Destory()
+    end
+    bindings = {}
+end
+
+---@return boolean
+local function AreAnimating()
+    return table.size(bindings) > 0
+end
+
+---@param element tes3uiElement
+---@param alignX number
+---@param alignY number
+---@return integer
+---@return integer
+local function LocalToWorld(element, alignX, alignY)
+    -- todo + border
+    local x = element.width * alignX ---@type integer
+    local y = element.height * -alignY ---@type integer
+    local node = element
+    while node ~= nil do
+        x = x + node.positionX
+        y = y + node.positionY
+        node = node.parent
+    end
+    -- screen space
+    local width, height = tes3ui.getViewportSize()
+    x = x + math.floor(width / 2)
+    y = y - math.floor(height / 2)
+    return x, y
+end
+
+local menucount = 0
+
+---@param source tes3uiElement
+---@param destX number
+---@param destY number
+---@param onFinished fun(ab : KoiKoi.AnimationBinding)?
+---@return tes3uiElement
+local function AddMenuAnimation(source, destX, destY, onFinished)
+    local sx, sy = LocalToWorld(source, 0, 0)
+
+    local animMenu = tes3ui.createHelpLayerMenu({ id = "KoiKoi.AnimMenu_" .. tostring(menucount) })
+    menucount = (menucount + 1) % 16
+
+    animMenu:destroyChildren()
+    animMenu.absolutePosAlignX = nil
+    animMenu.absolutePosAlignY = nil
+    animMenu.borderAllSides = 0
+    animMenu.paddingAllSides = 0
+    animMenu.alpha = 0
+    animMenu.autoWidth = true
+    animMenu.autoHeight = true
+    -- animMenu.disabled = true
+    -- animMenu.visible = false
+
+    -- maybe need transform
+    animMenu.positionX = sx
+    animMenu.positionY = sy
+    local e = source:move({ to= animMenu })
+    animMenu:updateLayout()
+    logger:debug("%d, %d -> %d, %d", animMenu.positionX, animMenu.positionY, destX, destY)
+    AddAnimation(animMenu, animMenu.positionX, animMenu.positionY, destX, destY, nil, e, onFinished)
+    return e
+end
+
 ---@class KoiKoi.View.Voice
 ---@field latest { KoiKoi.Player : {VoiceId : integer} }
 ---@field timer number
@@ -342,9 +447,19 @@ local function GetGrabCardId()
     return nil
 end
 
+---@param element tes3uiElement?
+local function UnregisterEvents(element)
+    if not element then
+        return
+    end
+    element:unregister(tes3.uiEvent.mouseOver)
+    element:unregister(tes3.uiEvent.mouseLeave)
+    element:unregister(tes3.uiEvent.mouseClick)
+end
+
 ---@param element tes3uiElement
 ---@param player KoiKoi.Player
----@return tes3uiElement
+---@return tes3uiElement? deprecated
 local function CaptureCard(element, player)
     local cardId = GetCardId(element)
     assert(cardId)
@@ -362,9 +477,32 @@ local function CaptureCard(element, player)
     assert(gameMenu)
     local to = gameMenu:findChild(dest)
     assert(to)
-    local moved = element:move({ to = to })
-    SetCardColor(moved, true)
-    SetCardSize(moved, smallSize)
+    --logger:trace("card num: %d", table.size(to.children))
+    -- estimate nealy actual destination x
+    local totalRatio = 1.0 - cardLayoutWidth / to.width -- exclude card width not cardLayoutWidthSmall
+    local capturedRatio = table.size(to.children) / 8.0 * totalRatio
+    local alignX = you and capturedRatio or totalRatio - capturedRatio
+    local alignY = (1.0 - (cardLayoutHeight / to.height)) * 0.5 -- centering
+    local ex, ey = LocalToWorld(to, alignX, alignY)
+    UnregisterEvents(element)
+    SetCardColor(element, true)
+    --SetCardSize(element, smallSize)
+
+    -- When multiple cards are placed in the same location, card movement overlaps.
+    -- I would like to shift the start or end position, but even if I don't, it is minor.
+    AddMenuAnimation(element, ex, ey,
+    function(ab)
+        --local moved = element:move({ to = to })
+        local moved = ab.params:move({ to = to })
+        SetCardColor(moved, true)
+        SetCardSize(moved, smallSize)
+        if not you then -- opponent is right-justified, so line them up from right to left.
+            to:reorderChildren(0, moved, 1)
+        end
+        to:getTopLevelMenu():updateLayout()
+    end)
+    -- local moved = element:move({ to = to })
+    -- SetCardSize(moved, smallSize)
 
     -- Overlap placement if it does not fit
     gameMenu:updateLayout() -- calculate after moved
@@ -393,11 +531,12 @@ local function CaptureCard(element, player)
         end
     end
 
-    return moved
+    --return moved
+    return nil
 end
 
 ---@param player KoiKoi.Player
----@return tes3uiElement
+---@return tes3uiElement? deprecated
 local function CaptureGrabCard(player)
     local element = GetGrabCard()
     assert(element)
@@ -407,16 +546,6 @@ local function CaptureGrabCard(player)
     grab.visible = false
     grab:updateLayout()
     return moved
-end
-
----@param element tes3uiElement?
-local function UnregisterEvents(element)
-    if not element then
-        return
-    end
-    element:unregister(tes3.uiEvent.mouseOver)
-    element:unregister(tes3.uiEvent.mouseLeave)
-    element:unregister(tes3.uiEvent.mouseClick)
 end
 
 ---@param self KoiKoi.View
@@ -1080,10 +1209,10 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 local g0 = root:findChild(uiid.boardGroundRow0)
                 local g1 = root:findChild(uiid.boardGroundRow1)
 
-                local caps  = service:Capture(grab, target)
+                local caps, drawn = service:Capture(grab, target)
                 if table.size(caps) == 1 then
                     local moved0 = CaptureCard(e.source, koi.player.you)
-                    UnregisterEvents(moved0)
+                    --UnregisterEvents(moved0)
                 else
                      ---@type tes3uiElement[]
                      local elems = table.new(table.size(caps), 0)
@@ -1104,7 +1233,7 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
 
                     for _, elem in ipairs(elems) do
                         local moved0 = CaptureCard(elem, koi.player.you)
-                        UnregisterEvents(moved0)
+                        --UnregisterEvents(moved0)
                     end
 
                     tes3.messageBox(i18n("koi.view.infoManyCaptured", {count = table.size(caps)}))
@@ -1112,7 +1241,7 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 local grab = GetGrabCard()
                 assert(grab)
                 local moved1 = CaptureGrabCard(koi.player.you)
-                UnregisterEvents(moved1)
+                --UnregisterEvents(moved1)
                 sound.Play(sound.se.putCard)
                 local h0 = root:findChild(uiid.playerHand)
                 -- local h1 = root:findChild(uiid.opponentHand)
@@ -1120,7 +1249,7 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 ResetHighlightCards(g1)
                 ResetHighlightCards(h0)
                 root:updateLayout()
-                service:NotifyMatchedCards()
+                service:NotifyMatchedCards(drawn)
             else
                 tes3.messageBox(i18n("koi.view.infoUnmatchHand"))
             end
@@ -1144,7 +1273,7 @@ function View.RegisterGroundEvent(self, element, service)
         local cardId = GetGrabCardId()
         if cardId then
             if service:CanDiscard(cardId) then
-                service:Discard(cardId)
+                local drawn = service:Discard(cardId)
                 local root = e.source:getTopLevelMenu()
                 local g0 = root:findChild(uiid.boardGroundRow0)
                 local g1 = root:findChild(uiid.boardGroundRow1)
@@ -1157,7 +1286,7 @@ function View.RegisterGroundEvent(self, element, service)
                 ResetHighlightCards(g0)
                 ResetHighlightCards(g1)
                 root:updateLayout()
-                service:NotifyDiscardCard()
+                service:NotifyDiscardCard(drawn)
             else
                 tes3.messageBox(i18n("koi.view.infoDiscard"))
             end
@@ -1462,8 +1591,9 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     assert(table.size(matchedCard) == table.size(elems))
 
     for _, elem in ipairs(elems) do
+        UnregisterEvents(elem)
         local moved0 = CaptureCard(elem, player)
-        UnregisterEvents(moved0)
+        --UnregisterEvents(moved0)
     end
 
     assert(selected)
@@ -1476,7 +1606,7 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     ResetHighlightCards(g1)
     ResetHighlightCards(h0)
     gameMenu:updateLayout()
-    service:NotifyMatchedCards() -- correct usage?
+    service:NotifyMatchedCards(drawn) -- correct usage?
 
     if table.size(matchedCard) > 1 then
         tes3.messageBox(i18n("koi.view.infoManyCaptured", {count = table.size(matchedCard)}))
@@ -1519,13 +1649,26 @@ function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
     local g = table.size(g0.children) < table.size(g1.children) and g0 or g1 -- whitch less
 
     assert(selected)
-    local moved = selected:move({ to = g })
-    self:RegisterGroundCardEvent(moved, selectedCard, service)
+    -- esitimate alignx
+    local cardRatio = cardLayoutWidth / g.width
+    local cardHeightRatio = cardLayoutHeight / g.height
+    local alignX = cardRatio * table.size(g.children) * 0.5 + 0.5
+    local alignY = g == g0 and (1.0 - cardHeightRatio) or 0.0 -- padding g.height
+    local ex, ey = LocalToWorld(g, alignX, alignY)
+    AddMenuAnimation(selected, ex, ey, function(ab)
+        logger:debug("animation done")
+        --local moved = selected:move({ to = g })
+        local moved = ab.params:move({ to = g })
+        self:RegisterGroundCardEvent(moved, selectedCard, service)
+        gameMenu:updateLayout()
+        --service:NotifyDiscardCard(drawn) -- need to wait animation done?
+    end)
+
     gameMenu:updateLayout()
 
     sound.Play(sound.se.putCard)
 
-    service:NotifyDiscardCard() -- correct usage?
+    service:NotifyDiscardCard(drawn) -- need to wait animation done?
 end
 
 ---@param self KoiKoi.View
@@ -1757,13 +1900,6 @@ function View.CreateYourCaptured(self, parent)
     border.borderAllSides = 6
     border.paddingAllSides = 2 -- avoid thin border
 
-    -- local block = captured:createBlock()
-    -- block.childAlignX = 0
-    -- block.widthProportional = 1
-    -- block.autoHeight = true
-    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {name = self.names[koi.player.you]})})
-    -- label.wrapText = true
-
     local bright = CreateTypeArea(CreateTypeFrame(border), uiid.playerBright, card.type.bright, true)
     local animal = CreateTypeArea(CreateTypeFrame(border), uiid.playerAnimal, card.type.animal, true)
     local ribbon = CreateTypeArea(CreateTypeFrame(border), uiid.playerRibbon, card.type.ribbon, true)
@@ -1794,13 +1930,6 @@ function View.CreateOpponentCaptured(self, parent)
     animal.childAlignX = 1.0
     ribbon.childAlignX = 1.0
     chaff.childAlignX = 1.0
-
-    -- local block = captured:createBlock()
-    -- block.childAlignX = 1
-    -- block.widthProportional = 1
-    -- block.autoHeight = true
-    -- local label = block:createLabel({text = i18n("koi.view.capturedLabel", {name = self.names[koi.player.opponent]})})
-    -- label.wrapText = true
 end
 
 ---@param self KoiKoi.View
@@ -2110,6 +2239,7 @@ function View.Initialize(self, service)
         end
         event.register(tes3.event.keyDown, self.testShowDialog, {filter = tes3.scanCode.c} )
 
+        -- dont work well with animation
         self.testCapture = function(_)
             local m = tes3ui.findMenu(uiid.gameMenu)
             assert(m)
@@ -2126,6 +2256,7 @@ function View.Initialize(self, service)
     end
     gameMenu = self:OpenGameMenu(uiid.gameMenu, service)
     tes3ui.enterMenuMode(gameMenu.id)
+
 end
 
 ---@param self KoiKoi.View
@@ -2134,6 +2265,8 @@ function View.Shutdown(self)
     if overlayMenu then
         overlayMenu:destroy()
     end
+
+    DestoryAnimationBindings()
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     if gameMenu then
@@ -2165,6 +2298,9 @@ function View.OnEnterFrame(self, delta, timestamp)
         grab.positionY = cursor.y + grab.height * 0.5
         grab:updateLayout()
     end
+
+    UpdateAnimationBindings(delta)
+    --logger:debug( "animation " .. tostring(AreAnimating()))
 end
 
 return View

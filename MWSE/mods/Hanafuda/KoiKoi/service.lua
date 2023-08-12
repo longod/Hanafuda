@@ -97,6 +97,7 @@ end
 ---@param cardId integer
 ---@param ground integer
 ---@return integer[] -- captured ground card, there is a possibility of getting more than one.
+---@return boolean
 function Service.Capture(self, cardId, ground)
     local drawn = self.drawnCard == cardId
     self.game:Capture(self.game.current, cardId, false, drawn)
@@ -111,7 +112,7 @@ function Service.Capture(self, cardId, ground)
     if drawn then
         self.drawnCard = nil
     end
-    return many or { ground }
+    return many or { ground }, drawn
 end
 
 
@@ -124,12 +125,14 @@ end
 
 ---@param self KoiKoi.Service
 ---@param cardId integer
+---@return boolean
 function Service.Discard(self, cardId)
     local drawn = self.drawnCard == cardId
     self.game:Discard(self.game.current, cardId, drawn)
     if drawn then
         self.drawnCard = nil
     end
+    return drawn
 end
 
 ---@param self KoiKoi.Service
@@ -628,17 +631,19 @@ function Service.NotifyFlipCard(self)
 end
 
 ---@param self KoiKoi.Service
-function Service.NotifyMatchedCards(self)
+---@param drawn boolean
+function Service.NotifyMatchedCards(self, drawn)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait
-    self:RequestPhase(match and phase.drawCard or phase.checkCombo)
+    local next = drawn and phase.checkCombo or phase.drawCard
+    self:RequestPhase(next)
 end
 
 ---@param self KoiKoi.Service
-function Service.NotifyDiscardCard(self)
+---@param drawn boolean
+function Service.NotifyDiscardCard(self, drawn)
     -- match or draw
-    local match = self.phase >= phase.matchCard and self.phase <= phase.matchCardWait
-    self:RequestPhase(match and phase.drawCard or phase.checkCombo)
+    local next = drawn and phase.checkCombo or phase.drawCard
+    self:RequestPhase(next)
 end
 
 ---@param self KoiKoi.Service

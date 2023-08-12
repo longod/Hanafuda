@@ -9,7 +9,7 @@ local this = {}
 
 ---@param target tes3uiElement
 ---@param animation KoiKoi.EasingAnimationVector2f
----@param params any
+---@param params any user data
 ---@param onFinished fun(ab : KoiKoi.AnimationBinding)?
 ---@param onDestory fun(ab : KoiKoi.AnimationBinding)?
 ---@return KoiKoi.AnimationBinding
@@ -30,6 +30,10 @@ function this.Update(self, deltaTime)
         self.target.positionY = y
         self.target:updateLayout()
     end
+    if not b and self.onFinished then
+        self.onFinished(self)
+        self.onFinished = nil
+    end
     return b
 end
 
@@ -37,6 +41,7 @@ end
 function this.Destory(self)
     if self.onDestory then
         self.onDestory(self)
+        self.onDestory = nil
     end
 end
 
