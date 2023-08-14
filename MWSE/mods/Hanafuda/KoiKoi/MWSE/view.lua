@@ -24,8 +24,6 @@ local cardProperty = "Hanafuda:CardId"
 local helpReminderFirstTime = 15
 local helpReminderTime = 20
 
-local menucount = 0
-
 ---@param element tes3uiElement
 ---@param alignX number
 ---@param alignY number
@@ -435,7 +433,7 @@ function View.CaptureCard(self, element, player)
     --logger:trace("card num: %d", table.size(to.children))
     -- estimate nealy actual destination x
     local totalRatio = 1.0 - cardLayoutWidth / to.width -- exclude card width not cardLayoutWidthSmall
-    local capturedRatio = table.size(to.children) / 8.0 * totalRatio
+    local capturedRatio = math.min(table.size(to.children) / 7.0, 1.0) * totalRatio
     local alignX = you and capturedRatio or totalRatio - capturedRatio
     local alignY = (1.0 - (cardLayoutHeight / to.height)) * 0.5 -- centering
     local ex, ey = LocalToWorld(to, alignX, alignY)
@@ -455,36 +453,38 @@ function View.CaptureCard(self, element, player)
             to:reorderChildren(0, moved, 1)
         end
         to:getTopLevelMenu():updateLayout()
+
+        -- Overlap placement if it does not fit
+        -- calculate after moved
+        --gameMenu:updateLayout()
+        local merginL = to.paddingLeft or to.paddingAllSides
+        local merginR = to.paddingRight or to.paddingAllSides
+        local availableWidth = to.width - merginL - merginR
+
+        -- Assuming the same width, there is no need to do so. In fact, they are the same width.
+        local requiredWidth = 0
+        for _, child in ipairs(to.children) do
+            requiredWidth = requiredWidth + child.width
+            requiredWidth = requiredWidth + (child.borderLeft or child.borderAllSides)
+            requiredWidth = requiredWidth + (child.borderRight or child.borderAllSides)
+        end
+        if requiredWidth > availableWidth then
+            local count = table.size(to.children)
+            assert(count > 0)
+            local average = requiredWidth / count
+            local interval = (availableWidth - average) / (count - 1)
+            for index, child in ipairs(to.children) do
+                child.borderAllSides = 0
+                child.borderLeft = nil
+                child.borderRight = nil
+                child.ignoreLayoutX = true
+                child.positionX = math.floor(interval * (index - 1))
+            end
+        end
+        to:getTopLevelMenu():updateLayout()
     end)
     -- local moved = element:move({ to = to })
     -- SetCardSize(moved, smallSize)
-
-    -- Overlap placement if it does not fit
-    gameMenu:updateLayout() -- calculate after moved
-    local merginL = to.paddingLeft or to.paddingAllSides
-    local merginR = to.paddingRight or to.paddingAllSides
-    local availableWidth = to.width - merginL - merginR
-
-    -- Assuming the same width, there is no need to do so. In fact, they are the same width.
-    local requiredWidth = 0
-    for _, child in ipairs(to.children) do
-        requiredWidth = requiredWidth + child.width
-        requiredWidth = requiredWidth + (child.borderLeft or child.borderAllSides)
-        requiredWidth = requiredWidth + (child.borderRight or child.borderAllSides)
-    end
-    if requiredWidth > availableWidth then
-        local count = table.size(to.children)
-        assert(count > 0)
-        local average = requiredWidth / count
-        local interval = (availableWidth - average ) / (count - 1)
-        for index, child in ipairs(to.children) do
-            child.borderAllSides = 0
-            child.borderLeft = nil
-            child.borderRight = nil
-            child.ignoreLayoutX = true
-            child.positionX = math.floor(interval * (index - 1))
-        end
-    end
 
     --return moved
     return nil
@@ -2230,8 +2230,7 @@ end
 function View.AddMenuAnimation(self, source, destX, destY, onFinished)
     local sx, sy = LocalToWorld(source, 0, 0)
 
-    local animMenu = tes3ui.createHelpLayerMenu({ id = "KoiKoi.AnimMenu_" .. tostring(menucount) })
-    menucount = (menucount + 1) % 16
+    local animMenu = tes3ui.createHelpLayerMenu({ id = "KoiKoi.AnimMenu_" .. tostring(table.size(self.bindings)) })
 
     animMenu:destroyChildren()
     animMenu.absolutePosAlignX = nil
@@ -2247,7 +2246,7 @@ function View.AddMenuAnimation(self, source, destX, destY, onFinished)
     -- maybe need transform
     animMenu.positionX = sx
     animMenu.positionY = sy
-    local e = source:move({ to= animMenu })
+    local e = source:move({ to = animMenu })
     animMenu:updateLayout()
     logger:trace("anim %d, %d -> %d, %d", animMenu.positionX, animMenu.positionY, destX, destY)
     self:AddAnimation(animMenu, animMenu.positionX, animMenu.positionY, destX, destY, nil, e, onFinished)
