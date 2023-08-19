@@ -24,6 +24,8 @@ local cardProperty = "Hanafuda:CardId"
 local helpReminderFirstTime = 15
 local helpReminderTime = 20
 
+local animMenuCount = 0
+
 ---@param element tes3uiElement
 ---@param alignX number
 ---@param alignY number
@@ -2230,7 +2232,8 @@ end
 function View.AddMenuAnimation(self, source, destX, destY, onFinished)
     local sx, sy = LocalToWorld(source, 0, 0)
 
-    local animMenu = tes3ui.createHelpLayerMenu({ id = "KoiKoi.AnimMenu_" .. tostring(table.size(self.bindings)) })
+    local animMenu = tes3ui.createHelpLayerMenu({ id = "KoiKoi.AnimMenu_" .. tostring(animMenuCount) })
+    animMenuCount = (animMenuCount + 1) % 24 -- unique number
 
     animMenu:destroyChildren()
     animMenu.absolutePosAlignX = nil
