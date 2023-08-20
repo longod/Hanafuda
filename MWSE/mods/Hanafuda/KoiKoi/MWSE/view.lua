@@ -1366,7 +1366,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         end
     end
 
-    -- BUG Crash when using coroutine with enterFrame event present
 
     -- animation with coroutine or timer
     -- todo card animation deck to hand/ground
@@ -1385,6 +1384,89 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         service:NotifyDealedInitialCards()
 
     else
+        -- BUG Crash when using coroutine with enterFrame event present
+        -- So I have to hang on to the timer.
+
+        -- deck
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
+        local pile = gameMenu:findChild(uiid.boardPile)
+        local element = PutDeck(pile, self.asset, deck)
+        self:RegisterDeckEvent(element, service)
+        gameMenu:updateLayout()
+        sound.Play(sound.se.putDeck)
+
+        -- todo use from service settings
+        local initialCards = 8
+        local initialDealEach = 2
+        local owner = 3
+        local iterations = initialCards * owner
+        timer.start({
+            type = timer.real,
+            ---@param e mwseTimerCallbackData
+            callback = function(e)
+                local index = iterations - e.timer.iterations
+                local ownerIndex = math.floor(index / initialDealEach) % owner
+                local localIndex = math.floor(index / (initialDealEach * owner)) * initialDealEach + (index % initialDealEach)
+                --logger:info(ownerIndex)
+                --logger:debug(localIndex)
+
+                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+                assert(gameMenu)
+
+                local back = parent ~= koi.player.you
+                local child = koi.GetOpponent(parent)
+
+                local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+                local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+                local ph = gameMenu:findChild(uiid.playerHand)
+                local oh = gameMenu:findChild(uiid.opponentHand)
+                local childHand = child == koi.player.you and ph or oh
+                local parentHand = child == koi.player.you and oh or ph
+
+                local i = localIndex + 1 -- lua
+
+                if ownerIndex == 0 then -- player
+                    local view = childHand
+                    local cardId = pools[child].hand[i]
+                    local element = PutCard(view, self.asset, cardId, not back)
+                    if child == koi.player.you then -- FIXME workaround
+                        self:RegisterHandCardEvent(element, cardId, service)
+                    end
+                elseif ownerIndex == 1 then -- field
+                    local cardId = groundPools[i]
+                    local view = (i % 2 == 0) and g1 or g0
+                    local element = PutCard(view, self.asset, cardId, false)
+                    self:RegisterGroundCardEvent(element, cardId, service)
+
+                elseif ownerIndex == 2 then -- dealer
+                    local view = parentHand
+                    local cardId = pools[parent].hand[i]
+                    local element = PutCard(view, self.asset, cardId, back)
+                    if parent == koi.player.you then -- FIXME workaround
+                        self:RegisterHandCardEvent(element, cardId, service)
+                    end
+
+                else
+                    -- error
+                end
+
+                gameMenu:updateLayout()
+                sound.Play(sound.se.dealCard) -- TODO new dealing sound
+
+                -- last
+                if e.timer.iterations == 1 then
+                    logger:debug("dealing done")
+                    service:NotifyDealedInitialCards()
+                end
+
+            end,
+            iterations = iterations,
+            duration = 0.1,         -- tweak this
+            persist = false,        -- perhaps false
+        })
+
+        --[[
         local deal = coroutine.wrap(putCards)
         timer.start({
             type = timer.real,
@@ -1410,6 +1492,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
             duration = 0.1,         -- tweak this
             persist = false,        -- hmm..perhaps false
         })
+        --]]
     end
 end
 
