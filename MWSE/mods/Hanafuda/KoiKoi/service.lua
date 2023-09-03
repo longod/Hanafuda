@@ -75,7 +75,7 @@ function Service.new(game, view, onExit, logger)
         view = view,
         drawnCard = nil,
         skipDecidingParent = false, -- or table flags
-        skipAnimation = true,
+        skipAnimation = false,
         waitScale = 1.0,
         lastCommand = nil,
         onExit = onExit,

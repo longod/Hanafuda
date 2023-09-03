@@ -194,6 +194,26 @@ local function PutCard(parent, asset, cardId, backface, notooltip)
     return element
 end
 
+---@param self KoiKoi.View
+---@param source tes3uiElement
+---@param parent tes3uiElement
+---@param alignX number
+---@param alignY number
+---@param asset CardAssetPackage
+---@param cardId integer
+---@param backface boolean
+---@param notooltip boolean?
+---@return tes3uiElement
+function View.PutCardWithAnimation(self, source, parent, alignX, alignY, asset, cardId, backface, notooltip)
+    local element = PutCard(source, asset, cardId, backface, notooltip)
+    local dx, dy = LocalToWorld(parent, alignX, alignY)
+    return self:AddMenuAnimation(element, dx, dy, function (ab)
+        local moved = ab.params:move({ to = parent })
+        -- callback?
+        moved:getTopLevelMenu():updateLayout()
+    end )
+end
+
 ---@param element tes3uiElement
 ---@param asset CardAssetPackage
 ---@return tes3uiElement
@@ -1426,23 +1446,46 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
 
                 local i = localIndex + 1 -- lua
 
+                local alignX = 0.5
+                local alignY = 0.0
+
+                -- TODO All should be dealt backface and cards should be turned over after placement
+
                 if ownerIndex == 0 then -- player
                     local view = childHand
                     local cardId = pools[child].hand[i]
-                    local element = PutCard(view, self.asset, cardId, not back)
+                    local cardRatio = cardLayoutWidth / view.width
+                    local cardHeightRatio = cardLayoutHeight / view.height
+                    alignX = cardRatio * (i - 1)
+                    -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
+                    alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
+                    alignY = (1.0 - (cardLayoutHeight / view.height)) * 0.5 -- centering
+                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, not back)
                     if child == koi.player.you then -- FIXME workaround
                         self:RegisterHandCardEvent(element, cardId, service)
                     end
                 elseif ownerIndex == 1 then -- field
                     local cardId = groundPools[i]
-                    local view = (i % 2 == 0) and g1 or g0
-                    local element = PutCard(view, self.asset, cardId, false)
+                    local row1 = i % 2 == 0
+                    local row0 = not row1
+                    local view = row1 and g1 or g0
+                    local cardRatio = cardLayoutWidth / view.width
+                    local cardHeightRatio = cardLayoutHeight / view.height
+                    alignX = cardRatio * (math.floor(i / 2) - 1) * 0.5 + 0.5
+                    alignY = row0 and (1.0 - cardHeightRatio) or 0.0 -- padding g.height
+                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, false)
                     self:RegisterGroundCardEvent(element, cardId, service)
 
                 elseif ownerIndex == 2 then -- dealer
                     local view = parentHand
                     local cardId = pools[parent].hand[i]
-                    local element = PutCard(view, self.asset, cardId, back)
+                    local cardRatio = cardLayoutWidth / view.width
+                    local cardHeightRatio = cardLayoutHeight / view.height
+                    alignX = cardRatio * (i - 1)
+                    -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
+                    alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
+                    alignY = (1.0 - (cardLayoutHeight / view.height)) * 0.5 -- centering
+                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, back)
                     if parent == koi.player.you then -- FIXME workaround
                         self:RegisterHandCardEvent(element, cardId, service)
                     end
@@ -1462,7 +1505,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
 
             end,
             iterations = iterations,
-            duration = 0.1,         -- tweak this
+            duration = 0.2,         -- tweak this
             persist = false,        -- perhaps false
         })
 
