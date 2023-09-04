@@ -203,13 +203,16 @@ end
 ---@param cardId integer
 ---@param backface boolean
 ---@param notooltip boolean?
+---@param onFinished fun(moved : tes3uiElement)?
 ---@return tes3uiElement
-function View.PutCardWithAnimation(self, source, parent, alignX, alignY, asset, cardId, backface, notooltip)
+function View.PutCardWithAnimation(self, source, parent, alignX, alignY, asset, cardId, backface, notooltip, onFinished)
     local element = PutCard(source, asset, cardId, backface, notooltip)
     local dx, dy = LocalToWorld(parent, alignX, alignY)
     return self:AddMenuAnimation(element, dx, dy, function (ab)
         local moved = ab.params:move({ to = parent })
-        -- callback?
+        if onFinished then
+            onFinished(moved)
+        end
         moved:getTopLevelMenu():updateLayout()
     end )
 end
@@ -376,7 +379,7 @@ function View.ReleaseGrabedCard(self, to, discard, cardId, service, row0)
         alignX = cardRatio * table.size(to.children)
          -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
         alignX = alignX + (0.5 - cardRatio * 8 * 0.5)
-        alignY = (1.0 - (cardLayoutHeight / to.height)) * 0.5 -- centering
+        alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
     end
 
     local ex, ey = LocalToWorld(to, alignX, alignY)
@@ -388,6 +391,17 @@ function View.ReleaseGrabedCard(self, to, discard, cardId, service, row0)
         if discard and cardId and service then
             self:RegisterGroundCardEvent(moved, cardId, service)
         end
+
+        -- leave hgihlight
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
+        --local h0 = gameMenu:findChild(uiid.playerHand)
+        local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+        local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+        ResetHighlightCards(g0)
+        ResetHighlightCards(g1)
+        --ResetHighlightCards(h0)
+
         to:getTopLevelMenu():updateLayout()
     end)
 
@@ -474,6 +488,17 @@ function View.CaptureCard(self, element, player)
         if not you then -- opponent is right-justified, so line them up from right to left.
             to:reorderChildren(0, moved, 1)
         end
+
+        -- leave highlight
+        local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+        assert(gameMenu)
+        local h0 = gameMenu:findChild(uiid.playerHand)
+        local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+        local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+        ResetHighlightCards(g0)
+        ResetHighlightCards(g1)
+        ResetHighlightCards(h0)
+
         to:getTopLevelMenu():updateLayout()
 
         -- Overlap placement if it does not fit
@@ -1221,11 +1246,14 @@ function View.RegisterGroundCardEvent(self, element, cardId, service)
                 local moved1 = self:CaptureGrabCard(koi.player.you)
                 --UnregisterEvents(moved1)
                 sound.Play(sound.se.putCard)
+
+                -- without animation
                 local h0 = root:findChild(uiid.playerHand)
                 -- local h1 = root:findChild(uiid.opponentHand)
                 ResetHighlightCards(g0)
                 ResetHighlightCards(g1)
                 ResetHighlightCards(h0)
+
                 root:updateLayout()
                 service:NotifyMatchedCards(drawn)
             else
@@ -1261,8 +1289,10 @@ function View.RegisterGroundEvent(self, element, service)
                     --self:RegisterGroundCardEvent(moved, cardId, service)
                     sound.Play(sound.se.putCard)
                 end
+                -- without animation
                 ResetHighlightCards(g0)
                 ResetHighlightCards(g1)
+
                 root:updateLayout()
                 service:NotifyDiscardCard(drawn)
             else
@@ -1296,11 +1326,25 @@ function View.RegisterDeckEvent(self, element, service)
         if service:CanDrawCard() then
             local cardId = service:DrawCard()
             if cardId then
+                local skipAnimation = false -- TODO args?
                 local drawn = e.source:getTopLevelMenu():findChild(uiid.boardDrawn)
-                local element = PutCard(drawn, self.asset, cardId, false)
-                self:RegisterDrawnCardEvent(element, cardId, service)
-                e.source:getTopLevelMenu():updateLayout()
-                sound.Play(sound.se.flipCard)
+                if skipAnimation then
+                    local element = PutCard(drawn, self.asset, cardId, false)
+                    self:RegisterDrawnCardEvent(element, cardId, service)
+                    e.source:getTopLevelMenu():updateLayout()
+                    sound.Play(sound.se.flipCard)
+                else
+                    local pile = e.source:getTopLevelMenu():findChild(uiid.boardPile)
+                    local cardRatio = cardLayoutWidth / drawn.width
+                    local cardHeightRatio = cardLayoutHeight / drawn.height
+                    local alignX = -cardRatio * 0.5 + 0.5 -- centering
+                    local alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+                    self:PutCardWithAnimation(pile, drawn, alignX, alignY, self.asset, cardId, false, false,
+                    function (moved)
+                        self:RegisterDrawnCardEvent(moved, cardId, service) -- only player?
+                    end)
+                    sound.Play(sound.se.flipCard)
+                end
             end
         else
             tes3.messageBox(i18n("koi.view.infoDraw"))
@@ -1459,11 +1503,13 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     alignX = cardRatio * (i - 1)
                     -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
                     alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
-                    alignY = (1.0 - (cardLayoutHeight / view.height)) * 0.5 -- centering
-                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, not back)
-                    if child == koi.player.you then -- FIXME workaround
-                        self:RegisterHandCardEvent(element, cardId, service)
-                    end
+                    alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+                    self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, not back, false,
+                    function (moved)
+                        if child == koi.player.you then -- FIXME workaround
+                            self:RegisterHandCardEvent(moved, cardId, service)
+                        end
+                    end)
                 elseif ownerIndex == 1 then -- field
                     local cardId = groundPools[i]
                     local row1 = i % 2 == 0
@@ -1473,9 +1519,10 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     local cardHeightRatio = cardLayoutHeight / view.height
                     alignX = cardRatio * (math.floor(i / 2) - 1) * 0.5 + 0.5
                     alignY = row0 and (1.0 - cardHeightRatio) or 0.0 -- padding g.height
-                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, false)
-                    self:RegisterGroundCardEvent(element, cardId, service)
-
+                    self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, false, false,
+                    function (moved)
+                        self:RegisterGroundCardEvent(moved, cardId, service)
+                    end)
                 elseif ownerIndex == 2 then -- dealer
                     local view = parentHand
                     local cardId = pools[parent].hand[i]
@@ -1484,11 +1531,13 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     alignX = cardRatio * (i - 1)
                     -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
                     alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
-                    alignY = (1.0 - (cardLayoutHeight / view.height)) * 0.5 -- centering
-                    local element = self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, back)
-                    if parent == koi.player.you then -- FIXME workaround
-                        self:RegisterHandCardEvent(element, cardId, service)
-                    end
+                    alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+                    self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, back, false,
+                    function (moved)
+                        if parent == koi.player.you then -- FIXME workaround
+                            self:RegisterHandCardEvent(moved, cardId, service)
+                        end
+                    end)
 
                 else
                     -- error
@@ -1505,37 +1554,10 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
 
             end,
             iterations = iterations,
-            duration = 0.2,         -- tweak this
+            duration = 0.15,         -- tweak this
             persist = false,        -- perhaps false
         })
 
-        --[[
-        local deal = coroutine.wrap(putCards)
-        timer.start({
-            type = timer.real,
-            ---@param e mwseTimerCallbackData
-            callback = function(e)
-                if deal() == nil then
-                    --or infinit and use e.timer.cancel
-                    -- notify servic to next phase
-                    local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-                    assert(gameMenu)
-                    local pile = gameMenu:findChild(uiid.boardPile)
-                    local e = PutDeck(pile, self.asset, deck)
-                    self:RegisterDeckEvent(e, service)
-                    gameMenu:updateLayout()
-                    sound.Play(sound.se.putDeck)
-                    logger:debug("dealing done")
-                    service:NotifyDealedInitialCards()
-                else
-                    sound.Play(sound.se.dealCard)
-                end
-            end,
-            iterations = 8 * 3 + 1, -- cards and endpoint
-            duration = 0.1,         -- tweak this
-            persist = false,        -- hmm..perhaps false
-        })
-        --]]
     end
 end
 
@@ -1684,11 +1706,14 @@ function View.Capture(self, service, player, selectedCard, matchedCard, drawn, s
     local moved0 = self:CaptureCard(selected, player)
     UnregisterEvents(moved0)
     sound.Play(sound.se.putCard)
+
+    -- without animation
     local h0 = gameMenu:findChild(uiid.playerHand)
     -- local h1 = gameMenu:findChild(uiid.opponentHand)
     ResetHighlightCards(g0)
     ResetHighlightCards(g1)
     ResetHighlightCards(h0)
+
     gameMenu:updateLayout()
     service:NotifyMatchedCards(drawn) -- correct usage?
 
@@ -1741,10 +1766,17 @@ function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
     local alignY = g == g0 and (1.0 - cardHeightRatio) or 0.0 -- padding g.height
     local ex, ey = LocalToWorld(g, alignX, alignY)
     self:AddMenuAnimation(selected, ex, ey, function(ab)
-        logger:debug("animation done")
+        logger:trace("animation done")
         --local moved = selected:move({ to = g })
         local moved = ab.params:move({ to = g })
         self:RegisterGroundCardEvent(moved, selectedCard, service)
+
+        -- leave highlight
+        --local h0 = gameMenu:findChild(uiid.playerHand)
+        ResetHighlightCards(g0)
+        ResetHighlightCards(g1)
+        --ResetHighlightCards(h0)
+
         gameMenu:updateLayout()
         --service:NotifyDiscardCard(drawn) -- need to wait animation done?
     end)
@@ -1767,16 +1799,31 @@ function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
     local drawn = gameMenu:findChild(uiid.boardDrawn)
-    local element = PutCard(drawn, self.asset, cardId, false)
-    self:RegisterDrawnCardEvent(element, cardId, service) -- only player?
-    if emptyDeck then
-        local pile = gameMenu:findChild(uiid.boardPile)
-        pile.visible = false
-    end
-    gameMenu:updateLayout()
-    sound.Play(sound.se.flipCard)
+    if skipAnimation then
+        local element = PutCard(drawn, self.asset, cardId, false)
+        self:RegisterDrawnCardEvent(element, cardId, service) -- only player?
+        if emptyDeck then
+            local pile = gameMenu:findChild(uiid.boardPile)
+            pile.visible = false
+        end
+        gameMenu:updateLayout()
+        sound.Play(sound.se.flipCard)
 
-    service:NotifyDrawCard()
+        service:NotifyDrawCard()
+    else
+        local pile = gameMenu:findChild(uiid.boardPile)
+        local cardRatio = cardLayoutWidth / drawn.width
+        local cardHeightRatio = cardLayoutHeight / drawn.height
+        local alignX = -cardRatio * 0.5 + 0.5 -- centering
+        local alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+        self:PutCardWithAnimation(pile, drawn, alignX, alignY, self.asset, cardId, false, false,
+        function (moved)
+            self:RegisterDrawnCardEvent(moved, cardId, service) -- only player?
+            service:NotifyDrawCard() -- after moved
+        end)
+        sound.Play(sound.se.flipCard)
+
+    end
 
 end
 
