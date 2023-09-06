@@ -1466,6 +1466,7 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         local initialCards = 8
         local initialDealEach = 2
         local owner = 3
+        --[[
         local iterations = initialCards * owner
         timer.start({
             type = timer.real,
@@ -1556,6 +1557,105 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
             end,
             iterations = iterations,
             duration = 0.15,         -- tweak this
+            persist = false,        -- perhaps false
+        })
+        ]]--
+
+        -- Deal out two cards at a time.
+        local iterations = math.floor(initialCards / initialDealEach) * owner
+        timer.start({
+            type = timer.real,
+            ---@param e mwseTimerCallbackData
+            callback = function(e)
+                local index = iterations - e.timer.iterations
+                index = index * initialDealEach
+                local ownerIndex = math.floor(index / initialDealEach) % owner
+                local localIndex = math.floor(index / (initialDealEach * owner)) * initialDealEach + (index % initialDealEach)
+                --logger:info(ownerIndex)
+                --logger:debug(localIndex)
+
+                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+                assert(gameMenu)
+
+                local back = parent ~= koi.player.you
+                local child = koi.GetOpponent(parent)
+
+                local g0 = gameMenu:findChild(uiid.boardGroundRow0)
+                local g1 = gameMenu:findChild(uiid.boardGroundRow1)
+                local ph = gameMenu:findChild(uiid.playerHand)
+                local oh = gameMenu:findChild(uiid.opponentHand)
+                local childHand = child == koi.player.you and ph or oh
+                local parentHand = child == koi.player.you and oh or ph
+
+                for n = 1, initialDealEach, 1 do
+                    local i = localIndex + n -- lua
+
+                    local alignX = 0.5
+                    local alignY = 0.0
+
+                    if ownerIndex == 0 then -- player
+                        local view = childHand
+                        local cardId = pools[child].hand[i]
+                        local cardRatio = cardLayoutWidth / view.width
+                        local cardHeightRatio = cardLayoutHeight / view.height
+                        alignX = cardRatio * (localIndex + initialDealEach - n) -- invert?
+                        -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
+                        alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
+                        alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+                        self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, true, false,
+                        function (moved)
+                            if child == koi.player.you then -- FIXME workaround
+                                moved = FlipCard(moved, self.asset)
+                                self:RegisterHandCardEvent(moved, cardId, service)
+                            end
+                        end)
+                    elseif ownerIndex == 1 then -- field
+                        local cardId = groundPools[i]
+                        local row1 = i % 2 == 0
+                        local row0 = not row1
+                        local view = row1 and g1 or g0
+                        local cardRatio = cardLayoutWidth / view.width
+                        local cardHeightRatio = cardLayoutHeight / view.height
+                        alignX = cardRatio * (math.floor(localIndex / 2) - 1) * 0.5 + 0.5
+                        alignY = row0 and (1.0 - cardHeightRatio) or 0.0 -- padding g.height
+                        self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, false, false,
+                        function (moved)
+                            self:RegisterGroundCardEvent(moved, cardId, service)
+                        end)
+                    elseif ownerIndex == 2 then -- dealer
+                        local view = parentHand
+                        local cardId = pools[parent].hand[i]
+                        local cardRatio = cardLayoutWidth / view.width
+                        local cardHeightRatio = cardLayoutHeight / view.height
+                        alignX = cardRatio * (localIndex + initialDealEach - n) -- invert?
+                        -- HACK I have it set to center-aligned, but due to a glitch, only the initial position is so, and it is actually left-aligned. Offset by the initial position
+                        alignX = alignX + (0.5 - cardRatio * initialCards * 0.5)
+                        alignY = (1.0 - cardHeightRatio) * 0.5 -- centering
+                        self:PutCardWithAnimation(pile, view, alignX, alignY, self.asset, cardId, true, false,
+                        function (moved)
+                            if parent == koi.player.you then -- FIXME workaround
+                                moved = FlipCard(moved, self.asset)
+                                self:RegisterHandCardEvent(moved, cardId, service)
+                            end
+                        end)
+
+                    else
+                        -- error
+                    end
+
+                    end
+
+                gameMenu:updateLayout()
+
+                -- last
+                if e.timer.iterations == 1 then
+                    logger:debug("dealing done")
+                    service:NotifyDealedInitialCards()
+                end
+
+            end,
+            iterations = iterations,
+            duration = 0.3,         -- tweak this
             persist = false,        -- perhaps false
         })
 
