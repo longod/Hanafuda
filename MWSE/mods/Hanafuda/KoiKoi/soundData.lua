@@ -41,7 +41,7 @@ this.musicData = {
 
 ---@type {[KoiKoi.SoundEffectId] : KoiKoi.SoundData}
 this.soundData = {
-    [this.se.dealCard] = { sound = "book page2", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_put1.wav", "Fx\\Hanafuda\\springin_put1.wav" } },
+    [this.se.dealCard] = { sound = "book page2", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_deal1.wav" } },
     [this.se.putDeck] = { sound = "book close", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_pick1.wav" } },
     [this.se.pickCard] = { sound = "book page", soundPath = { "Fx\\Hanafuda\\on-jin_pick1.wav", "Fx\\Hanafuda\\on-jin_pick2.wav" }, volume = 0.8 },
     [this.se.putCard] = { sound = "book page2", soundPath = { "Fx\\Hanafuda\\soundeffect-lab_put1.wav", "Fx\\Hanafuda\\springin_put1.wav" } },

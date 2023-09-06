@@ -996,7 +996,7 @@ function View.CreateDecidingParent(self, service, cardId0, cardId1)
         service:NotifyDecideParent(selectedCardId)
     end)
     gameMenu:updateLayout()
-    sound.Play(sound.se.dealCard)
+    sound.Play(sound.se.putCard)
     tes3.messageBox(i18n("koi.view.decideParentMessage"))
 
 end
@@ -1443,7 +1443,8 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         local e = PutDeck(pile, self.asset, deck)
         self:RegisterDeckEvent(e, service)
         gameMenu:updateLayout()
-        sound.Play(sound.se.putDeck)
+        --sound.Play(sound.se.putDeck)
+        sound.Play(sound.se.dealCard)
         logger:debug("dealing done")
         service:NotifyDealedInitialCards()
 
@@ -1458,7 +1459,8 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
         local element = PutDeck(pile, self.asset, deck)
         self:RegisterDeckEvent(element, service)
         gameMenu:updateLayout()
-        sound.Play(sound.se.putDeck)
+        --sound.Play(sound.se.putDeck)
+        sound.Play(sound.se.dealCard)
 
         -- todo use from service settings
         local initialCards = 8
@@ -1544,7 +1546,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                 end
 
                 gameMenu:updateLayout()
-                sound.Play(sound.se.dealCard) -- TODO new dealing sound
 
                 -- last
                 if e.timer.iterations == 1 then
