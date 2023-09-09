@@ -17,6 +17,7 @@ local defaultConfig = {
     cardBackStyle = "worn",
     cardLanguage = this.cardLanguage.tamrielic,
     tooltipImage = false,
+    cardAnimation = true,
     -- game speed x1.0 for wait time
     ---@class Config.KoiKoi
     koikoi = {

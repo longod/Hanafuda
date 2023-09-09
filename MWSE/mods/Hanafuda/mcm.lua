@@ -55,6 +55,11 @@ local function OnModConfigReady(e)
         description = i18n("mcm.hanafuda.tooltipImage.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.tooltipImage),
         variable = mwse.mcm.createTableVariable({ id = "tooltipImage", table = config })
     })
+    hanafuda:createYesNoButton({
+        label = i18n("mcm.hanafuda.cardAnimation.label"),
+        description = i18n("mcm.hanafuda.cardAnimation.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.cardAnimation),
+        variable = mwse.mcm.createTableVariable({ id = "cardAnimation", table = config })
+    })
 
     --- first letter to upper case
     ---@param s string
@@ -160,14 +165,14 @@ local function OnModConfigReady(e)
     end
     do
         local audio = page:createCategory(i18n("mcm.audio.category"))
-        audio:createOnOffButton({
+        audio:createYesNoButton({
             label = i18n("mcm.audio.playerVoice.label"),
-            description = i18n("mcm.audio.playerVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.audio.playerVoice),
+            description = i18n("mcm.audio.playerVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.audio.playerVoice),
             variable = mwse.mcm.createTableVariable({ id = "playerVoice", table = config.audio })
         })
-        audio:createOnOffButton({
+        audio:createYesNoButton({
             label = i18n("mcm.audio.npcVoice.label"),
-            description = i18n("mcm.audio.npcVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetOnOff(defaults.audio.npcVoice),
+            description = i18n("mcm.audio.npcVoice.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.audio.npcVoice),
             variable = mwse.mcm.createTableVariable({ id = "npcVoice", table = config.audio })
         })
     end
