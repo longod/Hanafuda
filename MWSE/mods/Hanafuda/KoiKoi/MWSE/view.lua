@@ -409,7 +409,10 @@ function View.ReleaseGrabedCard(self, to, discard, cardId, service, row0)
     else
         local root = to:getTopLevelMenu()
         local moved = grab.children[1]:move({ to = to }) -- currently just one child.
-        -- unregister events?
+        -- unregister events
+        if discard and cardId and service then
+            self:RegisterGroundCardEvent(moved, cardId, service)
+        end
         root:updateLayout()
     end
 
@@ -1295,7 +1298,7 @@ function View.RegisterGroundEvent(self, element, service)
                 local g = table.size(g0.children) < table.size(g1.children) and g0 or g1
                 local moved = self:ReleaseGrabedCard(g, true, cardId, service, g == g0)
                 if moved then
-                    --self:RegisterGroundCardEvent(moved, cardId, service)
+                    --self:RegisterGroundCardEvent(moved, cardId, service) -- ReleaseGrabedCard
                     sound.Play(sound.se.putCard)
                 end
                 -- without animation
