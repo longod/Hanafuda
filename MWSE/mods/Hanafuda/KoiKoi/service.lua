@@ -51,7 +51,6 @@ local phase = {
 ---@field view KoiKoi.View
 ---@field drawnCard integer? or game has this
 ---@field skipDecidingParent boolean
----@field skipAnimation boolean
 ---@field waitScale number
 ---@field lastCommand KoiKoi.ICommand?
 ---@field onExit fun(params : KoiKoi.ExitStatus)?
@@ -75,7 +74,6 @@ function Service.new(game, view, onExit, logger)
         view = view,
         drawnCard = nil,
         skipDecidingParent = false, -- or table flags
-        skipAnimation = false,
         waitScale = 1.0,
         lastCommand = nil,
         onExit = onExit,
@@ -324,7 +322,7 @@ function Service.OnEnterFrame(self, delta, timestamp)
                 self.game:DealInitialCards()
             end
 
-            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self, self.skipAnimation)
+            self.view:DealInitialCards(self.game.parent, self.game.pools, self.game.groundPool, self.game.deck, self)
         end,
         [phase.dealingInitial] = function()
             -- wait for view
@@ -360,7 +358,7 @@ function Service.OnEnterFrame(self, delta, timestamp)
                 self.lastCommand = command
                 if command.selectedCard then
                     self:RequestPhase(phase.matchCardFlip) -- wait for view
-                    self.view:Flip(self, self.game.current, command.selectedCard, self.skipAnimation)
+                    self.view:Flip(self, self.game.current, command.selectedCard)
                 else
                     -- error?
                 end
@@ -382,11 +380,11 @@ function Service.OnEnterFrame(self, delta, timestamp)
                     if command.matchedCard then
                         -- match
                         local caps = self:Capture(command.selectedCard, command.matchedCard)
-                        self.view:Capture(self, self.game.current, command.selectedCard, caps, false, self.skipAnimation)
+                        self.view:Capture(self, self.game.current, command.selectedCard, caps, false)
                     else
                         -- discard
                         self:Discard(command.selectedCard)
-                        self.view:Discard(self, self.game.current, command.selectedCard, false, self.skipAnimation)
+                        self.view:Discard(self, self.game.current, command.selectedCard, false)
                     end
                 else
                     -- error?
@@ -401,7 +399,7 @@ function Service.OnEnterFrame(self, delta, timestamp)
                 local draw = self:DrawCard()
                 assert(draw)
                 self:RequestPhase(phase.drawCardWait) -- wait for view
-                self.view:Draw(self, self.game.current, draw, self.game:EmptyDeck(), self.skipAnimation)
+                self.view:Draw(self, self.game.current, draw, self.game:EmptyDeck())
             else
                 -- draw? prepare for view
                 self:RequestPhase(phase.matchDrawCard)
@@ -419,10 +417,10 @@ function Service.OnEnterFrame(self, delta, timestamp)
                 if command.selectedCard and command.matchedCard then
                     -- match
                     local caps = self:Capture(command.selectedCard, command.matchedCard)
-                    self.view:Capture(self, self.game.current, command.selectedCard, caps, true, self.skipAnimation)
+                    self.view:Capture(self, self.game.current, command.selectedCard, caps, true)
                 elseif not command.matchedCard then
                     -- discard
-                    self.view:Discard(self, self.game.current, command.selectedCard, true, self.skipAnimation)
+                    self.view:Discard(self, self.game.current, command.selectedCard, true)
                     self:Discard(command.selectedCard)
                 else
                     -- error

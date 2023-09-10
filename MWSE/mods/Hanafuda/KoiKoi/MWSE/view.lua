@@ -1371,8 +1371,7 @@ end
 ---@param groundPools integer[]
 ---@param deck integer[]
 ---@param service KoiKoi.Service
----@param skipAnimation boolean deprecated
-function View.DealInitialCards(self, parent, pools, groundPools, deck, service, skipAnimation)
+function View.DealInitialCards(self, parent, pools, groundPools, deck, service)
     self:CleanUpCards() -- clean deciding parnet cards
 
     if config.cardAnimation then
@@ -1619,10 +1618,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     if child == koi.player.you then -- workaround
                         self:RegisterHandCardEvent(e, cardId, service)
                     end
-                    -- if not skipAnimation then
-                    --     gameMenu:updateLayout()
-                    --     coroutine.yield(e)
-                    -- end
                 end
                 -- ground
                 for i = start, (start + (initialDealEach-1)) do
@@ -1630,10 +1625,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     local view = (i % 2 == 0) and g1 or g0
                     local e = PutCard(view, self.asset, cardId, false)
                     self:RegisterGroundCardEvent(e, cardId, service)
-                    -- if not skipAnimation then
-                    --     gameMenu:updateLayout()
-                    --     coroutine.yield(e)
-                    -- end
                 end
                 -- parent
                 for i = start, (start + (initialDealEach-1)) do
@@ -1643,10 +1634,6 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service, 
                     if parent == koi.player.you then -- workaround
                         self:RegisterHandCardEvent(e, cardId, service)
                     end
-                    -- if not skipAnimation then
-                    --     gameMenu:updateLayout()
-                    --     coroutine.yield(e)
-                    -- end
                 end
             end
         end
@@ -1735,8 +1722,7 @@ end
 ---@param service KoiKoi.Service
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
----@param skipAnimation boolean deprecated
-function View.Flip(self, service, player, selectedCard, skipAnimation)
+function View.Flip(self, service, player, selectedCard)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
 
@@ -1762,8 +1748,7 @@ end
 ---@param selectedCard integer
 ---@param matchedCard integer[]
 ---@param drawn boolean
----@param skipAnimation boolean
-function View.Capture(self, service, player, selectedCard, matchedCard, drawn, skipAnimation)
+function View.Capture(self, service, player, selectedCard, matchedCard, drawn)
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
 
@@ -1834,8 +1819,7 @@ end
 ---@param player KoiKoi.Player
 ---@param selectedCard integer
 ---@param drawn boolean
----@param skipAnimation boolean deprecated
-function View.Discard(self, service, player, selectedCard, drawn, skipAnimation)
+function View.Discard(self, service, player, selectedCard, drawn)
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
@@ -1907,8 +1891,7 @@ end
 ---@param player KoiKoi.Player
 ---@param cardId integer
 ---@param emptyDeck boolean
----@param skipAnimation boolean deprecated
-function View.Draw(self, service, player, cardId, emptyDeck, skipAnimation)
+function View.Draw(self, service, player, cardId, emptyDeck)
 
     local gameMenu = tes3ui.findMenu(uiid.gameMenu)
     assert(gameMenu)
