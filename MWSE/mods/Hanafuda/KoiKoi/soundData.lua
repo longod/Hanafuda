@@ -456,7 +456,7 @@ this.voiceData = {
                 "vo\\d\\f\\Hit_DF004.mp3",	--	Ughn
                 "vo\\d\\f\\Hit_DF005.mp3",	--	Stoopid.
                 "vo\\d\\f\\Hit_DF006.mp3",	--	AIIEEE.
-                "vo\\d\\f\\Hit_DF007.mp3",	--	Groan.
+                -- "vo\\d\\f\\Hit_DF007.mp3",	--	Groan. (missing)
                 "vo\\d\\f\\Hit_DF008.mp3",	--	Groan.
                 "vo\\d\\f\\Hit_DF009.mp3",	--	Ungh!
                 "vo\\d\\f\\Hit_DF009.mp3",	--	Groan.
@@ -655,7 +655,7 @@ this.voiceData = {
             },
             [this.voice.winGame] = {
                 "vo\\d\\m\\bAtk_DM004.mp3",	--	I've fought guars more ferocious than you!
-                "vo\\d\\m\\bIdl_DM001.mp3",	--	The best swimmers are soonest drowned.
+                --"vo\\d\\m\\bIdl_DM001.mp3",	--	The best swimmers are soonest drowned. (missing)
                 "vo\\d\\m\\Hlo_DM023.mp3",	--	You must be joking. Bother someone else.
                 "vo\\d\\m\\Hlo_DM022.mp3",	--	You waste your time. Go away.
                 "vo\\d\\m\\Hlo_DM024.mp3",	--	Whatever it is, I'm not interested.
@@ -1438,7 +1438,7 @@ this.voiceData = {
             [this.voice.remind] = {
                 "vo\\n\\f\\bIdl_NF013.mp3",	--	Ah... ah... AH... CHOOOO!
                 "vo\\n\\f\\bIdl_NF019.mp3",	--	*Pfbbbbbbbt*
-                "vo\\n\\f\\bIdl_NF021.mp3",	--	[Wide yawn.]
+                -- "vo\\n\\f\\bIdl_NF021.mp3",	--	[Wide yawn.] (missing)
                 "vo\\n\\f\\Hlo_NF088.mp3",	--	I take it you want something. Well, what is it?
                 "vo\\n\\f\\Hlo_NF089.mp3",	--	Today's your lucky day, so let's hear it.
                 "vo\\n\\f\\Hlo_NF091.mp3",	--	Ho! What's your pleasure?

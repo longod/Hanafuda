@@ -223,7 +223,10 @@ do
     unitwind:start("Koi-Koi Sound Test")
 
     unitwind:test("General NPC Voice Valid Path", function()
+        local soundDataFiles = "Data Files\\Sound\\"
         local soundData = require("Hanafuda.KoiKoi.soundData")
+        local allValid = true
+        local allExists = true
         for race, genders in pairs(soundData.voiceData) do
             local r = string.sub(race, 1, 1)
             local dir1 = "vo\\" .. r .. "\\"
@@ -235,11 +238,18 @@ do
                         if not valid then
                             logger:warn("invalid voice path %s, %s, %d, %d, '%s'", race, gender, voiceId, index, path)
                         end
-                        unitwind:expect(valid).toBe(true)
+                        allValid = allValid and valid
+                        local exists = lfs.fileexists(soundDataFiles .. path)
+                        if not exists then
+                            logger:error("does not exist voice path %s, %s, %d, %d, '%s'", race, gender, voiceId, index, path)
+                        end
+                        allExists = allExists and exists
                     end
                 end
             end
         end
+        unitwind:expect(allValid).toBe(true)
+        unitwind:expect(allExists).toBe(true)
     end)
 
     unitwind:finish()
