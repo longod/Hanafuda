@@ -206,7 +206,8 @@ end
 ---@param onFinished fun(moved : tes3uiElement)?
 ---@return tes3uiElement
 function View.PutCardWithAnimation(self, source, parent, alignX, alignY, asset, cardId, backface, notooltip, onFinished)
-    local element = PutCard(source, asset, cardId, backface, notooltip)
+    local s = table.size(source.children) > 0 and source.children[1] or source -- get deck element if exist
+    local element = PutCard(s, asset, cardId, backface, notooltip)
     local dx, dy = LocalToWorld(parent, alignX, alignY)
     return self:AddMenuAnimation(element, dx, dy, function (ab)
         local moved = ab.params:move({ to = parent })
@@ -541,8 +542,8 @@ function View.CaptureCard(self, element, player)
             end)
     else
         local moved = element:move({ to = to })
+        SetCardColor(moved, true)
         SetCardSize(moved, smallSize)
-        SetCardSize(element, smallSize)
     end
 
     --return moved
@@ -1496,15 +1497,17 @@ function View.DealInitialCards(self, parent, pools, groundPools, deck, service)
             type = timer.real,
             ---@param e mwseTimerCallbackData
             callback = function(e)
+                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
+                if not gameMenu then
+                    return -- the game may have ended.
+                end
+
                 local index = iterations - e.timer.iterations
                 index = index * initialDealEach
                 local ownerIndex = math.floor(index / initialDealEach) % owner
                 local localIndex = math.floor(index / (initialDealEach * owner)) * initialDealEach + (index % initialDealEach)
                 --logger:info(ownerIndex)
                 --logger:debug(localIndex)
-
-                local gameMenu = tes3ui.findMenu(uiid.gameMenu)
-                assert(gameMenu)
 
                 local back = parent ~= koi.player.you
                 local child = koi.GetOpponent(parent)
