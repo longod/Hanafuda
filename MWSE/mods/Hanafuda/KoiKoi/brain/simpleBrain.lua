@@ -1,5 +1,7 @@
 --- baseline AI
 ---@class KoiKoi.SimpleBrain : KoiKoi.IBrain
+---@field timer number
+---@field wait number?
 local this = {}
 local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})

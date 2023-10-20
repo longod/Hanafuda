@@ -267,6 +267,7 @@ local function CreateRunner()
 
         -- set custom rules
         local rule = require("Hanafuda.settings").Default().koikoi
+        ---@diagnostic disable-next-line: inject-field
         rule.houseRule.luckyHands = false
 
         timer.start({

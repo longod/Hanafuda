@@ -1,5 +1,7 @@
 --- weighted selection AI
 ---@class KoiKoi.WeightedBrain : KoiKoi.IBrain
+---@field timer number
+---@field wait number?
 ---@field weights number[]
 local this = {}
 local brain = require("Hanafuda.KoiKoi.brain.brain")
@@ -64,8 +66,8 @@ local baseWeights = {
 ---@return KoiKoi.WeightedBrain
 function this.new(params)
     local instance = brain.new(params)
-    instance.weights = table.copy(baseWeights)
     ---@cast instance KoiKoi.WeightedBrain
+    instance.weights = table.copy(baseWeights)
     setmetatable(instance, { __index = this })
     return instance
 end
