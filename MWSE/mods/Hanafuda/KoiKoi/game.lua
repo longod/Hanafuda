@@ -327,6 +327,7 @@ function KoiKoi.Simulate(self, player, drawnCardId, deltaTime, timestamp)
             groundPool = self.groundPool,
             deck = self.deck,
             combination = nil,
+            houseRule = self.settings.houseRule,
         }
         local command = self.brains[player]:Simulate(params)
         return command
@@ -352,6 +353,7 @@ function KoiKoi.Call(self, player, combinations, deltaTime, timestamp)
             groundPool = self.groundPool,
             deck = self.deck,
             combination = combinations,
+            houseRule = self.settings.houseRule,
         }
         local command = self.brains[player]:Call(params)
         return command

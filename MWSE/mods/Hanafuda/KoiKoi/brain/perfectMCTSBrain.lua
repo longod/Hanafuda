@@ -1,7 +1,11 @@
+-- Monte Carlo Tree Search
+-- The best move is selected from the results obtained by trying the game in Monte Carlo Tree Search.
+-- Perfect information is used, including the opponent's cards in hand and in the deck.
+-- This is a cheat, but it helps to step up to advanced AI.
+
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
 local combination = require("Hanafuda.KoiKoi.combination")
-local config = require("Hanafuda.config")
 
 ---@class KoiKoi.MCTS.Action
 ---@field player KoiKoi.Player
@@ -27,15 +31,16 @@ function Action.new(player, cardId, captured, calling)
     return instance
 end
 
+-- own game state
 ---@enum KoiKoi.MCTS.Phase
 local phase = {
-    matchCard = 40,
-    matchDrawCard = 52,
-    calling = 70,
+    matchCard = 1,
+    matchDrawCard = 2,
+    calling = 3,
 
-    tie = 80,
-    win = 81,
-    lose = 82,
+    tie = 10,
+    win = 11,
+    lose = 12,
 }
 
 
@@ -50,7 +55,7 @@ local State = {}
 
 ---@param player KoiKoi.Player
 ---@param phase KoiKoi.MCTS.Phase
----@param params KoiKoi.AI.Params
+---@param params KoiKoi.AI.Params -- TODO Minimum parameters as they will be copied.
 ---@param combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@param action KoiKoi.MCTS.Action?
 ---@param logger mwseLogger?
@@ -120,20 +125,19 @@ function State.CollectLegalActions(self)
     local pool = self.player == koi.player.you and self.params.pool or self.params.opponentPool
 
     -- continue or win
-    -- fixme not contain combination updated condition
     if self.phase == phase.calling then
         if table.size(pool.hand) > 0 then
-            --self.logger:info("calling")
+            --self.logger:debug("calling")
             return { Action.new(self.player, nil, nil, koi.calling.shobu), Action.new(self.player, nil, nil, koi.calling.koikoi) }
         else
-            --self.logger:info("calling (force win)")
+            --self.logger:debug("calling (force win)")
             return { Action.new(self.player, nil, nil, koi.calling.shobu) }
         end
     end
 
     if self.params.drawnCard then
         local actions = GenerateCardActions(self.player, self.params.drawnCard, self.params.groundPool)
-        --self.logger:info("draw %d", table.size(actions))
+        --self.logger:debug("draw %d", table.size(actions))
         return actions
     else
         -- hand
@@ -144,7 +148,7 @@ function State.CollectLegalActions(self)
                 table.insert(concat, a)
             end
         end
-        --self.logger:info("hand %d", table.size(concat))
+        --self.logger:debug("hand %d", table.size(concat))
         return concat
     end
 end
@@ -200,7 +204,7 @@ function State.NextState(self, action)
         [phase.matchDrawCard] = function()
             handleCard()
             -- check combo
-            local houseRule = config.koikoi.houseRule -- FIXME Use a copied instance of game or runner
+            local houseRule = p.houseRule
             local combo = combination.Calculate(pool, houseRule, self.logger)
             local diff = combination.Different(combo, c[player], self.logger)
             if diff then
@@ -229,7 +233,7 @@ function State.NextState(self, action)
             end
         end,
     }
-    --self.logger:info("phase " .. tostring(self.phase))
+    --self.logger:debug("phase " .. tostring(self.phase))
     local next = transit[self.phase]()
 
     return State.new(player, next, p, c, action, self.logger)
@@ -254,15 +258,18 @@ function State.CalculateScore(self, player)
     local mult = 1
     if self.combinations[player] then
         point = SumTotalPoint(self.combinations[player])
-        -- TODO
-        -- local houseRule = require("Hanafuda.KoiKoi.houseRule")
-        -- if self.settings.houseRule.multiplier == houseRule.multiplier.doublePointsOver7 then
-        --     if point >= 7 then
-        --         mult = 2
-        --     end
-        -- elseif self.settings.houseRule.multiplier == houseRule.multiplier.eachTimeKoiKoi then
-        --     mult = 1 + self.calls[koi.player.you] + self.calls[koi.player.opponent]
-        -- end
+        -- It does not necessarily have to be an exact score. It would be easier to focus on selections that score higher.
+        --[[
+        local houseRule = require("Hanafuda.KoiKoi.houseRule")
+        if self.params.houseRule.multiplier == houseRule.multiplier.doublePointsOver7 then
+            if point >= 7 then
+                mult = 2
+            end
+        elseif self.params.houseRule.multiplier == houseRule.multiplier.eachTimeKoiKoi then
+            -- TODO call-time
+            --mult = 1 + self.calls[koi.player.you] + self.calls[koi.player.opponent]
+        end
+        --]]--
     end
     return point, mult
 end
@@ -271,6 +278,8 @@ end
 ---@param self KoiKoi.MCTS.State
 ---@return integer
 function State.CalculateReward(self)
+    -- TODO Is [-1,1] or [-n,n] better for the range of reward?
+    -- With [-n,n], I think the more attempts, the larger q/n will be and the more biased it will be...
     if self.phase == phase.win then
         local point, mult = self:CalculateScore(koi.player.you)
         return 1 * point * mult -- TODO its not best
@@ -327,12 +336,14 @@ function Node.IsFullyExpanded(self)
     return table.size(self:CollectUntriedActions()) == 0
 end
 
+--- total simulation reward
 ---@param self KoiKoi.MCTS.Node
 ---@return number
 function Node.q(self)
     return self.result
 end
 
+--- total number of visits
 ---@param self KoiKoi.MCTS.Node
 ---@return number
 function Node.n(self)
@@ -340,13 +351,14 @@ function Node.n(self)
 end
 
 ---@param self KoiKoi.MCTS.Node
+---@param cp number? hyperparameter of search
 ---@return number[]
-function Node.UCB1(self, coeff)
-    coeff = coeff or 1 -- TODO
-    local ln = 2 * math.log(self:n())
+function Node.UCB1(self, cp)
+    cp = cp or 1
+    local ln = 2 * math.log(self:n()) -- m log(n)/2nj m=4
     local ucb1 = table.new(table.size(self.children), 0) ---@type number[]
     for _, c in ipairs(self.children) do
-        local v = c:q() / c:n() + coeff * math.sqrt(ln / c:n())
+        local v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
         table.insert(ucb1, v)
     end
     return ucb1
@@ -360,9 +372,9 @@ function Node.SelectBestChild(self)
     if table.size(self.children) == 0 then
         return nil, 0, 0
     end
-    local ucb1 = self:UCB1()
+    local ucb1 = self:UCB1() -- TODO cp
     -- local index = table.maxn(ucb1) -- useless if contain negative value
-    --self.logger:info(table.concat(ucb1, ", "))
+    --self.logger:debug(table.concat(ucb1, ", "))
     local index = 1
     local max = ucb1[1]
     for i, v in ipairs(ucb1) do
@@ -381,7 +393,7 @@ function Node.CollectUntriedActions(self)
     if not self.untriedActions then
         self.untriedActions = self.state:CollectLegalActions()
     end
-    -- self.logger:info("untriedActions %d", table.size(self.untriedActions))
+    -- self.logger:debug("untriedActions %d", table.size(self.untriedActions))
     return self.untriedActions
 end
 
@@ -412,7 +424,7 @@ function Node.Rollout(self)
     local state = self.state
     while not state:IsTermianl() do
         local actions = state:CollectLegalActions()
-        --self.logger:info("Rollout actions %d", table.size(actions))
+        --self.logger:debug("Rollout actions %d", table.size(actions))
         local action = RolloutPolicy(actions)
         state = state:NextState(action)
     end
@@ -463,7 +475,9 @@ end
 
 
 -- cheating reference
----@class KoiKoi.PerfectMCTSBrain : KoiKoi.IBrain
+---@class KoiKoi.MCTSBrain : KoiKoi.IBrain
+---@field node KoiKoi.MCTS.Node?
+---@field iteration integer
 ---@field timer number
 ---@field wait number?
 local this = {}
@@ -471,136 +485,162 @@ local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})
 
 ---@param params KoiKoi.IBrain.Params?
----@return KoiKoi.PerfectMCTSBrain
+---@return KoiKoi.MCTSBrain
 function this.new(params)
     local instance = brain.new(params)
-    ---@cast instance KoiKoi.PerfectMCTSBrain
+    ---@cast instance KoiKoi.MCTSBrain
+    instance.node = nil
+    instance.iteration = 0
     setmetatable(instance, { __index = this })
     return instance
 end
 
 ---@param params KoiKoi.IBrain.GenericParams
----@return KoiKoi.PerfectMCTSBrain
+---@return KoiKoi.MCTSBrain
 function this.generate(params)
     return this.new({logger = params.logger})
 end
 
----@param self KoiKoi.PerfectMCTSBrain
+---@param self KoiKoi.MCTSBrain
 function this.Reset(self)
     self.timer = 0
     self.wait = nil
+    self.node = nil
+    self.iteration = 0
 end
 
----@param self KoiKoi.PerfectMCTSBrain
----@param state KoiKoi.MCTS.State
+---@param self KoiKoi.MCTSBrain
+---@param root KoiKoi.MCTS.Node
 ---@return KoiKoi.MCTS.Node?
-function this.Dispatch(self, state)
-    local root = Node.new(state, nil, self.logger)
-    local iteration = 1000
-    local duration = nil
+function this.Dispatch(self, root)
+    assert(root)
+    -- TODO How many attempts is appropriate?
+    local maxIteration = 10000
+    local iteration = maxIteration - self.iteration
+    local duration = 0.002 -- seconds
     assert(iteration ~= nil or duration ~= nil)
     local it = 0
-    local beginTime = os.clock()
-    --self.logger:info(beginTime)
+    local beginTime = os.clock() -- too low acculacy?
+    --self.logger:debug(beginTime)
     while (iteration == nil or it < iteration) and (duration == nil or (os.clock() - beginTime) < duration) do
+        it = it + 1
         if not Dispatch(root) then
             break
         end
-        it = it + 1
     end
-    --self.logger:info(os.clock())
-    self.logger:info("iteration %d", it)
+    --self.logger:debug(os.clock() - beginTime)
+    --self.logger:debug("iteration %d", it)
+
+    -- break and continue
+    if iteration then
+        self.iteration = self.iteration + it
+        --self.logger:debug("total iteration %d", self.iteration )
+        if self.iteration < maxIteration then
+            return nil
+        end
+    end
 
     local best, index, max = root:SelectBestChild()
-    self.logger:info("best %d (%f)", index, max)
+    self.logger:debug("best %d (%f)", index, max)
 
-    local ucb1 = root:UCB1()
+    local ucb1 = root:UCB1() -- TODO cp
     for i, child in ipairs(root.children) do
-        self.logger:info("%d: %d/%d (%f)", i, child:q(), child:n(), ucb1[i] )
+        self.logger:debug("%d: %d/%d (%f)", i, child:q(), child:n(), ucb1[i] )
     end
     -- if best then
     --     self.logger:assert(ucb1[index] == max, "mismatch max UCB1!" )
     -- end
 
+    self.logger:assert(best ~= nil, "It's impossible not to have a best action.")
+
     return best
 end
 
----@param self KoiKoi.PerfectMCTSBrain
+---@param self KoiKoi.MCTSBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.MatchCommand?
 function this.Simulate(self, p)
 
-    -- perhaps can be saved and taken over to the next frame.
-    local houseRule = config.koikoi.houseRule -- FIXME Use a copied instance of game or runner
-    -- FIXME pass from service or runner
-    local combos = {
-        [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
-        [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
-    }
-    local state = State.new(koi.player.you, p.drawnCard and phase.matchDrawCard or phase.matchCard, table.deepcopy(p), combos, nil, self.logger)
-    local best = self:Dispatch(state)
+    -- The same situation should be maintained, but it would be nice to be able to validate it
+    if self.node == nil then
+        local houseRule = p.houseRule
+        -- FIXME pass from service or runner
+        local combos = {
+            [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
+            [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
+        }
+        local state = State.new(koi.player.you, p.drawnCard and phase.matchDrawCard or phase.matchCard, table.deepcopy(p), combos, nil, self.logger)
+        self.node = Node.new(state, nil, self.logger)
+        self.iteration = 0
+    end
+    local best = self:Dispatch(self.node)
     if best then
-        self.logger:info("Q/N %d/%d", best:q(), best:n())
+        self.logger:debug("Q/N %d/%d", best:q(), best:n())
+        self.node = nil
         if best.state.action then
             if best.state.action.captured then
-                self.logger:info("action card %d", best.state.action.cardId)
-                self.logger:info("action captured %s", table.concat(best.state.action.captured, ", "))
+                self.logger:debug("action card %d", best.state.action.cardId)
+                self.logger:debug("action captured %s", table.concat(best.state.action.captured, ", "))
                 return { selectedCard = best.state.action.cardId, matchedCard = best.state.action.captured[1] }
             elseif best.state.action.cardId then
-                self.logger:info("action discard %d", best.state.action.cardId)
+                self.logger:debug("action discard %d", best.state.action.cardId)
                 return { selectedCard = best.state.action.cardId, matchedCard = nil } -- discard
             else
-                self.logger:info("action calling " .. tostring(best.state.action.calling))
-                -- TODO call this.Call
+                self.logger:debug("action calling " .. tostring(best.state.action.calling))
                 self.logger:error("invalid action")
             end
         end
     end
+    -- continue thinking
+    return nil
 
-    -- temp fallback
-    -- TODO possible state
-    self.logger:trace("no hand, no drawn")
-    return { selectedCard = nil, matchedCard = nil } -- skip
+    -- fallback
+    -- return { selectedCard = nil, matchedCard = nil } -- skip
 end
 
 --and current yaku
----@param self KoiKoi.PerfectMCTSBrain
+---@param self KoiKoi.MCTSBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
-
-    -- perhaps can be saved and taken over to the next frame.
-    local houseRule = config.koikoi.houseRule -- FIXME Use a copied instance of game or runner
-    -- FIXME pass from service or runner
-    local combos = {
-        [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
-        [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
-    }
-    local state = State.new(koi.player.you, phase.calling, table.deepcopy(p), combos, nil, self.logger)
-    local best = self:Dispatch(state)
+    -- The same situation should be maintained, but it would be nice to be able to validate it
+    if self.node == nil then
+        -- perhaps can be saved and taken over to the next frame.
+        local houseRule = p.houseRule
+        -- FIXME pass from service or runner
+        local combos = {
+            [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
+            [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
+        }
+        local state = State.new(koi.player.you, phase.calling, table.deepcopy(p), combos, nil, self.logger)
+        self.node = Node.new(state, nil, self.logger)
+        self.iteration = 0
+    end
+    local best = self:Dispatch(self.node)
     if best then
-        self.logger:info("Q/N %d/%d", best:q(), best:n())
+        self.logger:debug("Q/N %d/%d", best:q(), best:n())
+        self.node = nil
         if best.state.action then
             if best.state.action.captured then
-                self.logger:info("action card %d", best.state.action.cardId)
-                self.logger:info("action captured %s", table.concat(best.state.action.captured, ", "))
+                self.logger:debug("action card %d", best.state.action.cardId)
+                self.logger:debug("action captured %s", table.concat(best.state.action.captured, ", "))
                 --return { selectedCard = best.state.action.cardId, matchedCard = best.state.action.captured[1] }
                 self.logger:error("invalid action")
             elseif best.state.action.cardId then
-                self.logger:info("action discard %d", best.state.action.cardId)
+                self.logger:debug("action discard %d", best.state.action.cardId)
                 self.logger:error("invalid action")
                 --return { selectedCard = best.state.action.cardId, matchedCard = nil } -- discard
             else
-                self.logger:info("action calling " .. tostring(best.state.action.calling))
-                -- TODO call this.Call
+                self.logger:debug("action calling " .. tostring(best.state.action.calling))
                 return { calling = best.state.action.calling }
-
             end
         end
     end
+    -- continue thinking
+    return nil
 
-    -- temp fallback
-    return { calling = koi.calling.shobu }
+    -- fallback
+    -- return { calling = koi.calling.shobu }
 end
 
 return this

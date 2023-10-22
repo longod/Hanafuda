@@ -25,8 +25,6 @@ assert(sakeCup)
 assert(redPoetry and table.size(redPoetry) == 3)
 assert(blueRibbon and table.size(blueRibbon) == 3)
 
--- todo instance
-
 -- or {combotype = N, point = M} can be accessed ipairs
 ---@param captured { [CardType] : integer[] }
 ---@param houseRule Config.KoiKoi.HouseRule
@@ -42,20 +40,20 @@ function this.Calculate(captured, houseRule, logger)
         local count = table.size(bright)
         if count == 5 then
             combo[koi.combination.fiveBrights] = koi.basePoint[koi.combination.fiveBrights]
-            logger:debug("Goko " .. tostring(combo[koi.combination.fiveBrights]))
+            logger:trace("Goko " .. tostring(combo[koi.combination.fiveBrights]))
         elseif count == 4 then
             if card.Contain(rainman, bright) then
                 combo[koi.combination.rainyFourBrights] = koi.basePoint[koi.combination.rainyFourBrights]
-                logger:debug("Ame-Shiko " .. tostring(combo[koi.combination.rainyFourBrights]))
+                logger:trace("Ame-Shiko " .. tostring(combo[koi.combination.rainyFourBrights]))
             else
                 combo[koi.combination.fourBrights] = koi.basePoint[koi.combination.fourBrights]
-                logger:debug("Shiko " .. tostring(combo[koi.combination.fourBrights]))
+                logger:trace("Shiko " .. tostring(combo[koi.combination.fourBrights]))
             end
         elseif count == 3 then
             if card.Contain(rainman, bright) then
             else
                 combo[koi.combination.threeBrights] = koi.basePoint[koi.combination.threeBrights]
-                logger:debug("Sanko " .. tostring(combo[koi.combination.threeBrights]))
+                logger:trace("Sanko " .. tostring(combo[koi.combination.threeBrights]))
             end
         end
 
@@ -75,22 +73,22 @@ function this.Calculate(captured, houseRule, logger)
             card.Contain(deer, animal) and
             card.Contain(butterfly, animal) then
                 combo[koi.combination.boarDeerButterfly] = koi.basePoint[koi.combination.boarDeerButterfly]
-                logger:debug("Ino-Shika-Cho " .. tostring(combo[koi.combination.boarDeerButterfly]))
+                logger:trace("Ino-Shika-Cho " .. tostring(combo[koi.combination.boarDeerButterfly]))
             end
         end
         if count >= 5 then
             combo[koi.combination.animals] = koi.basePoint[koi.combination.animals] + (count - 5)
-            logger:debug("Tane " .. tostring(combo[koi.combination.animals]))
+            logger:trace("Tane " .. tostring(combo[koi.combination.animals]))
         end
 
         if card.Contain(sakeCup, animal) then
             if hasCurtain and houseRule.flowerViewingSake then
                 combo[koi.combination.flowerViewingSake] = koi.basePoint[koi.combination.flowerViewingSake]
-                logger:debug("Hanami-Zake " .. tostring(combo[koi.combination.flowerViewingSake]))
+                logger:trace("Hanami-Zake " .. tostring(combo[koi.combination.flowerViewingSake]))
             end
             if hasMoon and houseRule.moonViewingSake then
                 combo[koi.combination.moonViewingSake] = koi.basePoint[koi.combination.moonViewingSake]
-                logger:debug("Tsukimi-Zake " .. tostring(combo[koi.combination.moonViewingSake]))
+                logger:trace("Tsukimi-Zake " .. tostring(combo[koi.combination.moonViewingSake]))
             end
         end
     end
@@ -104,16 +102,16 @@ function this.Calculate(captured, houseRule, logger)
             if poetAll and blueAll then
                 -- same as both poetryRibbons and blueRibbons, but checking easly with bonus points
                 combo[koi.combination.poetryAndBlueRibbons] = koi.basePoint[koi.combination.poetryAndBlueRibbons] + (count - 6)
-                logger:debug("Akatan-Aotan " .. tostring(combo[koi.combination.poetryAndBlueRibbons]))
+                logger:trace("Akatan-Aotan " .. tostring(combo[koi.combination.poetryAndBlueRibbons]))
             elseif poetAll then
                 combo[koi.combination.poetryRibbons] = koi.basePoint[koi.combination.poetryRibbons] + (count - 3)
-                logger:debug("Akatan " .. tostring(combo[koi.combination.poetryRibbons]))
+                logger:trace("Akatan " .. tostring(combo[koi.combination.poetryRibbons]))
             elseif blueAll then
                 combo[koi.combination.blueRibbons] = koi.basePoint[koi.combination.blueRibbons] + (count - 3)
-                logger:debug("Aotan " .. tostring(combo[koi.combination.blueRibbons]))
+                logger:trace("Aotan " .. tostring(combo[koi.combination.blueRibbons]))
             elseif count >= 5 then
                 combo[koi.combination.ribbons] = koi.basePoint[koi.combination.ribbons] + (count - 5)
-                logger:debug("Tan " .. tostring(combo[koi.combination.ribbons]))
+                logger:trace("Tan " .. tostring(combo[koi.combination.ribbons]))
             end
         end
     end
@@ -123,7 +121,7 @@ function this.Calculate(captured, houseRule, logger)
         local count = table.size(chaff)
         if count >= 10 then
             combo[koi.combination.chaff] = koi.basePoint[koi.combination.chaff] + (count - 10)
-            logger:debug("Kasu " .. tostring(combo[koi.combination.chaff]))
+            logger:trace("Kasu " .. tostring(combo[koi.combination.chaff]))
         end
     end
     return table.size(combo) > 0 and combo or nil
@@ -190,11 +188,11 @@ function this.CalculateLuckyHands(hand, houseRule, logger)
     if pair4 >= 1 then
         -- If there were two, would they be cumulative?
         lucky[koi.luckyHands.fourOfAKind] = koi.luckyHandsPoint[koi.luckyHands.fourOfAKind]
-        logger:debug("Teshi " .. tostring(lucky[koi.luckyHands.fourOfAKind]))
+        logger:trace("Teshi " .. tostring(lucky[koi.luckyHands.fourOfAKind]))
     end
     if pair2 >= 4 then
         lucky[koi.luckyHands.fourPairs] = koi.luckyHandsPoint[koi.luckyHands.fourPairs]
-        logger:debug("Kuttsuki " .. tostring(lucky[koi.luckyHands.fourPairs]))
+        logger:trace("Kuttsuki " .. tostring(lucky[koi.luckyHands.fourPairs]))
     end
 
     return table.size(lucky) > 0 and lucky or nil

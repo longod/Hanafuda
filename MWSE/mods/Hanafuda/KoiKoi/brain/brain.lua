@@ -17,6 +17,7 @@
 ---@field groundPool  integer[] placed card pools
 ---@field deck integer[] for cheating
 ---@field combination { [KoiKoi.CombinationType] : integer }?
+---@field houseRule Config.KoiKoi.HouseRule
 
 ---@class KoiKoi.AI.WaitRange
 ---@field s number start
