@@ -65,10 +65,10 @@ local function CreateRunner()
         iteration = 10,
         epoch = 10,
         p1 = { index = 1,
-            numbers = { 0, 0 },
+            numbers = { 0, 0, 0, 0 },
         },
         p2 = { index = 1,
-            numbers = { 0, 0 },
+            numbers = { 0, 0, 0, 0 },
         },
     }
 
@@ -235,7 +235,7 @@ local function CreateRunner()
 
         local runlogger = require("logging.logger").new({
             name = "Hanafuda.Runner",
-            logLevel = "INFO",
+            logLevel = "DEBUG",
         })
 
         local batch = table.new(params.batchSize, 0)
@@ -332,7 +332,9 @@ local function CreateRunner()
                     result.win[koi.player.you], result.win[koi.player.you] / numPerEpoch * 100,
                     result.win[koi.player.opponent], result.win[koi.player.opponent] / numPerEpoch * 100,
                     result.tie, result.tie / numPerEpoch * 100
-                 )
+                )
+
+                -- TODO training system
 
                 -- end
                 if epoch >= params.epoch then

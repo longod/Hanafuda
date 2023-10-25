@@ -1,7 +1,3 @@
--- Monte Carlo Tree Search
--- The best move is selected from the results obtained by trying the game in Monte Carlo Tree Search.
--- Perfect information is used, including the opponent's cards in hand and in the deck.
--- This is a cheat, but it helps to step up to advanced AI.
 
 local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
@@ -10,13 +6,13 @@ local combination = require("Hanafuda.KoiKoi.combination")
 ---@class KoiKoi.MCTS.Action
 ---@field player KoiKoi.Player
 ---@field cardId integer?
----@field captured integer[]? nil, zero is discard
+---@field captured integer[]? nil is discard
 ---@field calling KoiKoi.Calling?
 local Action = {}
 
 ---@param player KoiKoi.Player
 ---@param cardId integer?
----@param captured integer[]? nil, zero is discard
+---@param captured integer[]? nil is discard
 ---@param calling KoiKoi.Calling?
 ---@return KoiKoi.MCTS.Action
 function Action.new(player, cardId, captured, calling)
@@ -50,6 +46,7 @@ local phase = {
 ---@field params KoiKoi.AI.Params
 ---@field action KoiKoi.MCTS.Action?
 ---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
+---@field rewardScaler number
 ---@field logger mwseLogger?
 local State = {}
 
@@ -58,17 +55,19 @@ local State = {}
 ---@param params KoiKoi.AI.Params -- TODO Minimum parameters as they will be copied.
 ---@param combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@param action KoiKoi.MCTS.Action?
+---@param rewardScaler number
 ---@param logger mwseLogger?
 ---@return KoiKoi.MCTS.State
-function State.new(player, phase, params, combinations, action, logger)
+function State.new(player, phase, params, combinations, action, rewardScaler, logger)
     ---@type KoiKoi.MCTS.State
     local instance = {
         player = player,
         phase = phase,
         params = params,
         action = action,
-        logger = logger,
+        rewardScaler = rewardScaler,
         combinations = combinations, -- maybe need parent combos
+        logger = logger,
     }
     setmetatable(instance, { __index = State })
     return instance
@@ -160,7 +159,6 @@ function State.NextState(self, action)
 
     local p = table.deepcopy(self.params) ---@type KoiKoi.AI.Params
     local c = table.deepcopy(self.combinations) ---@type  { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
-    local calling = action.calling
     local player = action.player
     local pool = self.player == koi.player.you and p.pool or p.opponentPool
 
@@ -211,7 +209,7 @@ function State.NextState(self, action)
                 c[player] = combo
                 return phase.calling
             elseif table.size(p.pool.hand) == 0 and table.size(p.opponentPool.hand) == 0 then
-                return phase.tie -- or end?
+                return phase.tie
             else
                 -- swap player
                 player = player == koi.player.you and koi.player.opponent or koi.player.you
@@ -222,9 +220,9 @@ function State.NextState(self, action)
             assert(action.calling)
             if action.calling == koi.calling.shobu then
                 if player == koi.player.you then
-                    return phase.win -- or end?
+                    return phase.win
                 else
-                    return phase.lose -- or end?
+                    return phase.lose
                 end
             else
                 -- swap player
@@ -236,7 +234,7 @@ function State.NextState(self, action)
     --self.logger:debug("phase " .. tostring(self.phase))
     local next = transit[self.phase]()
 
-    return State.new(player, next, p, c, action, self.logger)
+    return State.new(player, next, p, c, action, self.rewardScaler, self.logger)
 end
 
 ---@param self KoiKoi.MCTS.State
@@ -276,16 +274,16 @@ end
 
 ---comment
 ---@param self KoiKoi.MCTS.State
----@return integer
+---@return number
 function State.CalculateReward(self)
     -- TODO Is [-1,1] or [-n,n] better for the range of reward?
     -- With [-n,n], I think the more attempts, the larger q/n will be and the more biased it will be...
     if self.phase == phase.win then
         local point, mult = self:CalculateScore(koi.player.you)
-        return 1 * point * mult -- TODO its not best
+        return 1 * math.max(point * mult * self.rewardScaler, 1)
     elseif self.phase == phase.lose then
         local point, mult = self:CalculateScore(koi.player.opponent)
-        return -1 * point * mult -- TODO its not best
+        return -1 * math.max(point * mult * self.rewardScaler, 1)
     end
     -- if self.player == koi.player.you and self.action == koi.calling.shobu then
     --     return 1 -- or score?
@@ -299,6 +297,7 @@ end
 ---@field state KoiKoi.MCTS.State
 ---@field parent KoiKoi.MCTS.Node?
 ---@field children KoiKoi.MCTS.Node[]
+---@field ucb1Param number
 ---@field visited integer
 ---@field result number
 ---@field untriedActions KoiKoi.MCTS.Action[]?
@@ -307,14 +306,16 @@ local Node = {}
 
 ---@param state KoiKoi.MCTS.State
 ---@param parent KoiKoi.MCTS.Node?
+---@param ucb1Param number
 ---@param logger mwseLogger?
 ---@return KoiKoi.MCTS.Node
-function Node.new(state, parent, logger)
+function Node.new(state, parent, ucb1Param, logger)
     ---@type KoiKoi.MCTS.Node
     local instance = {
         state = state,
         parent = parent,
         children = {},
+        ucb1Param = ucb1Param,
         visited = 0,
         result = 0,
         untriedActions = nil,
@@ -345,17 +346,16 @@ end
 
 --- total number of visits
 ---@param self KoiKoi.MCTS.Node
----@return number
+---@return integer
 function Node.n(self)
     return self.visited
 end
 
 ---@param self KoiKoi.MCTS.Node
----@param cp number? hyperparameter of search
+---@param cp number hyperparameter of search
 ---@return number[]
 function Node.UCB1(self, cp)
-    cp = cp or 1
-    local ln = 2 * math.log(self:n()) -- m log(n)/2nj m=4
+    local ln = 2.0 * math.log(self:n()) -- m log(n)/2nj m=4
     local ucb1 = table.new(table.size(self.children), 0) ---@type number[]
     for _, c in ipairs(self.children) do
         local v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
@@ -372,7 +372,7 @@ function Node.SelectBestChild(self)
     if table.size(self.children) == 0 then
         return nil, 0, 0
     end
-    local ucb1 = self:UCB1() -- TODO cp
+    local ucb1 = self:UCB1(self.ucb1Param)
     -- local index = table.maxn(ucb1) -- useless if contain negative value
     --self.logger:debug(table.concat(ucb1, ", "))
     local index = 1
@@ -406,7 +406,7 @@ function Node.Expand(self)
     assert(table.size(actions) > 0)
     local action = table.remove(actions, 1)
     local state = self.state:NextState(action)
-    local child = Node.new(state, self, self.logger)
+    local child = Node.new(state, self, self.ucb1Param, self.logger)
     table.insert(self.children, child)
     return child
 end
@@ -474,37 +474,69 @@ local function Dispatch(root)
 end
 
 
--- cheating reference
+--- Monte Carlo Tree Search
+--- The best move is selected from the results obtained by trying the game in Monte Carlo Tree Search.
+--- Perfect information is used, including the opponent's cards in hand and in the deck.
+--- This is a cheat, but it helps to step up to advanced AI.
 ---@class KoiKoi.MCTSBrain : KoiKoi.IBrain
 ---@field node KoiKoi.MCTS.Node?
 ---@field iteration integer
----@field timer number
----@field wait number?
+---@field maxIteration integer
+---@field timeSlicing number seconds
+---@field ucb1Param number -- 0 <= n It seems smaller values tend to be stronger. Become more focused on the outcome of the child.
+---@field rewardScaler number -- 0 <= m (<= 1) Smaller values seem to simply place more emphasis on winning and losing, while larger values seem to place more emphasis on winning with high scores.
+
 local this = {}
 local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})
 
----@param params KoiKoi.IBrain.Params?
+---@type KoiKoi.MCTSBrain
+local defaults = {
+    node = nil,
+    iteration = 0,
+    maxIteration = 10000,
+    timeSlicing = 0.002, -- ms
+    ucb1Param = 1,
+    rewardScaler = 0.5,
+}
+
+---@class KoiKoi.MCTSBrain.Params : KoiKoi.IBrain.Params
+---@field maxIteration integer?
+---@field timeSlicing number? seconds
+---@field ucb1Param number?
+---@field rewardScaler number?
+
+---@param params KoiKoi.MCTSBrain.Params?
 ---@return KoiKoi.MCTSBrain
 function this.new(params)
     local instance = brain.new(params)
     ---@cast instance KoiKoi.MCTSBrain
-    instance.node = nil
-    instance.iteration = 0
+    table.copymissing(instance, defaults)
     setmetatable(instance, { __index = this })
+    instance:PrintHyperparameters()
     return instance
 end
 
 ---@param params KoiKoi.IBrain.GenericParams
 ---@return KoiKoi.MCTSBrain
 function this.generate(params)
-    return this.new({logger = params.logger})
+    return this.new({
+        logger = params.logger,
+        maxIteration = params.numbers[1] > 0 and 10 * math.exp(10 * params.numbers[1]) or defaults.maxIteration,
+        ucb1Param = params.numbers[2] > 0 and math.max(params.numbers[2] * 2, 0) or defaults.ucb1Param,
+        rewardScaler = params.numbers[3] > 0 and math.max(params.numbers[3], 0) or defaults.rewardScaler,
+    })
+end
+
+---@param self KoiKoi.MCTSBrain
+function this.PrintHyperparameters(self)
+    self.logger:debug("maxIteration: %d", self.maxIteration)
+    self.logger:debug("ucb1Param: %f", self.ucb1Param)
+    self.logger:debug("rewardScaler: %f", self.rewardScaler)
 end
 
 ---@param self KoiKoi.MCTSBrain
 function this.Reset(self)
-    self.timer = 0
-    self.wait = nil
     self.node = nil
     self.iteration = 0
 end
@@ -515,9 +547,8 @@ end
 function this.Dispatch(self, root)
     assert(root)
     -- TODO How many attempts is appropriate?
-    local maxIteration = 10000
-    local iteration = maxIteration - self.iteration
-    local duration = 0.002 -- seconds
+    local iteration = self.maxIteration and self.maxIteration - self.iteration or nil
+    local duration = self.timeSlicing -- seconds
     assert(iteration ~= nil or duration ~= nil)
     local it = 0
     local beginTime = os.clock() -- too low acculacy?
@@ -535,7 +566,7 @@ function this.Dispatch(self, root)
     if iteration then
         self.iteration = self.iteration + it
         --self.logger:debug("total iteration %d", self.iteration )
-        if self.iteration < maxIteration then
+        if self.iteration < self.maxIteration then
             return nil
         end
     end
@@ -543,7 +574,7 @@ function this.Dispatch(self, root)
     local best, index, max = root:SelectBestChild()
     self.logger:debug("best %d (%f)", index, max)
 
-    local ucb1 = root:UCB1() -- TODO cp
+    local ucb1 = root:UCB1(self.ucb1Param)
     for i, child in ipairs(root.children) do
         self.logger:debug("%d: %d/%d (%f)", i, child:q(), child:n(), ucb1[i] )
     end
@@ -569,8 +600,8 @@ function this.Simulate(self, p)
             [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
             [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
         }
-        local state = State.new(koi.player.you, p.drawnCard and phase.matchDrawCard or phase.matchCard, table.deepcopy(p), combos, nil, self.logger)
-        self.node = Node.new(state, nil, self.logger)
+        local state = State.new(koi.player.you, p.drawnCard and phase.matchDrawCard or phase.matchCard, table.deepcopy(p), combos, nil, self.rewardScaler, self.logger)
+        self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
     local best = self:Dispatch(self.node)
@@ -598,7 +629,6 @@ function this.Simulate(self, p)
     -- return { selectedCard = nil, matchedCard = nil } -- skip
 end
 
---and current yaku
 ---@param self KoiKoi.MCTSBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
@@ -612,8 +642,8 @@ function this.Call(self, p)
             [koi.player.you] = combination.Calculate(p.pool, houseRule, self.logger),
             [koi.player.opponent] = combination.Calculate(p.opponentPool, houseRule, self.logger),
         }
-        local state = State.new(koi.player.you, phase.calling, table.deepcopy(p), combos, nil, self.logger)
-        self.node = Node.new(state, nil, self.logger)
+        local state = State.new(koi.player.you, phase.calling, table.deepcopy(p), combos, nil, self.rewardScaler, self.logger)
+        self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
     local best = self:Dispatch(self.node)
