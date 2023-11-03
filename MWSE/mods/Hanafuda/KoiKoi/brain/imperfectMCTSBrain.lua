@@ -3,7 +3,7 @@ local koi = require("Hanafuda.KoiKoi.koikoi")
 local card = require("Hanafuda.card")
 local combination = require("Hanafuda.KoiKoi.combination")
 
----@class KoiKoi.MCTS.Action
+---@class KoiKoi.IMCTS.Action
 ---@field player KoiKoi.Player
 ---@field cardId integer?
 ---@field captured integer[]? nil is discard
@@ -14,9 +14,9 @@ local Action = {}
 ---@param cardId integer?
 ---@param captured integer[]? nil is discard
 ---@param calling KoiKoi.Calling?
----@return KoiKoi.MCTS.Action
+---@return KoiKoi.IMCTS.Action
 function Action.new(player, cardId, captured, calling)
-    ---@type KoiKoi.MCTS.Action
+    ---@type KoiKoi.IMCTS.Action
     local instance = {
         player = player,
         cardId = cardId,
@@ -28,7 +28,7 @@ function Action.new(player, cardId, captured, calling)
 end
 
 -- own game state
----@enum KoiKoi.MCTS.Phase
+---@enum KoiKoi.IMCTS.Phase
 local phase = {
     matchCard = 1,
     matchDrawCard = 2,
@@ -40,26 +40,26 @@ local phase = {
 }
 
 
----@class KoiKoi.MCTS.State
+---@class KoiKoi.IMCTS.State
 ---@field player KoiKoi.Player
----@field phase KoiKoi.MCTS.Phase
+---@field phase KoiKoi.IMCTS.Phase
 ---@field params KoiKoi.AI.Params
----@field action KoiKoi.MCTS.Action?
+---@field action KoiKoi.IMCTS.Action?
 ---@field combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
 ---@field rewardScaler number
 ---@field logger mwseLogger?
 local State = {}
 
 ---@param player KoiKoi.Player
----@param phase KoiKoi.MCTS.Phase
+---@param phase KoiKoi.IMCTS.Phase
 ---@param params KoiKoi.AI.Params -- TODO Minimum parameters as they will be copied.
 ---@param combinations { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
----@param action KoiKoi.MCTS.Action?
+---@param action KoiKoi.IMCTS.Action?
 ---@param rewardScaler number
 ---@param logger mwseLogger?
----@return KoiKoi.MCTS.State
+---@return KoiKoi.IMCTS.State
 function State.new(player, phase, params, combinations, action, rewardScaler, logger)
-    ---@type KoiKoi.MCTS.State
+    ---@type KoiKoi.IMCTS.State
     local instance = {
         player = player,
         phase = phase,
@@ -73,7 +73,7 @@ function State.new(player, phase, params, combinations, action, rewardScaler, lo
     return instance
 end
 
----@param self KoiKoi.MCTS.State
+---@param self KoiKoi.IMCTS.State
 ---@return boolean
 function State.IsTermianl(self)
     -- opponent?
@@ -91,7 +91,7 @@ end
 ---@param player KoiKoi.Player
 ---@param cardId integer
 ---@param ground integer[]
----@return KoiKoi.MCTS.Action[]
+---@return KoiKoi.IMCTS.Action[]
 local function GenerateCardActions(player, cardId, ground)
     local ids = {}
     for _, id in ipairs(ground) do
@@ -105,7 +105,7 @@ local function GenerateCardActions(player, cardId, ground)
             return { Action.new(player, cardId, ids, nil) }
         else
             -- capture a card
-            local actions = table.new(size, 0) ---@type KoiKoi.MCTS.Action[]
+            local actions = table.new(size, 0) ---@type KoiKoi.IMCTS.Action[]
             for _, id in ipairs(ids) do
                 table.insert(actions, Action.new(player, cardId, {id}, nil))
             end
@@ -117,11 +117,47 @@ local function GenerateCardActions(player, cardId, ground)
     end
 end
 
+-- unseen cards
+---@param p KoiKoi.AI.Params
+---@return integer[]
+local function GenerateProbabilityCardList(p)
+    -- TODO optimize to use hash
+    local prob = card.CreateDeck() -- non-shuffle, expects [index] == index
+    if p.drawnCard then
+        local r = table.removevalue(prob, p.drawnCard)
+        assert(r)
+    end
+    -- own hand
+    for _, value in ipairs(p.pool.hand) do
+        local r = table.removevalue(prob, value)
+        assert(r)
+    end
+    -- captured
+    for _, t in pairs(card.type) do
+        for _, value in ipairs(p.pool[t]) do
+            local r = table.removevalue(prob, value)
+            assert(r)
+        end
+        for _, value in ipairs(p.opponentPool[t]) do
+            local r = table.removevalue(prob, value)
+            assert(r)
+        end
+    end
+    -- ground
+    for _, value in ipairs(p.groundPool) do
+        local r = table.removevalue(prob, value)
+        assert(r)
+    end
+    -- mwse.log(table.size(prob))
+    return prob
+end
+
 ---comments
----@param self KoiKoi.MCTS.State
----@return KoiKoi.MCTS.Action[]
+---@param self KoiKoi.IMCTS.State
+---@return KoiKoi.IMCTS.Action[]
 function State.CollectLegalActions(self)
-    local pool = self.player == koi.player.you and self.params.pool or self.params.opponentPool
+    local you = self.player == koi.player.you
+    local pool = you and self.params.pool or self.params.opponentPool
 
     -- continue or win
     if self.phase == phase.calling then
@@ -134,35 +170,63 @@ function State.CollectLegalActions(self)
         end
     end
 
-    if self.params.drawnCard then
-        local actions = GenerateCardActions(self.player, self.params.drawnCard, self.params.groundPool)
-        --self.logger:debug("draw %d", table.size(actions))
-        return actions
+    if self.phase == phase.matchDrawCard then
+        if self.params.drawnCard then -- exists actual drawn card
+            local actions = GenerateCardActions(self.player, self.params.drawnCard, self.params.groundPool)
+            -- self.logger:debug("draw %d", table.size(actions))
+            return actions
+        else
+            local prob = GenerateProbabilityCardList(self.params)
+            local concat = table.new(table.size(prob) * 2, 0) ---@type KoiKoi.IMCTS.Action[]
+            for _, cardId in ipairs(prob) do
+                local actions = GenerateCardActions(self.player, cardId, self.params.groundPool)
+                for _, a in ipairs(actions) do
+                    table.insert(concat, a)
+                end
+            end
+            -- self.logger:debug("probability draw %d", table.size(concat))
+            return concat
+        end
     else
         -- hand
-        local concat = table.new(table.size(pool.hand) * 2, 0) ---@type KoiKoi.MCTS.Action[]
-        for _, cardId in ipairs(pool.hand) do
-            local actions = GenerateCardActions(self.player, cardId, self.params.groundPool)
-            for _, a in ipairs(actions) do
-                table.insert(concat, a)
+        if you then
+            local concat = table.new(table.size(pool.hand) * 2, 0) ---@type KoiKoi.IMCTS.Action[]
+            for _, cardId in ipairs(pool.hand) do
+                local actions = GenerateCardActions(self.player, cardId, self.params.groundPool)
+                for _, a in ipairs(actions) do
+                    table.insert(concat, a)
+                end
             end
+            -- self.logger:debug("hand %d", table.size(concat))
+            return concat
+        else
+            local prob = GenerateProbabilityCardList(self.params)
+            local concat = table.new(table.size(prob) * 2, 0) ---@type KoiKoi.IMCTS.Action[]
+            for _, cardId in ipairs(prob) do
+                local actions = GenerateCardActions(self.player, cardId, self.params.groundPool)
+                for _, a in ipairs(actions) do
+                    table.insert(concat, a)
+                end
+            end
+            -- self.logger:debug("probability hand %d", table.size(concat))
+            return concat
         end
-        --self.logger:debug("hand %d", table.size(concat))
-        return concat
     end
 end
 
----@param self KoiKoi.MCTS.State
----@param action KoiKoi.MCTS.Action
----@return KoiKoi.MCTS.State
+---@param self KoiKoi.IMCTS.State
+---@param action KoiKoi.IMCTS.Action
+---@return KoiKoi.IMCTS.State
 function State.NextState(self, action)
 
     local p = table.deepcopy(self.params) ---@type KoiKoi.AI.Params
     local c = table.deepcopy(self.combinations) ---@type  { KoiKoi.Player : { [KoiKoi.CombinationType] : integer } }
     local player = action.player
-    local pool = self.player == koi.player.you and p.pool or p.opponentPool
+    local you = self.player == koi.player.you
+    local pool = you and p.pool or p.opponentPool
 
-    local handleCard = function ()
+    ---@param ph KoiKoi.IMCTS.Phase
+    local handleCard = function (ph)
         local cardId = action.cardId
         assert(cardId)
         if action.captured then
@@ -179,32 +243,41 @@ function State.NextState(self, action)
         end
 
         -- release current card
-        local drawn = p.drawnCard ~= nil
-        if not drawn then
-            local removed = table.removevalue(pool.hand, cardId)
+        if ph == phase.matchCard then
+            if you then
+                local removed = table.removevalue(pool.hand, cardId)
+            else
+                -- Reduce the number of cards in opponent hand by one, whatever it is, to make it count.
+                local removed = table.remove(pool.hand)
+            end
         else
-            assert(p.drawnCard == cardId)
             p.drawnCard = nil
         end
 
     end
 
-    ---@type {[KoiKoi.MCTS.Phase] : fun(): KoiKoi.MCTS.Phase}
+    -- self.logger:debug("current phase %d", self.phase)
+
+    ---@type {[KoiKoi.IMCTS.Phase] : fun(ph: KoiKoi.IMCTS.Phase): KoiKoi.IMCTS.Phase}
     local transit = {
-        [phase.matchCard] = function()
-            handleCard()
+        [phase.matchCard] = function(ph)
+            handleCard(ph)
             -- auto draw
-            assert(p.drawnCard == nil)
-            p.drawnCard = card.DealCard(p.deck)
+            -- assert(p.drawnCard == nil)
+            -- p.drawnCard = card.DealCard(p.deck)
 
             return phase.matchDrawCard
         end,
-        [phase.matchDrawCard] = function()
-            handleCard()
+        [phase.matchDrawCard] = function(ph)
+            handleCard(ph)
             -- check combo
             local houseRule = p.houseRule
             local combo = combination.Calculate(pool, houseRule, self.logger)
             local diff = combination.Different(combo, c[player], self.logger)
+
+            -- self.logger:debug("your hand %d", table.size(p.pool.hand))
+            -- self.logger:debug("opponent hand %d", table.size(p.opponentPool.hand))
+
             if diff then
                 c[player] = combo
                 return phase.calling
@@ -216,7 +289,7 @@ function State.NextState(self, action)
                 return phase.matchCard
             end
         end,
-        [phase.calling] = function()
+        [phase.calling] = function(ph)
             assert(action.calling)
             if action.calling == koi.calling.shobu then
                 if player == koi.player.you then
@@ -232,12 +305,12 @@ function State.NextState(self, action)
         end,
     }
     --self.logger:debug("phase " .. tostring(self.phase))
-    local next = transit[self.phase]()
+    local next = transit[self.phase](self.phase)
 
     return State.new(player, next, p, c, action, self.rewardScaler, self.logger)
 end
 
----@param self KoiKoi.MCTS.State
+---@param self KoiKoi.IMCTS.State
 ---@param player KoiKoi.Player
 ---@return integer basePoint
 ---@return integer multiplier
@@ -273,7 +346,7 @@ function State.CalculateScore(self, player)
 end
 
 ---comment
----@param self KoiKoi.MCTS.State
+---@param self KoiKoi.IMCTS.State
 ---@return number
 function State.CalculateReward(self)
     -- TODO Is [-1,1] or [-n,n] better for the range of reward?
@@ -294,24 +367,24 @@ function State.CalculateReward(self)
     return 0
 end
 
----@class KoiKoi.MCTS.Node
----@field state KoiKoi.MCTS.State
----@field parent KoiKoi.MCTS.Node?
----@field children KoiKoi.MCTS.Node[]
+---@class KoiKoi.IMCTS.Node
+---@field state KoiKoi.IMCTS.State
+---@field parent KoiKoi.IMCTS.Node?
+---@field children KoiKoi.IMCTS.Node[]
 ---@field ucb1Param number
 ---@field visited integer
 ---@field result number
----@field untriedActions KoiKoi.MCTS.Action[]?
+---@field untriedActions KoiKoi.IMCTS.Action[]?
 ---@field logger mwseLogger?
 local Node = {}
 
----@param state KoiKoi.MCTS.State
----@param parent KoiKoi.MCTS.Node?
+---@param state KoiKoi.IMCTS.State
+---@param parent KoiKoi.IMCTS.Node?
 ---@param ucb1Param number
 ---@param logger mwseLogger?
----@return KoiKoi.MCTS.Node
+---@return KoiKoi.IMCTS.Node
 function Node.new(state, parent, ucb1Param, logger)
-    ---@type KoiKoi.MCTS.Node
+    ---@type KoiKoi.IMCTS.Node
     local instance = {
         state = state,
         parent = parent,
@@ -326,53 +399,60 @@ function Node.new(state, parent, ucb1Param, logger)
     return instance
 end
 
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@return boolean
 function Node.IsTermianl(self)
     return self.state:IsTermianl()
 end
 
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@return boolean
 function Node.IsFullyExpanded(self)
     return table.size(self:CollectUntriedActions()) == 0
 end
 
 --- total simulation reward
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@return number
 function Node.q(self)
     return self.result
 end
 
 --- total number of visits
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@return integer
 function Node.n(self)
     return self.visited
 end
 
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@param cp number hyperparameter of search
 ---@return number[]
 function Node.UCB1(self, cp)
     local ln = 2.0 * math.log(self:n()) -- m log(n)/2nj m=4
     local ucb1 = table.new(table.size(self.children), 0) ---@type number[]
     for _, c in ipairs(self.children) do
-        local v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
+        local v = 0
+        if c:n() > 0 then -- This is when it never backpropagate, so when it skips because it is a single action
+            v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
+        end
         table.insert(ucb1, v)
     end
     return ucb1
 end
 
----@param self KoiKoi.MCTS.Node
----@return KoiKoi.MCTS.Node?
+---@param self KoiKoi.IMCTS.Node
+---@return KoiKoi.IMCTS.Node?
 ---@return integer
 ---@return number
 function Node.SelectBestChild(self)
-    if table.size(self.children) == 0 then
+    local count = table.size(self.children)
+    if count  == 0 then
         return nil, 0, 0
+    elseif count == 1 then
+        return self.children[1], 1, 0
     end
+
     local ucb1 = self:UCB1(self.ucb1Param)
     -- local index = table.maxn(ucb1) -- useless if contain negative value
     --self.logger:debug(table.concat(ucb1, ", "))
@@ -388,19 +468,22 @@ function Node.SelectBestChild(self)
     return self.children[index], index, max
 end
 
----@param self KoiKoi.MCTS.Node
----@return KoiKoi.MCTS.Action[]
+---@param self KoiKoi.IMCTS.Node
+---@return KoiKoi.IMCTS.Action[]
+---@return boolean
 function Node.CollectUntriedActions(self)
+    local first = false
     if not self.untriedActions then
         self.untriedActions = self.state:CollectLegalActions()
+        first = true
     end
     -- self.logger:debug("untriedActions %d", table.size(self.untriedActions))
-    return self.untriedActions
+    return self.untriedActions, first
 end
 
 
----@param self KoiKoi.MCTS.Node
----@return KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
+---@return KoiKoi.IMCTS.Node
 function Node.Expand(self)
     local actions = self:CollectUntriedActions()
     assert(actions)
@@ -412,28 +495,27 @@ function Node.Expand(self)
     return child
 end
 
----@param actions KoiKoi.MCTS.Action[]
----@return KoiKoi.MCTS.Action
+---@param actions KoiKoi.IMCTS.Action[]
+---@return KoiKoi.IMCTS.Action
 local function RolloutPolicy(actions)
     local action = table.choice(actions)
     return action
 end
 
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@return integer
 function Node.Rollout(self)
     local state = self.state
     while not state:IsTermianl() do
         local actions = state:CollectLegalActions()
-        --self.logger:debug("Rollout actions %d", table.size(actions))
+        -- self.logger:debug("Rollout actions %d", table.size(actions))
         local action = RolloutPolicy(actions)
         state = state:NextState(action)
     end
     return state:CalculateReward()
 end
 
----comments
----@param self KoiKoi.MCTS.Node
+---@param self KoiKoi.IMCTS.Node
 ---@param result integer
 function Node.Backpropagate(self, result)
     self.visited = self.visited + 1
@@ -444,11 +526,17 @@ function Node.Backpropagate(self, result)
     end
 end
 
----comments
----@param root KoiKoi.MCTS.Node
----@return KoiKoi.MCTS.Node?
+---@param root KoiKoi.IMCTS.Node
+---@return KoiKoi.IMCTS.Node?
 local function InsertNodeWithTreePolicy(root)
-    local node = root ---@type KoiKoi.MCTS.Node?
+    -- If only one action is available, no attempt is made.
+    local rootAction, firstTime = root:CollectUntriedActions()
+    if firstTime and table.size(rootAction) == 1 then
+        local _ = root :Expand()
+        return nil -- single action
+    end
+
+    local node = root ---@type KoiKoi.IMCTS.Node?
     while node and not node:IsTermianl() do
         if node:IsFullyExpanded() then
             node = node:SelectBestChild()
@@ -462,7 +550,7 @@ end
 
 
 -- can detect all rollout?
----@param root KoiKoi.MCTS.Node
+---@param root KoiKoi.IMCTS.Node
 ---@return boolean
 local function Dispatch(root)
     local intersectedNode = InsertNodeWithTreePolicy(root)
@@ -479,8 +567,8 @@ end
 --- The best move is selected from the results obtained by trying the game in Monte Carlo Tree Search.
 --- Perfect information is used, including the opponent's cards in hand and in the deck.
 --- This is a cheat, but it helps to step up to advanced AI.
----@class KoiKoi.MCTSBrain : KoiKoi.IBrain
----@field node KoiKoi.MCTS.Node?
+---@class KoiKoi.IMCTSBrain : KoiKoi.IBrain
+---@field node KoiKoi.IMCTS.Node?
 ---@field iteration integer
 ---@field maxIteration integer
 ---@field timeSlicing number seconds
@@ -490,7 +578,7 @@ local this = {}
 local brain = require("Hanafuda.KoiKoi.brain.brain")
 setmetatable(this, {__index = brain})
 
----@type KoiKoi.MCTSBrain
+---@type KoiKoi.IMCTSBrain
 local defaults = {
     node = nil,
     iteration = 0,
@@ -500,17 +588,17 @@ local defaults = {
     rewardScaler = 0.5,
 }
 
----@class KoiKoi.MCTSBrain.Params : KoiKoi.IBrain.Params
+---@class KoiKoi.IMCTSBrain.Params : KoiKoi.IBrain.Params
 ---@field maxIteration integer?
 ---@field timeSlicing number? seconds
 ---@field ucb1Param number?
 ---@field rewardScaler number?
 
----@param params KoiKoi.MCTSBrain.Params?
----@return KoiKoi.MCTSBrain
+---@param params KoiKoi.IMCTSBrain.Params?
+---@return KoiKoi.IMCTSBrain
 function this.new(params)
     local instance = brain.new(params)
-    ---@cast instance KoiKoi.MCTSBrain
+    ---@cast instance KoiKoi.IMCTSBrain
     table.copymissing(instance, defaults)
     setmetatable(instance, { __index = this })
     instance:PrintHyperparameters()
@@ -518,7 +606,7 @@ function this.new(params)
 end
 
 ---@param params KoiKoi.IBrain.GenericParams
----@return KoiKoi.MCTSBrain
+---@return KoiKoi.IMCTSBrain
 function this.generate(params)
     return this.new({
         logger = params.logger,
@@ -528,22 +616,22 @@ function this.generate(params)
     })
 end
 
----@param self KoiKoi.MCTSBrain
+---@param self KoiKoi.IMCTSBrain
 function this.PrintHyperparameters(self)
     self.logger:debug("maxIteration: %d", self.maxIteration)
     self.logger:debug("ucb1Param: %f", self.ucb1Param)
     self.logger:debug("rewardScaler: %f", self.rewardScaler)
 end
 
----@param self KoiKoi.MCTSBrain
+---@param self KoiKoi.IMCTSBrain
 function this.Reset(self)
     self.node = nil
     self.iteration = 0
 end
 
----@param self KoiKoi.MCTSBrain
----@param root KoiKoi.MCTS.Node
----@return KoiKoi.MCTS.Node?
+---@param self KoiKoi.IMCTSBrain
+---@param root KoiKoi.IMCTS.Node
+---@return KoiKoi.IMCTS.Node?
 function this.Dispatch(self, root)
     assert(root)
     -- TODO How many attempts is appropriate?
@@ -553,10 +641,12 @@ function this.Dispatch(self, root)
     local it = 0
     local beginTime = os.clock() -- too low acculacy?
     --self.logger:debug(beginTime)
+    local breaked = false
     while (iteration == nil or it < iteration) and (duration == nil or (os.clock() - beginTime) < duration) do
         it = it + 1
         if not Dispatch(root) then
             self.logger:debug("break")
+            breaked = true
             break
         end
     end
@@ -564,7 +654,7 @@ function this.Dispatch(self, root)
     --self.logger:debug("iteration %d", it)
 
     -- break and continue
-    if iteration then
+    if (not breaked) and iteration then
         self.iteration = self.iteration + it
         --self.logger:debug("total iteration %d", self.iteration )
         if self.iteration < self.maxIteration then
@@ -588,7 +678,7 @@ function this.Dispatch(self, root)
     return best
 end
 
----@param self KoiKoi.MCTSBrain
+---@param self KoiKoi.IMCTSBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.MatchCommand?
 function this.Simulate(self, p)
@@ -605,7 +695,6 @@ function this.Simulate(self, p)
         self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
-    -- TODO skip if single action
     local best = self:Dispatch(self.node)
     if best then
         self.logger:debug("Q/N %d/%d", best:q(), best:n())
@@ -631,7 +720,7 @@ function this.Simulate(self, p)
     -- return { selectedCard = nil, matchedCard = nil } -- skip
 end
 
----@param self KoiKoi.MCTSBrain
+---@param self KoiKoi.IMCTSBrain
 ---@param p KoiKoi.AI.Params
 ---@return KoiKoi.CallCommand?
 function this.Call(self, p)
@@ -648,7 +737,6 @@ function this.Call(self, p)
         self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
-    -- TODO skip if single action
     local best = self:Dispatch(self.node)
     if best then
         self.logger:debug("Q/N %d/%d", best:q(), best:n())
