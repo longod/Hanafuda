@@ -359,7 +359,10 @@ function Node.UCB1(self, cp)
     local ln = 2.0 * math.log(self:n()) -- m log(n)/2nj m=4
     local ucb1 = table.new(table.size(self.children), 0) ---@type number[]
     for _, c in ipairs(self.children) do
-        local v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
+        local v = 0
+        if c:n() > 0 then -- This is when it never backpropagate, so when it skips because it is a single action
+            v = c:q() / c:n() + cp * math.sqrt(ln / c:n())
+        end
         table.insert(ucb1, v)
     end
     return ucb1
@@ -370,9 +373,13 @@ end
 ---@return integer
 ---@return number
 function Node.SelectBestChild(self)
-    if table.size(self.children) == 0 then
+    local count = table.size(self.children)
+    if count  == 0 then
         return nil, 0, 0
+    elseif count == 1 then
+        return self.children[1], 1, 0
     end
+
     local ucb1 = self:UCB1(self.ucb1Param)
     -- local index = table.maxn(ucb1) -- useless if contain negative value
     --self.logger:debug(table.concat(ucb1, ", "))
@@ -390,12 +397,15 @@ end
 
 ---@param self KoiKoi.MCTS.Node
 ---@return KoiKoi.MCTS.Action[]
+---@return boolean
 function Node.CollectUntriedActions(self)
+    local first = false
     if not self.untriedActions then
         self.untriedActions = self.state:CollectLegalActions()
+        first = true
     end
     -- self.logger:debug("untriedActions %d", table.size(self.untriedActions))
-    return self.untriedActions
+    return self.untriedActions, first
 end
 
 
@@ -432,7 +442,6 @@ function Node.Rollout(self)
     return state:CalculateReward()
 end
 
----comments
 ---@param self KoiKoi.MCTS.Node
 ---@param result integer
 function Node.Backpropagate(self, result)
@@ -444,10 +453,16 @@ function Node.Backpropagate(self, result)
     end
 end
 
----comments
 ---@param root KoiKoi.MCTS.Node
 ---@return KoiKoi.MCTS.Node?
 local function InsertNodeWithTreePolicy(root)
+    -- If only one action is available, no attempt is made.
+    local rootAction, firstTime = root:CollectUntriedActions()
+    if firstTime and table.size(rootAction) == 1 then
+        local _ = root :Expand()
+        return nil -- single action
+    end
+
     local node = root ---@type KoiKoi.MCTS.Node?
     while node and not node:IsTermianl() do
         if node:IsFullyExpanded() then
@@ -553,10 +568,12 @@ function this.Dispatch(self, root)
     local it = 0
     local beginTime = os.clock() -- too low acculacy?
     --self.logger:debug(beginTime)
+    local breaked = false
     while (iteration == nil or it < iteration) and (duration == nil or (os.clock() - beginTime) < duration) do
         it = it + 1
         if not Dispatch(root) then
             self.logger:debug("break")
+            breaked = true
             break
         end
     end
@@ -564,7 +581,7 @@ function this.Dispatch(self, root)
     --self.logger:debug("iteration %d", it)
 
     -- break and continue
-    if iteration then
+    if (not breaked) and iteration then
         self.iteration = self.iteration + it
         --self.logger:debug("total iteration %d", self.iteration )
         if self.iteration < self.maxIteration then
@@ -605,7 +622,6 @@ function this.Simulate(self, p)
         self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
-    -- TODO skip if single action
     local best = self:Dispatch(self.node)
     if best then
         self.logger:debug("Q/N %d/%d", best:q(), best:n())
@@ -648,7 +664,6 @@ function this.Call(self, p)
         self.node = Node.new(state, nil, self.ucb1Param, self.logger)
         self.iteration = 0
     end
-    -- TODO skip if single action
     local best = self:Dispatch(self.node)
     if best then
         self.logger:debug("Q/N %d/%d", best:q(), best:n())
