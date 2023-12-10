@@ -286,11 +286,6 @@ function State.CalculateReward(self)
         local point, mult = self:CalculateScore(koi.player.opponent)
         return -1 * math.max(point * mult * self.rewardScaler, 1)
     end
-    -- if self.player == koi.player.you and self.action == koi.calling.shobu then
-    --     return 1 -- or score?
-    -- elseif self.player == koi.player.you and self.action == koi.calling.shobu then
-    --     return -1
-    -- end
     return 0
 end
 
@@ -512,7 +507,7 @@ local defaults = {
     maxIteration = 10000,
     timeSlicing = 0.002, -- ms
     ucb1Param = 1,
-    rewardScaler = 0.5,
+    rewardScaler = 0.25,
 }
 
 ---@class KoiKoi.MCTSBrain.Params : KoiKoi.IBrain.Params

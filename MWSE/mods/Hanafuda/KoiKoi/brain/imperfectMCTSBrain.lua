@@ -352,6 +352,7 @@ function State.CalculateReward(self)
     -- TODO Is [-1,1] or [-n,n] better for the range of reward?
     -- or [0,1] win:1, lose:0, tie:0.5? ideals UCB1 parameter is 1?
     -- With [-n,n], I think the more attempts, the larger q/n will be and the more biased it will be...
+    -- In any case, if the normalization range is greatly exceeded, it seems that the intensive search for certain selections will spoil the search for others.
     if self.phase == phase.win then
         local point, mult = self:CalculateScore(koi.player.you)
         return 1 * math.max(point * mult * self.rewardScaler, 1)
@@ -359,11 +360,6 @@ function State.CalculateReward(self)
         local point, mult = self:CalculateScore(koi.player.opponent)
         return -1 * math.max(point * mult * self.rewardScaler, 1)
     end
-    -- if self.player == koi.player.you and self.action == koi.calling.shobu then
-    --     return 1 -- or score?
-    -- elseif self.player == koi.player.you and self.action == koi.calling.shobu then
-    --     return -1
-    -- end
     return 0
 end
 
@@ -563,10 +559,12 @@ local function Dispatch(root)
 end
 
 
---- Monte Carlo Tree Search
+--- Monte Carlo Tree Search (Imperfect Information)
 --- The best move is selected from the results obtained by trying the game in Monte Carlo Tree Search.
---- Perfect information is used, including the opponent's cards in hand and in the deck.
---- This is a cheat, but it helps to step up to advanced AI.
+--- Imperfect information is used, NOT including the opponent's cards in hand and in the deck.
+--- This is fair.
+--- However, the number of moves is enormous because the rollout is based on a list of all the moves that can be naively assumed.
+--- It also does not seem good that the value of playing the real and hypothetical hands is the same.
 ---@class KoiKoi.IMCTSBrain : KoiKoi.IBrain
 ---@field node KoiKoi.IMCTS.Node?
 ---@field iteration integer
@@ -585,7 +583,7 @@ local defaults = {
     maxIteration = 10000,
     timeSlicing = 0.002, -- ms
     ucb1Param = 1,
-    rewardScaler = 0.5,
+    rewardScaler = 0.25,
 }
 
 ---@class KoiKoi.IMCTSBrain.Params : KoiKoi.IBrain.Params
