@@ -154,12 +154,14 @@ local eventHandler ---@type KoiKoi.EventHandler?
 ---@param penaltyPoint integer
 local function LaunchKoiKoi(player, opponent, odds, penaltyPoint)
     local brain = act.GetAIBrain(opponent)
+    local frontStyle, backStyle = act.GetCardStyle(opponent)
+    local houseRule = act.GetHouseRule(opponent)
 
     -- I would like a helper.
     eventHandler = require("Hanafuda.KoiKoi.MWSE.event").new(
         require("Hanafuda.KoiKoi.service").new(
-            require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil, logger),
-            require("Hanafuda.KoiKoi.MWSE.view").new(player, opponent, config.cardStyle, config.cardBackStyle),
+            require("Hanafuda.KoiKoi.game").new(config.koikoi, brain, nil, houseRule, logger),
+            require("Hanafuda.KoiKoi.MWSE.view").new(player, opponent, frontStyle, backStyle),
             ---@param params KoiKoi.ExitStatus
             function(params)
                 -- and maybe need to get points for gambling

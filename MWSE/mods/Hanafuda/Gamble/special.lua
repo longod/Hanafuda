@@ -224,6 +224,21 @@ local creatures = {
     ["draugr_aesliip"] = false,
 }
 
+local npcStyles = {
+}
+
+local creatureStyles = {
+    ["dagoth_ur_1"] = "sixth_house",
+    ["dagoth_ur_2"] = "sixth_house",
+    ["vivec_god"] = "tribunal",
+    ["yagrum bagarn"] = "dwemer",
+    ["almalexia"] = "tribunal",
+    ["almalexia_warrior"] = "tribunal",
+    ["mudcrab_unique"] = "creature",
+    ["scamp_creeper"] = "daedra",
+    ["dremora_ttmg"] = "daedra",
+    ["dremora_ttpc"] = "daedra",
+}
 
 ---@param mobile tes3mobileNPC
 ---@return boolean
@@ -239,6 +254,18 @@ function this.IsAllowdCreature(mobile)
     logger:debug("Creature baseObject ID: " .. mobile.object.baseObject.id)
     local v = creatures[mobile.object.baseObject.id]
     return (v ~= nil) and (v == true) -- allowed only true
+end
+
+---@param mobile tes3mobileNPC
+---@return string?
+function this.GetCardStyleNPC(mobile)
+    return npcStyles[mobile.object.baseObject.id]
+end
+
+---@param mobile tes3mobileCreature
+---@return string?
+function this.GetCardStyleCreature(mobile)
+    return creatureStyles[mobile.object.baseObject.id]
 end
 
 return this

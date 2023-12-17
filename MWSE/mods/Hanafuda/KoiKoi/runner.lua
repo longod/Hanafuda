@@ -21,6 +21,7 @@ function this.new(rule, brain1, brain2, logger)
             rule,
             brain2, -- opponent
             brain1, -- player
+            nil,
             logger
         ),
         state = 0,

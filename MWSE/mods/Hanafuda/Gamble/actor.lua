@@ -494,4 +494,122 @@ function this.GetAIBrain(mobile)
     return brain
 end
 
+---@param mobile tes3mobileNPC
+---@return string?
+local function GetCardStyleByFaction(mobile)
+    local faction = mobile.object.faction
+    if faction then
+        local styles = {
+            ["ashlanders"] = "ashlanders",
+            ["blades"] = "blades",
+            ["camonna tong"] = "camonna_tong",
+            ["census and excise"] = "census_and_excise",
+            ["clan aundae"] = "clan_aundae",
+            ["clan berne"] = "clan_berne",
+            ["clan quarra"] = "clan_quarra",
+            ["fighters guild"] = "fighters_guild",
+            ["hlaalu"] = "hlaalu",
+            ["imperial cult"] = "imperial_cult",
+            ["imperial knights"] = "imperial_knights",
+            ["imperial legion"] = "imperial_legion",
+            ["mages guild"] = "mages_guild",
+            ["morag tong"] = "morag_tong",
+            ["nerevarine"] = "nerevarine",
+            ["redoran"] = "redoran",
+            ["sixth house"] = "sixth_house",
+            ["talos cult"] = "talos_cult",
+            ["telvanni"] = "telvanni",
+            ["temple"] = "temple",
+            ["thieves guild"] = "thieves_guild",
+            ["twin lamps"] = "twin_lamps",
+            -- tribunals
+            ["dark brotherhood"] = "dark_brotherhood",
+            ["hands of almalexia"] = "hands_of_almalexia",
+            ["royal guard"] = "royal_guard",
+            -- bloodmoon
+            ["east empire company"] = "east_empire_company",
+            ["skaal"] = "skaal",
+        }
+        local id = faction.id:lower()
+        return styles[id]
+    end
+    return nil
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return string
+---@return string
+function this.GetCardStyle(mobile)
+    --use settings
+    local types = {
+        [tes3.actorType.creature] =
+        ---@param a tes3mobileCreature
+        ---@return string?
+            function(a)
+                -- special
+                return special.GetCardStyleCreature(a)
+            end,
+        [tes3.actorType.npc] =
+        ---@param a tes3mobileNPC
+        ---@return string?
+            function(a)
+                -- special or faction
+                return special.GetCardStyleNPC(a) or GetCardStyleByFaction(a)
+                -- region?
+            end,
+        [tes3.actorType.player] =
+        ---@param a tes3mobilePlayer
+        ---@return string?
+            function(a)
+                -- default, faction, inventory item or game progress?
+                return nil
+            end,
+    }
+    local config = require("Hanafuda.config")
+    if types[mobile.actorType] then
+        local cardStyle = types[mobile.actorType](mobile)
+        return cardStyle or config.cardStyle, cardStyle or config.cardBackStyle
+    end
+    return config.cardStyle, config.cardBackStyle
+end
+
+---@param mobile tes3mobileCreature|tes3mobileNPC|tes3mobilePlayer
+---@return Config.KoiKoi.HouseRule
+function this.GetHouseRule(mobile)
+    local types = {
+        [tes3.actorType.creature] =
+        ---@param a tes3mobileCreature
+        ---@return Config.KoiKoi.HouseRule?
+            function(a)
+                -- special
+                return nil
+            end,
+        [tes3.actorType.npc] =
+        ---@param a tes3mobileNPC
+        ---@return Config.KoiKoi.HouseRule?
+            function(a)
+                -- mobile.object.faction
+                -- faction, region
+                -- special
+                return nil
+            end,
+        [tes3.actorType.player] =
+        ---@param a tes3mobilePlayer
+        ---@return Config.KoiKoi.HouseRule?
+            function(a)
+                return nil
+            end,
+    }
+    if types[mobile.actorType] then
+        local rule = types[mobile.actorType](mobile)
+        if rule then
+            return rule
+        end
+    end
+
+    -- default
+    local config = require("Hanafuda.config")
+    return config.koikoi.houseRule
+end
+
 return this

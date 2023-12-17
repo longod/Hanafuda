@@ -22,6 +22,7 @@ function(e)
                     require("Hanafuda.config").koikoi,
                     require("Hanafuda.KoiKoi.brain.randomBrain").new({ koikoiChance = 0.3, meaninglessDiscardChance = 0.1, waitHand = { s = 1, e = 4}, waitDrawn = { s = 0.5, e = 1.5}, waitCalling = { s = 2, e = 4 } }),
                     nil,
+                    nil,
                     logger
                 ),
                 require("Hanafuda.KoiKoi.MWSE.view").new(nil, nil, config.cardStyle, config.cardBackStyle),
