@@ -90,12 +90,13 @@ ValidateSettings(defaults.settings)
 ---@param rule Config.KoiKoi
 ---@param opponentBrain KoiKoi.IBrain?
 ---@param playerBrain KoiKoi.IBrain?
+---@param opponentHouseRule Config.KoiKoi.HouseRule?
 ---@param logger mwseLogger
 ---@return KoiKoi.Game
-function KoiKoi.new(rule, opponentBrain, playerBrain, logger)
+function KoiKoi.new(rule, opponentBrain, playerBrain, opponentHouseRule, logger)
     ---@type KoiKoi.Game
     local instance = table.deepcopy(defaults)
-    instance.settings.houseRule = table.deepcopy(rule.houseRule) -- do not change in game
+    instance.settings.houseRule = table.deepcopy(opponentHouseRule or rule.houseRule) -- do not change in game
     instance.settings.round = rule.round
     instance.logger = logger
     ValidateSettings(instance.settings)
