@@ -26,12 +26,16 @@ local function OnModConfigReady(e)
     })
     page.sidebar:createInfo{ text = i18n("mcm.page.description", { name = settings.modName, version = settings.version }) }
     page.sidebar:createHyperLink({
-		text = "Nexus",
+		text = "Hanafuda (Nexus)",
 		url = "https://www.nexusmods.com/morrowind/mods/53104",
 	})
     page.sidebar:createHyperLink({
-		text = "GitHub",
+		text = "Hanafuda (GitHub)",
 		url = "https://github.com/longod/Hanafuda",
+	})
+    page.sidebar:createHyperLink({
+		text = "[Optional] Safebox's The Achievement Framework (Nexus)",
+		url = "https://www.nexusmods.com/morrowind/mods/51081",
 	})
 
     local hanafuda = page:createCategory(i18n("mcm.hanafuda.category"))
@@ -59,6 +63,11 @@ local function OnModConfigReady(e)
         label = i18n("mcm.hanafuda.cardAnimation.label"),
         description = i18n("mcm.hanafuda.cardAnimation.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.cardAnimation),
         variable = mwse.mcm.createTableVariable({ id = "cardAnimation", table = config })
+    })
+    hanafuda:createYesNoButton({
+        label = i18n("mcm.hanafuda.achievement.label"),
+        description = i18n("mcm.hanafuda.achievement.description") .. "\n\n" .. i18n("mcm.default") .. GetYesNo(defaults.achievement),
+        variable = mwse.mcm.createTableVariable({ id = "achievement", table = config, restartRequired = true })
     })
 
     --- first letter to upper case

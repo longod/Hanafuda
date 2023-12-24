@@ -18,6 +18,7 @@ local defaultConfig = {
     cardLanguage = this.cardLanguage.tamrielic,
     tooltipImage = false,
     cardAnimation = true,
+    achievement = true,
     -- game speed x1.0 for wait time
     ---@class Config.KoiKoi
     koikoi = {

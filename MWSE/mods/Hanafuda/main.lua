@@ -8,10 +8,12 @@ local function OnInitialized(_)
     end
 
     require("Hanafuda.Gamble.service")
-
 end
 event.register(tes3.event.initialized, OnInitialized)
 
+if config.achievement then
+    require("Hanafuda.Gamble.achievement").RegisterService()
+end
 require("Hanafuda.mcm")
 
 -- unittest
